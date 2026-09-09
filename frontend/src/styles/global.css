@@ -1,0 +1,95 @@
+/* ============================================================
+   ESTILOS GLOBALES
+   ------------------------------------------------------------
+   Estilos base que aplican a toda la aplicacion: tipografia,
+   colores generales, body, layout principal.
+   ============================================================ */
+
+html,
+body {
+  height: 100%;
+  font-family: var(--fuente-principal);
+  font-size: var(--tamano-md);
+  color: var(--texto);
+  background-color: var(--fondo);
+  line-height: 1.5;
+}
+
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === TITULOS POR DEFECTO === */
+h1 {
+  font-size: var(--tamano-xxxl);
+  font-weight: var(--peso-bold);
+  line-height: 1.2;
+  color: var(--titulo);
+}
+
+h2 {
+  font-size: var(--tamano-xxl);
+  font-weight: var(--peso-bold);
+  line-height: 1.3;
+  color: var(--titulo);
+}
+
+h3 {
+  font-size: var(--tamano-xl);
+  font-weight: var(--peso-semibold);
+  line-height: 1.4;
+  color: var(--titulo);
+}
+
+h4 {
+  font-size: var(--tamano-lg);
+  font-weight: var(--peso-semibold);
+  line-height: 1.4;
+}
+
+/* === ENLACES === */
+a {
+  color: var(--color-primario);
+  transition: color var(--velocidad-rapida) var(--suavizado);
+}
+
+a:hover {
+  color: var(--color-primario-oscuro);
+}
+
+/* === FOCO ACCESIBLE === */
+:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+  border-radius: var(--radio-sm);
+}
+
+/* === Onda de cambio de tema (View Transitions API) ===
+   El nuevo tema se revela con un circulo que crece desde el boton.
+   Origen y radio los fija ToggleTema en --onda-x/--onda-y/--onda-r. */
+@keyframes onda-revelado {
+  from {
+    clip-path: circle(0 at var(--onda-x, 50%) var(--onda-y, 0));
+  }
+  to {
+    clip-path: circle(var(--onda-r, 150vmax) at var(--onda-x, 50%) var(--onda-y, 0));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: none;
+  }
+  ::view-transition-new(root) {
+    animation: onda-revelado 0.5s ease-out;
+  }
+}
+
+/* Mientras corre la onda, congelar otras transiciones para que solo se vea la onda */
+html[data-onda-activa] *,
+html[data-onda-activa] *::before,
+html[data-onda-activa] *::after {
+  transition: none !important;
+}

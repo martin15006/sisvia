@@ -1,0 +1,356 @@
+/* Pantalla de Resultado del chequeo (paso 5, ultimo). Mobile-first. */
+
+.resultado-pagina {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: var(--espacio-md);
+    transition: background var(--velocidad-media) var(--suavizado);
+}
+
+/* Fondo segun el estado final */
+.resultado-pagina.estado-operativo {
+    background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+}
+
+.resultado-pagina.estado-observacion {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+}
+
+.resultado-pagina.estado-alerta {
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFE082 100%);
+}
+
+.resultado-pagina.estado-critico {
+    background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+}
+
+.resultado-pagina.estado-no-operativo {
+    background: linear-gradient(135deg, #ECEFF1 0%, #B0BEC5 100%);
+}
+
+/* Mini header con logo */
+.resultado-mini-header {
+    display: flex;
+    justify-content: center;
+    padding: var(--espacio-sm) var(--espacio-md);
+}
+
+.resultado-mini-logo {
+    height: 32px;
+    width: auto;
+    opacity: 0.9;
+}
+
+/* Main */
+.resultado-main {
+    flex: 1;
+    max-width: 540px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+    padding: var(--espacio-md) 0;
+}
+
+/* Tarjeta principal */
+.resultado-tarjeta {
+    background: var(--superficie);
+    border-radius: var(--radio-lg);
+    padding: var(--espacio-xl) var(--espacio-lg);
+    text-align: center;
+    box-shadow: var(--sombra-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espacio-md);
+    border-top: 8px solid currentColor;
+}
+
+.estado-operativo .resultado-tarjeta { border-top-color: var(--color-primario); }
+.estado-observacion .resultado-tarjeta { border-top-color: var(--color-azul); }
+.estado-alerta .resultado-tarjeta { border-top-color: var(--color-amarillo); }
+.estado-critico .resultado-tarjeta { border-top-color: var(--color-rojo); }
+.estado-no-operativo .resultado-tarjeta { border-top-color: var(--estado-neutro-fondo); }
+
+.resultado-icono {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    color: var(--color-blanco);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+    font-weight: var(--peso-bold);
+    line-height: 1;
+}
+
+.estado-operativo .resultado-icono {
+    background: var(--color-primario);
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.45);
+}
+
+.estado-observacion .resultado-icono {
+    background: var(--color-azul);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.45);
+}
+
+.estado-alerta .resultado-icono {
+    background: var(--color-amarillo);
+    color: var(--color-gris-900);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
+}
+
+.estado-critico .resultado-icono {
+    background: var(--color-rojo);
+    box-shadow: 0 6px 20px rgba(211, 47, 47, 0.45);
+}
+
+.estado-no-operativo .resultado-icono {
+    background: var(--estado-neutro-fondo);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.resultado-titulo {
+    margin: 0;
+    font-size: var(--tamano-xl);
+    font-weight: var(--peso-bold);
+    letter-spacing: 0.3px;
+}
+
+.estado-operativo .resultado-titulo { color: var(--color-primario-oscuro); }
+.estado-observacion .resultado-titulo { color: var(--estado-info-texto); }
+.estado-alerta .resultado-titulo { color: var(--estado-adv-texto); }
+.estado-critico .resultado-titulo { color: var(--color-rojo); }
+.estado-no-operativo .resultado-titulo { color: #263238; }
+
+.resultado-subtitulo {
+    margin: 0;
+    color: var(--color-gris-700);
+    font-size: var(--tamano-md);
+    line-height: 1.5;
+    font-weight: var(--peso-medio);
+}
+
+.resultado-aviso-bloqueo {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    padding: var(--espacio-sm) var(--espacio-md);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    letter-spacing: 2px;
+    box-shadow: var(--sombra-md);
+    width: 100%;
+    text-align: center;
+}
+
+/* Resumen */
+.resultado-resumen {
+    background: var(--superficie);
+    border-radius: var(--radio-lg);
+    padding: var(--espacio-md);
+    box-shadow: var(--sombra-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-sm);
+}
+
+.resultado-resumen-titulo {
+    color: var(--color-gris-900);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-bottom: var(--espacio-xs);
+    border-bottom: 1px dashed var(--color-gris-200);
+}
+
+.resultado-resumen-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--espacio-sm);
+}
+
+.resultado-resumen-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: var(--espacio-sm);
+    border-radius: var(--radio-md);
+    background: var(--superficie-sutil);
+}
+
+.resultado-resumen-numero {
+    font-size: 36px;
+    font-weight: var(--peso-bold);
+    line-height: 1;
+}
+
+.resultado-numero-cumple { color: var(--color-primario); }
+.resultado-numero-no-cumple { color: var(--color-rojo); }
+.resultado-numero-na { color: var(--color-gris-500); }
+
+.resultado-resumen-label {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+    font-weight: var(--peso-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.resultado-resumen-criticos {
+    background: var(--estado-error-fondo);
+    border: 2px solid var(--color-rojo);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-sm) var(--espacio-md);
+    color: var(--color-rojo);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+}
+
+.resultado-resumen-criticos-badge {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--peso-bold);
+    font-size: var(--tamano-md);
+    flex-shrink: 0;
+}
+
+/* Vehiculo */
+.resultado-vehiculo {
+    background: var(--superficie);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-md);
+    text-align: center;
+    box-shadow: var(--sombra-sm);
+    border-left: 6px solid var(--color-primario);
+}
+
+.resultado-vehiculo-placa {
+    font-size: var(--tamano-xxl);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.resultado-vehiculo-info {
+    margin-top: 4px;
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: var(--peso-semibold);
+}
+
+/* Avisos extra */
+.resultado-aviso {
+    border-radius: var(--radio-md);
+    padding: var(--espacio-sm) var(--espacio-md);
+    font-size: var(--tamano-sm);
+    line-height: 1.4;
+    box-shadow: var(--sombra-sm);
+}
+
+.resultado-aviso-warning {
+    background: var(--estado-adv-fondo);
+    color: var(--estado-adv-texto);
+    border-left: 4px solid var(--color-naranja);
+}
+
+.resultado-aviso-info {
+    background: var(--estado-info-fondo);
+    color: var(--estado-info-texto);
+    border-left: 4px solid var(--color-azul);
+}
+
+/* Boton final */
+.resultado-boton-volver {
+    padding: 14px var(--espacio-lg);
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: var(--sombra-md);
+    margin-top: var(--espacio-sm);
+}
+
+.resultado-boton-volver:hover {
+    background: var(--color-primario-oscuro);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-lg);
+}
+
+.resultado-boton-volver:active {
+    transform: scale(0.98);
+}
+
+.resultado-estado {
+    text-align: center;
+    padding: var(--espacio-xl) var(--espacio-md);
+    color: var(--color-gris-500);
+    font-size: var(--tamano-md);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .resultado-titulo {
+        font-size: var(--tamano-lg);
+    }
+    .resultado-icono {
+        width: 80px;
+        height: 80px;
+        font-size: 44px;
+    }
+    .resultado-resumen-numero {
+        font-size: 28px;
+    }
+    .resultado-vehiculo-placa {
+        font-size: var(--tamano-xl);
+    }
+}
+
+/* === Modo oscuro === */
+/* Los fondos de pagina por estado eran gradientes claros: se aplanan a la
+   superficie/estado oscuro para que la pagina no quede luminosa en oscuro. */
+[data-tema="oscuro"] .resultado-pagina.estado-operativo {
+    background: var(--estado-exito-fondo);
+}
+[data-tema="oscuro"] .resultado-pagina.estado-observacion {
+    background: var(--estado-info-fondo);
+}
+[data-tema="oscuro"] .resultado-pagina.estado-alerta {
+    background: var(--estado-adv-fondo);
+}
+[data-tema="oscuro"] .resultado-pagina.estado-critico {
+    background: var(--estado-error-fondo);
+}
+[data-tema="oscuro"] .resultado-pagina.estado-no-operativo {
+    background: var(--fondo);
+}
+
+/* El titulo "no operativo" era texto azul-grisaceo oscuro (#263238):
+   ilegible sobre fondo oscuro -> texto claro. */
+[data-tema="oscuro"] .estado-no-operativo .resultado-titulo {
+    color: var(--texto);
+}

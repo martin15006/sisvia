@@ -1,0 +1,301 @@
+// Controlador del dashboard administrativo.
+// Devuelve KPIs del dia + alertas que necesitan atencion del admin.
+//
+// Diferenciacion por rol (multinivel, Tarea #102): el filtro de scope lo resuelve
+// el helper scope.service.js segun el nivel del admin (sede / ciudad / departamento
+// / region / nacional). Todas las consultas se filtran por las sedes de su scope.
+//
+// IMPORTANTE: para "del dia" usamos la medianoche local del servidor. En produccion,
+// si el servidor estuviera en otra zona horaria distinta a Colombia, habria que
+// normalizar a America/Bogota explicitamente.
+
+import { supabase } from '../config/supabase.js';
+import { obtenerScope, aplicarScope } from '../services/scope.service.js';
+
+// Helper: devuelve el ISO string de la medianoche de hoy en hora local
+const inicioDelDiaISO = () => {
+    const ahora = new Date();
+    const inicio = new Date(
+        ahora.getFullYear(),
+        ahora.getMonth(),
+        ahora.getDate(),
+        0, 0, 0, 0
+    );
+    return inicio.toISOString();
+};
+
+// Helper: ISO de hoy + N dias hacia el futuro
+const enDiasISO = (dias) => {
+    const ahora = new Date();
+    const objetivo = new Date(
+        ahora.getFullYear(),
+        ahora.getMonth(),
+        ahora.getDate() + dias,
+        23, 59, 59, 999
+    );
+    return objetivo.toISOString();
+};
+
+export const obtenerStatsDashboard = async (req, res) => {
+    try {
+        const usuario = req.usuario; // viene del middleware verificarToken
+        // Resolver una sola vez el scope territorial del admin (qué sedes ve)
+        const scope = await obtenerScope(usuario);
+        const desdeHoy = inicioDelDiaISO();
+        const enUnMes = enDiasISO(30);
+
+        // ====================================================================
+        // 1) KPIs del dia (4 cajas)
+        // ====================================================================
+
+        // a) Chequeos creados hoy (cerrados o no)
+        const chequeosHoyQuery = supabase
+            .from('chequeos_preoperacionales')
+            .select('id', { count: 'exact', head: true })
+            .gte('fecha', desdeHoy);
+
+        // b) Chequeos cerrados hoy con resultado NO OPERATIVO
+        const noOperativosHoyQuery = supabase
+            .from('chequeos_preoperacionales')
+            .select('id', { count: 'exact', head: true })
+            .gte('fecha', desdeHoy)
+            .eq('cerrado', true)
+            .eq('resultado_estado', 'no_operativo');
+
+        // c) Intentos bloqueados de hoy
+        const intentosHoyQuery = supabase
+            .from('intentos_chequeo_bloqueado')
+            .select('id', { count: 'exact', head: true })
+            .gte('fecha', desdeHoy);
+
+        // d) Conductores activos (totalidad, no del dia)
+        const conductoresActivosQuery = supabase
+            .from('usuarios')
+            .select('id', { count: 'exact', head: true })
+            .eq('rol', 'conductor')
+            .eq('activo', true);
+
+        // e) Chequeos abandonados hoy (Tarea #104)
+        const abandonadosHoyQuery = supabase
+            .from('chequeos_preoperacionales')
+            .select('id', { count: 'exact', head: true })
+            .gte('abandonado_en', desdeHoy)
+            .eq('abandonado', true);
+
+        // Aplicar filtro de sede si aplica y ejecutar todo en paralelo
+        const [
+            { count: chequeosDelDia },
+            { count: chequeosNoOperativosDelDia },
+            { count: intentosBloqueadosDelDia },
+            { count: conductoresActivos },
+            { count: chequeosAbandonadosDelDia },
+        ] = await Promise.all([
+            aplicarScope(chequeosHoyQuery, scope),
+            aplicarScope(noOperativosHoyQuery, scope),
+            aplicarScope(intentosHoyQuery, scope),
+            aplicarScope(conductoresActivosQuery, scope),
+            aplicarScope(abandonadosHoyQuery, scope),
+        ]);
+
+        // ====================================================================
+        // 2) Alertas "Necesita atencion"
+        // ====================================================================
+
+        // a) Licencias por vencer (proximos 30 dias) — solo conductores activos
+        let licenciasQuery = supabase
+            .from('usuarios')
+            .select('id, nombre_completo, licencia_numero, licencia_categoria, licencia_vencimiento, sede_id')
+            .eq('rol', 'conductor')
+            .eq('activo', true)
+            .not('licencia_vencimiento', 'is', null)
+            .lte('licencia_vencimiento', enUnMes.split('T')[0])
+            .order('licencia_vencimiento', { ascending: true });
+        licenciasQuery = aplicarScope(licenciasQuery, scope);
+        const { data: licenciasPorVencerRaw } = await licenciasQuery;
+
+        // Calcular dias_restantes para cada licencia (negativo si ya vencio)
+        const hoyMidnight = new Date(desdeHoy);
+        const licenciasPorVencer = (licenciasPorVencerRaw || []).map((u) => {
+            const vencimiento = new Date(u.licencia_vencimiento);
+            const diffMs = vencimiento - hoyMidnight;
+            const diasRestantes = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            return {
+                id: u.id,
+                nombre_completo: u.nombre_completo,
+                licencia_numero: u.licencia_numero,
+                licencia_categoria: u.licencia_categoria,
+                licencia_vencimiento: u.licencia_vencimiento,
+                dias_restantes: diasRestantes,
+            };
+        });
+
+        // b) Vehiculos sin RUNT cargado
+        let sinRuntQuery = supabase
+            .from('vehiculos')
+            .select('id, placa, marca, linea')
+            .is('runt_url', null)
+            .eq('activo', true);
+        sinRuntQuery = aplicarScope(sinRuntQuery, scope);
+        const { data: vehiculosSinRunt } = await sinRuntQuery;
+
+        // c) Vehiculos no operativos (estado='no_operativo' o inactivos)
+        let noOperativosQuery = supabase
+            .from('vehiculos')
+            .select('id, placa, marca, linea, estado, activo')
+            .or('estado.eq.no_operativo,activo.eq.false');
+        noOperativosQuery = aplicarScope(noOperativosQuery, scope);
+        const { data: vehiculosNoOperativos } = await noOperativosQuery;
+
+        // d) Chequeos abandonados hoy (con datos del conductor y vehiculo).
+        // Solo para visualizacion — el contador completo del dia ya esta en kpis.
+        let abandonadosListaQuery = supabase
+            .from('chequeos_preoperacionales')
+            .select(`
+                id,
+                abandonado_en,
+                motivo_abandono,
+                tipo,
+                conductor:conductor_id ( id, nombre_completo ),
+                vehiculo:vehiculo_id ( id, placa )
+            `)
+            .eq('abandonado', true)
+            .gte('abandonado_en', desdeHoy)
+            .order('abandonado_en', { ascending: false })
+            .limit(10);
+        abandonadosListaQuery = aplicarScope(abandonadosListaQuery, scope);
+        const { data: abandonadosRaw } = await abandonadosListaQuery;
+        const chequeosAbandonados = (abandonadosRaw || []).map((c) => ({
+            id: c.id,
+            abandonado_en: c.abandonado_en,
+            motivo_abandono: c.motivo_abandono,
+            tipo: c.tipo,
+            conductor_nombre: c.conductor?.nombre_completo || '—',
+            placa: c.vehiculo?.placa || '—',
+        }));
+
+        // ====================================================================
+        // 3) Estado de la flota — conteo por estado, para la franja proporcional
+        // ====================================================================
+        // Solo vehiculos activos: los desactivados no son "flota disponible",
+        // salen aparte en la lista de bloqueados.
+        let flotaQuery = supabase
+            .from('vehiculos')
+            .select('estado')
+            .eq('activo', true);
+        flotaQuery = aplicarScope(flotaQuery, scope);
+        const { data: flotaRaw } = await flotaQuery;
+
+        const flota = { operativo: 0, observacion: 0, alerta: 0, critico: 0, no_operativo: 0 };
+        for (const v of flotaRaw || []) {
+            if (Object.prototype.hasOwnProperty.call(flota, v.estado)) flota[v.estado] += 1;
+        }
+        flota.total = (flotaRaw || []).length;
+
+        // ====================================================================
+        // 4) "No pueden salir" — una sola lista ordenada por gravedad
+        // ====================================================================
+        // Reemplaza el tener que leer cuatro grupos sueltos para saber que te
+        // frena hoy. Distingue dos cosas que NO son lo mismo:
+        //   bloqueo 'duro'   -> el sistema le impide arrancar el chequeo hoy
+        //                       (vehiculo desactivado, o SOAT/RTM/extintor vencido:
+        //                        ver chequeos.service.js -> primerDocumentoVencido)
+        //   bloqueo 'blando' -> su estado dice que no deberia salir, pero HOY el
+        //                       sistema lo deja arrancar igual. Es una brecha real
+        //                       del producto, no un descuido de esta consulta.
+        let bloqueadosQuery = supabase
+            .from('vehiculos')
+            .select(`
+                id, placa, tipo, estado, activo,
+                soat_vencimiento, rtm_vencimiento, extintor_vencimiento,
+                sede:sede_id ( id, nombre )
+            `);
+        bloqueadosQuery = aplicarScope(bloqueadosQuery, scope);
+        const { data: candidatosRaw } = await bloqueadosQuery;
+
+        const hoySolo = new Date(desdeHoy);
+        hoySolo.setHours(0, 0, 0, 0);
+
+        // Devuelve el primer documento vencido del vehiculo, o null.
+        // Espejo de primerDocumentoVencido() en chequeos.service.js: si cambian
+        // las reglas alla, hay que cambiarlas aca.
+        const documentoVencido = (v) => {
+            const docs = [
+                ['SOAT', v.soat_vencimiento],
+                ['revisión técnico-mecánica', v.rtm_vencimiento],
+                ['extintor', v.extintor_vencimiento],
+            ];
+            for (const [nombre, fecha] of docs) {
+                if (!fecha) continue;
+                const f = new Date(fecha);
+                f.setHours(0, 0, 0, 0);
+                if (f < hoySolo) {
+                    const dias = Math.floor((hoySolo - f) / (1000 * 60 * 60 * 24));
+                    return { nombre, fecha, dias_vencido: dias };
+                }
+            }
+            return null;
+        };
+
+        // Menor numero = mas grave. Ordena la lista.
+        const GRAVEDAD = { desactivado: 1, documento_vencido: 2, no_operativo: 3, critico: 4 };
+
+        const noPuedenSalir = [];
+        for (const v of candidatosRaw || []) {
+            const sedeNombre = v.sede?.nombre || '—';
+            const base = { id: v.id, placa: v.placa, tipo: v.tipo, estado: v.estado, sede_nombre: sedeNombre };
+
+            if (!v.activo) {
+                noPuedenSalir.push({ ...base, motivo: 'desactivado', bloqueo: 'duro',
+                    detalle: 'Vehículo desactivado' });
+                continue;
+            }
+            const doc = documentoVencido(v);
+            if (doc) {
+                noPuedenSalir.push({ ...base, motivo: 'documento_vencido', bloqueo: 'duro',
+                    detalle: `${doc.nombre} vencido hace ${doc.dias_vencido} ${doc.dias_vencido === 1 ? 'día' : 'días'}` });
+                continue;
+            }
+            if (v.estado === 'no_operativo' || v.estado === 'critico') {
+                noPuedenSalir.push({ ...base, motivo: v.estado, bloqueo: 'blando',
+                    detalle: v.estado === 'critico'
+                        ? 'Estado crítico tras el último chequeo'
+                        : 'Marcado como no operativo' });
+            }
+        }
+        noPuedenSalir.sort((a, b) =>
+            (GRAVEDAD[a.motivo] || 9) - (GRAVEDAD[b.motivo] || 9) || a.placa.localeCompare(b.placa)
+        );
+
+        // ====================================================================
+        // 5) Respuesta
+        // ====================================================================
+
+        res.json({
+            // scope.tipo: 'global' (superadmin) | 'sedes' (resto, con la lista
+            // de sedes que cubre su nivel). El frontend lo usa para el texto
+            // contextual del dashboard.
+            scope: scope.tipo === 'global'
+                ? { tipo: 'global' }
+                : { tipo: 'sedes', cantidad_sedes: scope.sedeIds.length },
+            generado_en: new Date().toISOString(),
+            kpis: {
+                chequeos_del_dia: chequeosDelDia || 0,
+                chequeos_no_operativos_del_dia: chequeosNoOperativosDelDia || 0,
+                intentos_bloqueados_del_dia: intentosBloqueadosDelDia || 0,
+                conductores_activos: conductoresActivos || 0,
+                chequeos_abandonados_del_dia: chequeosAbandonadosDelDia || 0,
+            },
+            flota,
+            no_pueden_salir: noPuedenSalir,
+            alertas: {
+                licencias_por_vencer: licenciasPorVencer,
+                vehiculos_sin_runt: vehiculosSinRunt || [],
+                vehiculos_no_operativos: vehiculosNoOperativos || [],
+                chequeos_abandonados: chequeosAbandonados,
+            },
+        });
+    } catch (err) {
+        console.error('Error en obtenerStatsDashboard:', err);
+        res.status(500).json({ error: 'Error al obtener las estadisticas del dashboard' });
+    }
+};

@@ -1,0 +1,17 @@
+.boton-exportar { display: inline-flex; gap: 6px; }
+.boton-exportar button {
+    padding: 6px 14px;
+    border: none;
+    color: var(--color-blanco);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+}
+.boton-exportar-pdf { background: var(--color-rojo); }
+.boton-exportar-word { background: var(--color-primario); }
+.boton-exportar button:hover:not(:disabled) { filter: brightness(0.92); }
+.boton-exportar button:disabled { opacity: 0.6; cursor: progress; }
+.boton-exportar-compacto button { padding: 4px 10px; font-size: var(--tamano-xs); }

@@ -1,0 +1,356 @@
+/* =================================================================
+   Mi perfil — pagina dedicada de auto-edicion (Tarea #100).
+   Convencion §17: bordes 2px+, sombras md+, texto gris-900.
+   ================================================================= */
+
+.mi-perfil-contenedor {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--superficie);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-md);
+    padding: var(--espacio-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xl);
+}
+
+/* ===== Hero con foto + identidad ===== */
+.mi-perfil-hero {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espacio-sm);
+    padding-bottom: var(--espacio-lg);
+    border-bottom: 2px dashed var(--color-gris-200);
+}
+
+.mi-perfil-foto,
+.mi-perfil-foto-placeholder {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--color-primario);
+    box-shadow: var(--sombra-md);
+    margin-bottom: var(--espacio-sm);
+}
+
+.mi-perfil-foto-placeholder {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    font-size: 56px;
+    font-weight: var(--peso-bold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-color: var(--color-primario-oscuro);
+}
+
+.mi-perfil-nombre {
+    margin: 0;
+    font-size: 26px;
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+    line-height: 1.2;
+    text-transform: capitalize;
+}
+
+.mi-perfil-rol {
+    color: var(--color-gris-900);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.mi-perfil-sede {
+    margin-top: 4px;
+    padding: 4px 12px;
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+    border: 2px solid var(--color-primario-oscuro);
+    border-radius: var(--radio-xl);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    box-shadow: var(--sombra-sm);
+}
+
+.mi-perfil-boton-foto {
+    margin-top: var(--espacio-md);
+    padding: 10px 22px;
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    border: 2px solid var(--color-primario-oscuro);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-family: inherit;
+    box-shadow: var(--sombra-sm);
+}
+
+.mi-perfil-boton-foto:hover:not(:disabled) {
+    background: var(--color-primario-oscuro);
+    transform: translateY(-1px);
+    box-shadow: var(--sombra-md);
+}
+
+.mi-perfil-boton-foto:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mi-perfil-foto-pendiente {
+    margin-top: var(--espacio-sm);
+    color: var(--color-primario-oscuro);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    font-style: italic;
+}
+
+/* ===== Form ===== */
+.mi-perfil-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-lg);
+}
+
+.mi-perfil-seccion-titulo {
+    margin: 0;
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    color: var(--color-primario-oscuro);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-bottom: var(--espacio-sm);
+    border-bottom: 2px solid var(--color-gris-200);
+}
+
+.mi-perfil-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mi-perfil-label {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+}
+
+.mi-perfil-bloqueado-mini {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+    font-weight: var(--peso-semibold);
+    background: var(--color-gris-100);
+    border: 2px solid var(--color-gris-300);
+    padding: 2px 8px;
+    border-radius: var(--radio-md);
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+}
+
+.mi-perfil-input {
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-input-borde);
+    background: var(--color-input-bg);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    color: var(--color-gris-900);
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+}
+
+.mi-perfil-input:hover:not(:disabled) {
+    border-color: var(--color-primario-oscuro);
+}
+
+.mi-perfil-input:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.mi-perfil-input-bloqueado {
+    background: var(--color-gris-100);
+    color: var(--color-gris-700);
+    cursor: not-allowed;
+    border-color: var(--color-gris-300);
+}
+
+/* Aviso temporal cuando se intenta escribir un caracter no permitido.
+   Mismo peach + borde dorado que en ModalCrear/ModalEditar Usuario para
+   mantener consistencia visual en todo el proyecto. */
+.mi-perfil-aviso-validacion {
+    display: block;
+    margin-top: 6px;
+    padding: 8px 12px;
+    background: var(--estado-adv-solido);
+    color: #1A1A1A;
+    border: 2px solid #e29a2d;
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    line-height: 1.35;
+    box-shadow: var(--sombra-md);
+    animation: mi-perfil-aviso-aparecer 0.18s ease-out;
+}
+
+@keyframes mi-perfil-aviso-aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mi-perfil-aviso-bloqueado {
+    background: var(--estado-adv-fondo);
+    border: 2px solid #F9A825;
+    color: #1A1A1A;
+    padding: var(--espacio-md);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    box-shadow: var(--sombra-sm);
+}
+
+.mi-perfil-aviso-bloqueado strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--color-gris-900);
+}
+
+/* ===== Mensajes ===== */
+.mi-perfil-error {
+    background: var(--estado-error-fondo);
+    color: var(--color-rojo);
+    padding: var(--espacio-md);
+    border-radius: var(--radio-md);
+    border: 2px solid var(--color-rojo);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+}
+
+.mi-perfil-info {
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+    padding: var(--espacio-md);
+    border-radius: var(--radio-md);
+    border: 2px solid var(--color-primario-oscuro);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+}
+
+/* ===== Acciones ===== */
+.mi-perfil-acciones {
+    display: flex;
+    gap: var(--espacio-md);
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: var(--espacio-md);
+    border-top: 2px solid var(--color-gris-200);
+}
+
+.mi-perfil-boton-pass {
+    padding: 10px 18px;
+    background: var(--superficie);
+    color: var(--color-primario-oscuro);
+    border: 2px solid var(--color-primario);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    box-shadow: var(--sombra-sm);
+}
+
+.mi-perfil-boton-pass:hover:not(:disabled) {
+    background: var(--acento-suave);
+    transform: translateY(-1px);
+    box-shadow: var(--sombra-md);
+}
+
+.mi-perfil-boton-guardar {
+    padding: 12px 28px;
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    border: 2px solid var(--color-primario-oscuro);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    box-shadow: var(--sombra-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.mi-perfil-boton-guardar:hover:not(:disabled) {
+    background: var(--color-primario-oscuro);
+    transform: translateY(-1px);
+    box-shadow: var(--sombra-md);
+}
+
+.mi-perfil-boton-pass:disabled,
+.mi-perfil-boton-guardar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+    .mi-perfil-contenedor {
+        padding: var(--espacio-md);
+    }
+    .mi-perfil-foto,
+    .mi-perfil-foto-placeholder {
+        width: 100px;
+        height: 100px;
+    }
+    .mi-perfil-foto-placeholder {
+        font-size: 42px;
+    }
+    .mi-perfil-nombre {
+        font-size: 22px;
+    }
+    .mi-perfil-acciones {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+    .mi-perfil-boton-pass,
+    .mi-perfil-boton-guardar {
+        width: 100%;
+    }
+}
+
+/* === Modo oscuro === */
+/* El borde dorado del aviso peach se aclara de mas sobre el solido oscuro;
+   lo bajamos a un ambar mas apagado coherente con --estado-adv-solido oscuro. */
+[data-tema="oscuro"] .mi-perfil-aviso-validacion {
+    border-color: #A65A14;
+}
+/* El aviso "bloqueado" tenia fondo crema claro, borde amarillo fuerte y texto
+   oscuro: en oscuro se convierte en tinte translucido + borde/texto de estado. */
+[data-tema="oscuro"] .mi-perfil-aviso-bloqueado {
+    border-color: var(--estado-adv-borde);
+    color: var(--estado-adv-texto);
+}
+[data-tema="oscuro"] .mi-perfil-aviso-bloqueado strong {
+    color: var(--estado-adv-texto);
+}

@@ -1,0 +1,28 @@
+   /* COMPONENTE: ProtectedRoute (pantalla de carga de sesion) */
+
+   .protected-cargando {
+       min-height: 100vh;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       justify-content: center;
+       background: linear-gradient(135deg,
+               var(--color-primario-claro) 0%,
+               var(--superficie) 100%);
+       gap: var(--espacio-md);
+   }
+
+   .protected-spinner {
+       width: 48px;
+       height: 48px;
+       border: 4px solid var(--color-gris-200);
+       border-top-color: var(--color-primario);
+       border-radius: 50%;
+       animation: rotate 1s linear infinite;
+   }
+
+   .protected-cargando p {
+       color: var(--color-primario-oscuro);
+       font-size: var(--tamano-md);
+       font-weight: var(--peso-semibold);
+   }

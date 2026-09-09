@@ -1,0 +1,339 @@
+/* ============================================================
+   COMPONENTE: ModalCrearUsuario (formulario)
+   ============================================================ */
+
+.form-usuario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+}
+
+.form-usuario-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  padding-bottom: var(--espacio-lg);
+  border-bottom: 1px dashed var(--color-gris-200);
+}
+
+.form-usuario-seccion:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.form-usuario-seccion-titulo {
+  font-size: var(--tamano-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-primario-oscuro);
+  font-weight: var(--peso-semibold);
+  margin: 0;
+}
+
+.form-usuario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--espacio-md);
+}
+
+.form-usuario-campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.form-usuario-label {
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-semibold);
+  color: var(--color-gris-700);
+}
+
+.form-usuario-input {
+  padding: var(--espacio-sm) var(--espacio-md);
+  border: 2px solid var(--color-input-borde);
+  background: var(--color-input-bg);
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-md);
+  transition: all var(--velocidad-rapida);
+  font-family: inherit;
+}
+
+.form-usuario-input:hover:not(:disabled) {
+  border-color: var(--color-primario-oscuro);
+}
+
+.form-usuario-input:focus {
+  outline: none;
+  border-color: var(--color-primario);
+}
+
+.form-usuario-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === FOTO === */
+.form-usuario-foto-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-usuario-foto-placeholder {
+  width: 160px;
+  height: 160px;
+  background: var(--color-gris-100);
+  border: 2px dashed var(--color-gris-300);
+  border-radius: var(--radio-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-sm);
+  color: var(--color-gris-500);
+  font-size: var(--tamano-sm);
+  cursor: pointer;
+  transition: all var(--velocidad-rapida);
+}
+
+.form-usuario-foto-placeholder:hover {
+  border-color: var(--color-primario);
+  background: var(--acento-suave);
+  color: var(--color-primario-oscuro);
+}
+
+.form-usuario-foto-icono {
+  font-size: 40px;
+}
+
+.form-usuario-foto-preview-contenedor {
+  position: relative;
+  display: inline-block;
+}
+
+.form-usuario-foto-preview {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: var(--radio-md);
+  border: 2px solid var(--color-primario);
+}
+
+.form-usuario-foto-quitar {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--color-rojo);
+  color: var(--color-blanco);
+  border: none;
+  border-radius: var(--radio-xl);
+  padding: 4px 12px;
+  font-size: var(--tamano-xs);
+  font-weight: var(--peso-semibold);
+  cursor: pointer;
+  box-shadow: var(--sombra-md);
+}
+
+.form-usuario-foto-quitar:hover {
+  background: var(--estado-error-solido);
+}
+
+/* === MENSAJES === */
+.form-usuario-error {
+  background: var(--estado-error-fondo);
+  color: var(--color-rojo);
+  padding: var(--espacio-md);
+  border-radius: var(--radio-md);
+  border-left: 4px solid var(--color-rojo);
+  font-size: var(--tamano-sm);
+}
+
+.form-usuario-info {
+  background: var(--acento-suave);
+  color: var(--color-primario-oscuro);
+  padding: var(--espacio-md);
+  border-radius: var(--radio-md);
+  border-left: 4px solid var(--color-primario);
+  font-size: var(--tamano-sm);
+}
+
+/* Campo sensible: input arriba + boton "Cambiar" abajo (para correo/cedula).
+   Lo ponemos en columna para que no se rompa cuando el grid usa columnas estrechas. */
+.form-usuario-campo-sensible {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-usuario-boton-cambiar {
+  padding: 8px 14px;
+  background: var(--color-primario);
+  color: var(--color-blanco);
+  border: 2px solid var(--color-primario-oscuro);
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-xs);
+  font-weight: var(--peso-bold);
+  cursor: pointer;
+  transition: all var(--velocidad-rapida) var(--suavizado);
+  font-family: inherit;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  box-shadow: var(--sombra-sm);
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+
+.form-usuario-boton-cambiar:hover:not(:disabled) {
+  background: var(--color-primario-oscuro);
+  transform: translateY(-1px);
+  box-shadow: var(--sombra-md);
+}
+
+.form-usuario-boton-cambiar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Texto pequeño de ayuda debajo de un campo (gris-900 por accesibilidad) */
+.form-usuario-ayuda {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--tamano-xs);
+  color: var(--color-gris-900);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Confirmación de la cadena de mando (#116): ocupa toda la fila del grid */
+.form-usuario-resumen-cadena {
+  grid-column: 1 / -1;
+  margin-top: var(--espacio-xs);
+  padding: var(--espacio-sm) var(--espacio-md);
+  background: var(--acento-suave);
+  border: 2px solid var(--color-primario-oscuro);
+  border-radius: var(--radio-md);
+  color: var(--color-gris-900);
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-semibold);
+  line-height: 1.4;
+}
+
+/* Aviso temporal cuando se intenta escribir un caracter no permitido.
+   PROBANDO: fondo naranja + texto y borde negros (combinacion alto contraste
+   estilo senales de transito). Tipografia fina semibold sin letter-spacing. */
+.form-usuario-aviso-validacion {
+  display: block;
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: var(--estado-adv-solido);
+  color: #1A1A1A;
+  border: 2px solid #e29a2d;
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-semibold);
+  line-height: 1.35;
+  box-shadow: var(--sombra-md);
+  animation: form-usuario-aviso-aparecer 0.18s ease-out;
+}
+
+@keyframes form-usuario-aviso-aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === BOTONES === */
+.form-usuario-acciones {
+  display: flex;
+  gap: var(--espacio-md);
+  justify-content: flex-end;
+  padding-top: var(--espacio-md);
+  border-top: var(--borde-fino);
+}
+
+.form-usuario-boton {
+  padding: var(--espacio-md) var(--espacio-xl);
+  border: none;
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-md);
+  font-weight: var(--peso-semibold);
+  cursor: pointer;
+  transition: all var(--velocidad-media) var(--suavizado);
+}
+
+.form-usuario-boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-usuario-boton-cancelar {
+  background: var(--color-gris-100);
+  color: var(--color-gris-700);
+}
+
+.form-usuario-boton-cancelar:hover:not(:disabled) {
+  background: var(--color-gris-200);
+}
+
+.form-usuario-boton-crear {
+  background: var(--color-primario);
+  color: var(--color-blanco);
+  box-shadow: var(--sombra-sm);
+}
+
+.form-usuario-boton-crear:hover:not(:disabled) {
+  background: var(--color-primario-oscuro);
+  transform: translateY(-1px);
+  box-shadow: var(--sombra-md);
+}
+
+@media (max-width: 640px) {
+  .form-usuario-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-usuario-acciones {
+    flex-direction: column-reverse;
+  }
+  .form-usuario-boton {
+    width: 100%;
+  }
+}
+/* Casilla "Pool de transporte" — conductor que maneja vehiculos VIP (docs/diseno-pool-vip.md) */
+.form-usuario-campo-ancho {
+    grid-column: 1 / -1;
+}
+
+.form-usuario-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie-sutil);
+    cursor: pointer;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-900);
+}
+
+.form-usuario-checkbox input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primario);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* === Modo oscuro === */
+/* Aviso de validacion: el badge naranja se oscurece en modo oscuro, asi que
+   el texto y borde oscuros del modo claro pierden contraste -> los aclaramos. */
+[data-tema="oscuro"] .form-usuario-aviso-validacion {
+    color: #2B1A06;
+    border-color: #E0A24A;
+}

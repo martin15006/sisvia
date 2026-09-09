@@ -1,0 +1,14 @@
+# Cabeceras de seguridad del sitio. Cloudflare Pages las aplica a cada respuesta.
+#
+# NOTA: a proposito NO incluimos Content-Security-Policy todavia. Una CSP mal
+# calibrada rompe la app (bloquea scripts/estilos/imagenes/websocket de Supabase).
+# Estas cuatro NO restringen la carga de recursos, asi que son seguras de activar ya:
+#   - X-Frame-Options: evita clickjacking (que metan el sitio en un iframe ajeno).
+#   - X-Content-Type-Options: evita que el navegador "adivine" tipos (MIME sniffing).
+#   - Referrer-Policy: no filtrar la URL completa a sitios externos.
+#   - Strict-Transport-Security: forzar siempre HTTPS (Cloudflare ya sirve HTTPS).
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains

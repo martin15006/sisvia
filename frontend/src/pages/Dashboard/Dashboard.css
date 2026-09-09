@@ -1,0 +1,602 @@
+/* =================================================================
+   Dashboard administrativo — version final con KPIs reales + alertas.
+   Header/sidebar/footer vienen de AdminLayout.
+   Convencion §17: bordes 2px+, sombras md+, texto gris-900.
+   ================================================================= */
+
+/* ===== Bienvenida arriba ===== */
+.dashboard-bienvenida {
+    background: var(--superficie);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-lg);
+    padding: var(--espacio-xl);
+    margin-bottom: var(--espacio-xl);
+    box-shadow: var(--sombra-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+    flex-wrap: wrap;
+}
+
+.dashboard-boton-informe {
+    padding: 10px 18px;
+    border: 2px solid var(--color-primario-oscuro);
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+}
+.dashboard-boton-informe:hover {
+    background: var(--color-primario-oscuro);
+    transform: translateY(-1px);
+    box-shadow: var(--sombra-sm);
+}
+
+.dashboard-saludo {
+    margin: 0;
+    font-size: 28px;
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+    line-height: 1.2;
+}
+
+.dashboard-fecha {
+    margin: var(--espacio-sm) 0 0 0;
+    color: var(--color-gris-700);
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-semibold);
+    text-transform: capitalize;
+}
+
+.dashboard-scope {
+    margin: var(--espacio-sm) 0 0 0;
+    color: var(--color-primario-oscuro);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    font-style: italic;
+}
+
+/* ===== Error general ===== */
+.dashboard-error {
+    background: var(--estado-error-fondo);
+    color: var(--color-rojo);
+    padding: var(--espacio-md) var(--espacio-lg);
+    border: 2px solid var(--color-rojo);
+    border-radius: var(--radio-md);
+    margin-bottom: var(--espacio-xl);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+    box-shadow: var(--sombra-md);
+}
+
+.dashboard-error-reintentar {
+    padding: 6px 14px;
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    border: 2px solid var(--estado-error-solido);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+}
+
+.dashboard-error-reintentar:hover {
+    background: var(--estado-error-solido);
+}
+
+/* ===== Secciones genericas ===== */
+.dashboard-seccion {
+    background: var(--superficie);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-lg);
+    padding: var(--espacio-xl);
+    margin-bottom: var(--espacio-xl);
+    box-shadow: var(--sombra-md);
+}
+
+.dashboard-seccion-titulo {
+    margin: 0 0 var(--espacio-lg) 0;
+    font-size: var(--tamano-lg);
+    font-weight: var(--peso-bold);
+    color: var(--color-primario-oscuro);
+    padding-bottom: var(--espacio-sm);
+    border-bottom: 2px solid var(--color-gris-200);
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+}
+
+.dashboard-seccion-badge {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    padding: 2px 10px;
+    border-radius: var(--radio-xl);
+    min-width: 24px;
+    text-align: center;
+    box-shadow: var(--sombra-sm);
+}
+
+/* ===== Cuadricula de KPIs ===== */
+.dashboard-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--espacio-lg);
+}
+
+.dashboard-kpi {
+    position: relative;
+    background: var(--superficie-sutil);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-xl) var(--espacio-lg);
+    text-align: center;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+}
+
+/* Punto de estado (esquina): verde sano por defecto; respira en oscuro */
+.dashboard-kpi::after {
+    content: "";
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--acento-luz);
+}
+
+[data-tema="oscuro"] .dashboard-kpi::after {
+    box-shadow: 0 0 8px var(--acento-luz);
+    animation: kpi-latido 2.4s ease-in-out infinite;
+}
+
+@keyframes kpi-latido {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-tema="oscuro"] .dashboard-kpi::after { animation: none; }
+}
+
+.dashboard-kpi-clickeable {
+    cursor: pointer;
+}
+
+.dashboard-kpi-clickeable:hover {
+    border-color: var(--color-primario);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-md);
+    background: var(--superficie);
+}
+
+/* KPI con valor distinto de cero en metricas "malas" (no operativos, bloqueados) */
+.dashboard-kpi-alerta {
+    background: var(--estado-adv-fondo);
+    border-color: var(--estado-adv-texto);
+}
+
+.dashboard-kpi-alerta::after {
+    background: var(--estado-adv-texto);
+    box-shadow: none;
+    animation: none;
+}
+
+.dashboard-kpi-alerta .dashboard-kpi-numero {
+    color: var(--estado-adv-texto);
+}
+
+.dashboard-kpi-alerta:hover {
+    border-color: var(--estado-adv-texto);
+    background: var(--estado-adv-fondo);
+}
+
+.dashboard-kpi-numero {
+    font-size: 42px;
+    font-weight: var(--peso-bold);
+    color: var(--titulo);
+    line-height: 1;
+}
+
+/* Subrayado de acento bajo el numero */
+.dashboard-kpi-numero::after {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 3px;
+    margin: 8px auto 0;
+    border-radius: 2px;
+    background: var(--acento-luz);
+}
+
+[data-tema="oscuro"] .dashboard-kpi-numero::after {
+    box-shadow: 0 0 8px var(--acento-luz);
+}
+
+.dashboard-kpi-alerta .dashboard-kpi-numero::after {
+    background: var(--estado-adv-texto);
+    box-shadow: none;
+}
+
+.dashboard-kpi-label {
+    margin-top: var(--espacio-md);
+    font-size: var(--tamano-sm);
+    color: var(--texto);
+    font-weight: var(--peso-semibold);
+}
+
+/* ===== Estados vacios / cargando ===== */
+.dashboard-cargando {
+    padding: var(--espacio-xl);
+    text-align: center;
+    color: var(--color-gris-700);
+    font-style: italic;
+    font-size: var(--tamano-sm);
+}
+
+.dashboard-sin-alertas {
+    background: var(--acento-suave);
+    border: 2px solid var(--color-primario-oscuro);
+    color: var(--color-primario-oscuro);
+    padding: var(--espacio-lg);
+    border-radius: var(--radio-md);
+    text-align: center;
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-semibold);
+}
+
+/* ===== Necesita atencion ===== */
+.dashboard-alertas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--espacio-lg);
+}
+
+.dashboard-grupo-alerta {
+    background: var(--superficie-sutil);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-lg);
+}
+
+.dashboard-grupo-titulo {
+    margin: 0 0 var(--espacio-md) 0;
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+}
+
+.dashboard-grupo-cantidad {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    padding: 2px 10px;
+    border-radius: var(--radio-xl);
+    min-width: 24px;
+    text-align: center;
+}
+
+.dashboard-lista-alerta {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-sm);
+}
+
+.dashboard-item-alerta {
+    background: var(--superficie);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-sm) var(--espacio-md);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--espacio-md);
+}
+
+.dashboard-item-alerta:hover {
+    transform: translateX(2px);
+    box-shadow: var(--sombra-md);
+}
+
+.dashboard-item-nombre {
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+    font-size: var(--tamano-sm);
+}
+
+.dashboard-item-meta {
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+    padding: 2px 10px;
+    border-radius: var(--radio-md);
+}
+
+/* Estados de urgencia (color del .meta + borde izquierdo del item) */
+.dashboard-item-normal {
+    border-left: 6px solid var(--color-primario);
+}
+
+.dashboard-item-normal .dashboard-item-meta {
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+}
+
+.dashboard-item-urgente {
+    border-left: 6px solid var(--estado-adv-solido);
+    background: var(--estado-adv-fondo);
+}
+
+.dashboard-item-urgente .dashboard-item-meta {
+    background: var(--estado-adv-solido);
+    color: #1A1A1A;
+}
+
+[data-tema="oscuro"] .dashboard-item-urgente .dashboard-item-meta {
+    color: var(--texto-inverso);
+}
+
+.dashboard-item-critico {
+    border-left: 6px solid var(--color-rojo);
+    background: var(--estado-error-fondo);
+}
+
+.dashboard-item-critico .dashboard-item-meta {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+}
+
+.dashboard-item-vencido {
+    border-left: 6px solid var(--color-rojo);
+    background: var(--color-rojo);
+}
+
+.dashboard-item-vencido .dashboard-item-nombre {
+    color: var(--color-blanco);
+}
+
+.dashboard-item-vencido .dashboard-item-meta {
+    background: var(--superficie);
+    color: var(--color-rojo);
+    font-weight: var(--peso-bold);
+}
+
+/* Ver mas */
+.dashboard-ver-mas {
+    margin-top: var(--espacio-md);
+    background: none;
+    border: none;
+    color: var(--color-primario-oscuro);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    transition: color var(--velocidad-rapida) var(--suavizado);
+}
+
+.dashboard-ver-mas:hover {
+    color: var(--color-primario);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+    .dashboard-saludo {
+        font-size: 22px;
+    }
+    .dashboard-kpi-numero {
+        font-size: 32px;
+    }
+    .dashboard-alertas {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   ESTADO DE LA FLOTA — franja proporcional
+   ------------------------------------------------------------
+   Cuatro contadores sueltos dicen cuantos hay; una franja dice
+   cuanto PESA cada estado, que es la pregunta real del coordinador.
+   ============================================================ */
+
+.dashboard-flota-total {
+  margin-left: auto;
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-semibold);
+  color: var(--texto-suave);
+}
+
+.dashboard-flota-barra {
+  display: flex;
+  gap: 2px;
+  height: 30px;
+  border-radius: var(--radio-sm);
+  overflow: hidden;
+  margin-bottom: var(--espacio-md);
+}
+
+.dashboard-flota-tramo {
+  min-width: 4px;              /* un solo vehiculo sigue siendo visible */
+  transition: flex-grow var(--velocidad-media) var(--suavizado);
+}
+
+.dashboard-flota-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-sm) var(--espacio-lg);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-flota-item {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.dashboard-flota-punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.dashboard-flota-etiqueta {
+  font-size: var(--tamano-sm);
+  color: var(--texto-suave);
+}
+
+.dashboard-flota-cifra {
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-bold);
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Los cinco estados. Mismo token en la franja y en la leyenda. */
+.dashboard-flota-operativo    { background: var(--veh-operativo); }
+.dashboard-flota-observacion  { background: var(--veh-observacion); }
+.dashboard-flota-alerta       { background: var(--veh-alerta); }
+.dashboard-flota-critico      { background: var(--veh-critico); }
+.dashboard-flota-no_operativo { background: var(--veh-no-operativo); }
+
+/* ============================================================
+   NO PUEDEN SALIR — una sola lista ordenada por gravedad
+   ------------------------------------------------------------
+   Reemplaza el tener que leer cuatro grupos sueltos para saber
+   que te frena hoy.
+   ============================================================ */
+
+.dashboard-bloqueados {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--borde);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-md);
+  overflow: hidden;
+}
+
+.dashboard-bloqueado {
+  display: grid;
+  grid-template-columns: 116px 100px 1fr auto auto;
+  align-items: center;
+  gap: var(--espacio-md);
+  width: 100%;
+  padding: var(--espacio-md);
+  background: var(--superficie);
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--velocidad-rapida) var(--suavizado);
+}
+
+.dashboard-bloqueado:hover,
+.dashboard-bloqueado:focus-visible {
+  background: var(--superficie-sutil);
+}
+
+.dashboard-bloqueado:focus-visible {
+  outline: 2px solid var(--color-primario);
+  outline-offset: -2px;
+}
+
+/* La banda dice el veredicto antes que cualquier dato.
+   Franja completa, no borde lateral de color. */
+.dashboard-bloqueado-banda {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: var(--radio-sm);
+  font-size: var(--tamano-xs);
+  font-weight: var(--peso-bold);
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--veh-tinta);
+}
+
+.dashboard-banda-operativo    { background: var(--veh-operativo); }
+.dashboard-banda-observacion  { background: var(--veh-observacion); }
+.dashboard-banda-alerta       { background: var(--veh-alerta); }
+.dashboard-banda-critico      { background: var(--veh-critico); }
+.dashboard-banda-no_operativo { background: var(--veh-no-operativo); }
+
+.dashboard-bloqueado-placa {
+  font-family: var(--fuente-monospace);
+  font-size: var(--tamano-md);
+  font-weight: var(--peso-semibold);
+  color: var(--texto);
+  letter-spacing: 0.02em;
+}
+
+.dashboard-bloqueado-motivo {
+  font-size: var(--tamano-sm);
+  color: var(--texto);
+  min-width: 0;
+}
+
+.dashboard-bloqueado-sede {
+  font-size: var(--tamano-sm);
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+/* Aviso honesto: su estado dice que no deberia salir, pero hoy el
+   sistema le deja arrancar el chequeo igual (solo bloquean de verdad
+   el vehiculo desactivado y los documentos vencidos). */
+.dashboard-bloqueado-aviso {
+  padding: 2px 8px;
+  border: 1px dashed var(--borde);
+  border-radius: var(--radio-sm);
+  font-size: var(--tamano-xs);
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .dashboard-bloqueado {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "banda sede"
+      "placa placa"
+      "motivo motivo"
+      "aviso aviso";
+    align-items: start;
+    row-gap: var(--espacio-sm);
+  }
+  .dashboard-bloqueado-banda  { grid-area: banda; justify-self: start; }
+  .dashboard-bloqueado-sede   { grid-area: sede; }
+  .dashboard-bloqueado-placa  { grid-area: placa; }
+  .dashboard-bloqueado-motivo { grid-area: motivo; }
+  .dashboard-bloqueado-aviso  { grid-area: aviso; justify-self: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-flota-tramo,
+  .dashboard-bloqueado { transition: none; }
+}

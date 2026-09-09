@@ -1,0 +1,587 @@
+/* Lista de chequeos para el admin (siguiendo sección 17 de CONTEXTO_PROYECTO.md) */
+
+.cheqadmin-pagina {
+    min-height: 100vh;
+    background: var(--superficie-sutil);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header con logo (consistente con el resto del admin) */
+.cheqadmin-header-marca {
+    background: var(--superficie);
+    border-bottom: 2px solid var(--color-gris-300);
+    padding: var(--espacio-sm) var(--espacio-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--sombra-md);
+}
+
+.cheqadmin-logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+}
+
+.cheqadmin-logo-img {
+    height: 38px;
+    width: auto;
+}
+
+.cheqadmin-titulo-app {
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    color: var(--color-primario-oscuro);
+}
+
+.cheqadmin-usuario {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+}
+
+.cheqadmin-usuario-info {
+    text-align: right;
+}
+
+.cheqadmin-usuario-nombre {
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+    font-weight: var(--peso-bold);
+}
+
+.cheqadmin-usuario-rol {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cheqadmin-logout {
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--color-rojo);
+    border: 2px solid var(--color-rojo);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cheqadmin-logout:hover {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+}
+
+/* Barra de página (debajo del header de marca) */
+.cheqadmin-barra-pagina {
+    background: var(--superficie);
+    border-bottom: 2px solid var(--color-gris-300);
+    padding: var(--espacio-md);
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+    box-shadow: var(--sombra-sm);
+}
+
+.cheqadmin-volver {
+    padding: 8px 14px;
+    background: var(--color-gris-200);
+    color: var(--color-gris-900);
+    border: 1px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    box-shadow: var(--sombra-sm);
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.cheqadmin-volver:hover {
+    background: var(--color-gris-300);
+    box-shadow: var(--sombra-md);
+}
+
+.cheqadmin-barra-titulo {
+    flex: 1;
+    min-width: 0;
+}
+
+.cheqadmin-barra-titulo h1 {
+    margin: 0;
+    color: var(--color-primario-oscuro);
+    font-size: var(--tamano-xl);
+    font-weight: var(--peso-bold);
+}
+
+.cheqadmin-barra-titulo p {
+    margin: 2px 0 0 0;
+    color: var(--color-gris-700);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+}
+
+.cheqadmin-boton-intentos {
+    padding: 10px 16px;
+    background: var(--superficie);
+    color: var(--color-rojo);
+    border: 2px solid var(--color-rojo);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cheqadmin-boton-intentos:hover {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    box-shadow: var(--sombra-md);
+}
+
+/* Filtros */
+.cheqadmin-filtros {
+    background: var(--superficie);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    margin: var(--espacio-md) auto 0 auto;
+    padding: var(--espacio-md);
+    box-shadow: var(--sombra-md);
+    max-width: 1100px;
+    width: calc(100% - 32px);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--espacio-sm);
+    align-items: end;
+}
+
+.cheqadmin-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cheqadmin-filtro label {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-900);
+    font-weight: var(--peso-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cheqadmin-filtro input,
+.cheqadmin-filtro select {
+    padding: 8px 10px;
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+}
+
+.cheqadmin-filtro input:focus,
+.cheqadmin-filtro select:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.cheqadmin-filtro-checks {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: var(--espacio-sm);
+    align-items: start;
+    padding-top: var(--espacio-xs);
+    border-top: 1px dashed var(--color-gris-300);
+}
+
+.cheqadmin-check {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--espacio-xs);
+    background: var(--superficie-sutil);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-sm) var(--espacio-md);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+}
+
+.cheqadmin-check:hover {
+    border-color: var(--color-primario);
+    background: var(--superficie);
+}
+
+.cheqadmin-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primario);
+    cursor: pointer;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.cheqadmin-check-textos {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.cheqadmin-check-titulo {
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+    font-weight: var(--peso-bold);
+}
+
+.cheqadmin-check-ayuda {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-900);
+    line-height: 1.3;
+    font-weight: var(--peso-normal);
+}
+
+.cheqadmin-boton-limpiar {
+    padding: 12px var(--espacio-md);
+    background: var(--color-gris-200);
+    color: var(--color-gris-900);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    align-self: stretch;
+}
+
+.cheqadmin-boton-limpiar:hover {
+    background: var(--color-gris-300);
+    box-shadow: var(--sombra-sm);
+}
+
+/* Main */
+.cheqadmin-main {
+    flex: 1;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--espacio-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+}
+
+.cheqadmin-cargando,
+.cheqadmin-vacio {
+    text-align: center;
+    padding: var(--espacio-xl);
+    color: var(--color-gris-700);
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-semibold);
+    background: var(--superficie);
+    border: 2px dashed var(--color-gris-300);
+    border-radius: var(--radio-md);
+}
+
+/* Lista */
+.cheqadmin-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: var(--espacio-md);
+}
+
+/* Card */
+.cheqadmin-card {
+    background: var(--superficie);
+    border: 2px solid var(--color-gris-300);
+    border-left: 8px solid var(--color-gris-500);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-md);
+    box-shadow: var(--sombra-md);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+}
+
+.cheqadmin-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-lg);
+}
+
+.cheqadmin-card-operativo { border-left-color: var(--color-primario); }
+.cheqadmin-card-observacion { border-left-color: var(--color-azul); }
+.cheqadmin-card-alerta { border-left-color: var(--color-amarillo); }
+.cheqadmin-card-critico { border-left-color: var(--color-rojo); }
+.cheqadmin-card-no_operativo { border-left-color: var(--estado-neutro-fondo); }
+.cheqadmin-card-pendiente { border-left-color: var(--color-gris-500); }
+
+.cheqadmin-card-fila-superior {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--espacio-sm);
+    flex-wrap: wrap;
+}
+
+.cheqadmin-card-placa {
+    font-size: var(--tamano-xl);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+    letter-spacing: 1.5px;
+}
+
+.cheqadmin-card-badges {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.cheqadmin-badge-tipo,
+.cheqadmin-badge-oficial,
+.cheqadmin-badge-rechequeo,
+.cheqadmin-badge-cerrado,
+.cheqadmin-badge-abierto,
+.cheqadmin-badge-abandonado {
+    padding: 3px 8px;
+    border-radius: var(--radio-xl);
+    font-size: 10px;
+    font-weight: var(--peso-bold);
+    letter-spacing: 0.5px;
+}
+
+.cheqadmin-badge-tipo-preoperacional {
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+}
+
+.cheqadmin-badge-tipo-postoperacional {
+    background: var(--estado-adv-fondo);
+    color: var(--estado-adv-texto);
+}
+
+.cheqadmin-badge-oficial {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+}
+
+.cheqadmin-badge-rechequeo {
+    background: var(--color-gris-200);
+    color: var(--color-gris-900);
+    border: 1px solid var(--color-gris-300);
+}
+
+.cheqadmin-badge-cerrado {
+    background: #E0F2F1;
+    color: #00695C;
+    border: 1px solid #80CBC4;
+}
+
+.cheqadmin-badge-abierto {
+    background: var(--estado-adv-fondo);
+    color: var(--estado-adv-texto);
+    border: 1px solid var(--estado-adv-borde);
+}
+
+/* Badge ABANDONADO (Tarea #104): chequeo cancelado por inactividad o cierre del navegador */
+.cheqadmin-badge-abandonado {
+    background: var(--estado-error-fondo);
+    color: var(--estado-error-texto);
+    border: 1px solid var(--estado-error-texto);
+    font-weight: var(--peso-bold);
+}
+
+.cheqadmin-card-vehiculo {
+    color: var(--color-gris-900);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+}
+
+.cheqadmin-card-conductor {
+    color: var(--color-gris-900);
+    font-size: var(--tamano-sm);
+    line-height: 1.4;
+}
+
+.cheqadmin-card-conductor-label {
+    color: var(--color-gris-700);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cheqadmin-card-cedula {
+    color: var(--color-gris-700);
+    font-size: var(--tamano-xs);
+}
+
+.cheqadmin-card-fila-inferior {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--espacio-sm);
+    padding-top: var(--espacio-xs);
+    border-top: 1px dashed var(--color-gris-300);
+    margin-top: var(--espacio-xs);
+}
+
+.cheqadmin-card-fecha {
+    color: var(--color-gris-900);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+}
+
+.cheqadmin-resultado {
+    padding: 4px 10px;
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    color: var(--color-blanco);
+    letter-spacing: 0.5px;
+}
+
+.cheqadmin-resultado-operativo { background: var(--color-primario); }
+.cheqadmin-resultado-observacion { background: var(--color-azul); }
+.cheqadmin-resultado-alerta { background: var(--color-amarillo); color: var(--color-gris-900); }
+.cheqadmin-resultado-critico { background: var(--color-rojo); }
+.cheqadmin-resultado-no_operativo { background: var(--estado-neutro-fondo); }
+
+.cheqadmin-card-resumen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-xs);
+    padding-top: var(--espacio-xs);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+}
+
+.cheqadmin-card-exportar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--espacio-sm);
+    padding-top: var(--espacio-sm);
+    border-top: 1px solid var(--color-gris-300);
+}
+
+.cheqadmin-resumen-cumple {
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+    padding: 3px 10px;
+    border-radius: var(--radio-xl);
+}
+
+.cheqadmin-resumen-no-cumple {
+    background: var(--estado-error-fondo);
+    color: var(--color-rojo);
+    padding: 3px 10px;
+    border-radius: var(--radio-xl);
+    border: 1px solid var(--estado-error-borde);
+}
+
+.cheqadmin-resumen-na {
+    background: var(--color-gris-200);
+    color: var(--color-gris-900);
+    padding: 3px 10px;
+    border-radius: var(--radio-xl);
+}
+
+.cheqadmin-resumen-critico {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    padding: 3px 10px;
+    border-radius: var(--radio-xl);
+    letter-spacing: 1px;
+}
+
+/* Paginacion */
+.cheqadmin-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--espacio-md);
+    padding: var(--espacio-md);
+}
+
+.cheqadmin-paginacion button {
+    padding: 10px 18px;
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    box-shadow: var(--sombra-sm);
+}
+
+.cheqadmin-paginacion button:hover:not(:disabled) {
+    background: var(--color-primario-oscuro);
+    box-shadow: var(--sombra-md);
+    transform: translateY(-1px);
+}
+
+.cheqadmin-paginacion button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.cheqadmin-paginacion-info {
+    color: var(--color-gris-900);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+    .cheqadmin-header-marca {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--espacio-sm);
+    }
+    .cheqadmin-usuario {
+        justify-content: space-between;
+    }
+    .cheqadmin-barra-pagina {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .cheqadmin-filtro-checks {
+        grid-template-columns: 1fr;
+    }
+    .cheqadmin-lista {
+        grid-template-columns: 1fr;
+    }
+    .cheqadmin-card-placa {
+        font-size: var(--tamano-lg);
+    }
+}
+
+/* === Modo oscuro === */
+/* Badge CERRADO (teal): categoria propia, se aclara en oscuro */
+[data-tema="oscuro"] .cheqadmin-badge-cerrado {
+    background: rgba(29, 158, 117, 0.16);
+    color: #5DCAA5;
+    border-color: rgba(29, 158, 117, 0.45);
+}

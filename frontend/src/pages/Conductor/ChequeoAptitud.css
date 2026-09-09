@@ -1,0 +1,438 @@
+/* Pantalla de Aptitud (paso 2 del flujo del conductor). Mobile-first. */
+
+.aptitud-pagina {
+    min-height: 100vh;
+    background: var(--superficie-sutil);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.aptitud-header {
+    background: var(--superficie);
+    border-bottom: var(--borde-fino);
+    padding: var(--espacio-sm) var(--espacio-md);
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+    box-shadow: var(--sombra-sm);
+}
+
+.aptitud-volver-chip {
+    padding: 8px 14px;
+    background: var(--color-gris-200);
+    color: var(--color-gris-900);
+    border: 1px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    white-space: nowrap;
+    box-shadow: var(--sombra-sm);
+}
+
+.aptitud-volver-chip:hover,
+.aptitud-volver-chip:active {
+    background: var(--color-gris-300);
+    color: var(--color-gris-900);
+    border-color: var(--color-gris-500);
+    box-shadow: var(--sombra-md);
+}
+
+.aptitud-mini-logo {
+    height: 30px;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.aptitud-progreso-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aptitud-progreso-texto {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-500);
+    font-weight: var(--peso-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aptitud-progreso-barra {
+    height: 8px;
+    background: var(--color-gris-200);
+    border-radius: var(--radio-xl);
+    overflow: hidden;
+}
+
+.aptitud-progreso-relleno {
+    height: 100%;
+    background: var(--color-primario);
+    border-radius: var(--radio-xl);
+    transition: width var(--velocidad-media) var(--suavizado);
+}
+
+/* Main */
+.aptitud-main {
+    flex: 1;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--espacio-lg) var(--espacio-md);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--espacio-lg);
+}
+
+.aptitud-etiqueta {
+    text-align: center;
+    color: var(--color-gris-500);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.aptitud-pregunta {
+    text-align: center;
+    color: var(--color-gris-900);
+    font-size: var(--tamano-xl);
+    font-weight: var(--peso-bold);
+    line-height: 1.4;
+    margin: 0;
+    padding: var(--espacio-md);
+    background: var(--superficie);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-md);
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Botones SI / NO */
+.aptitud-botones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--espacio-md);
+}
+
+.aptitud-boton {
+    padding: var(--espacio-lg) var(--espacio-md);
+    border-radius: var(--radio-lg);
+    border: none;
+    font-size: var(--tamano-xxl);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    box-shadow: var(--sombra-md);
+    letter-spacing: 2px;
+    min-height: 120px;
+    font-family: inherit;
+}
+
+.aptitud-boton:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.aptitud-boton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.aptitud-boton-si {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+}
+
+.aptitud-boton-si:hover:not(:disabled) {
+    background: var(--color-primario-oscuro);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-lg);
+}
+
+.aptitud-boton-no {
+    background: var(--superficie);
+    color: var(--color-rojo);
+    border: 3px solid var(--color-rojo);
+}
+
+.aptitud-boton-no:hover:not(:disabled) {
+    background: var(--estado-error-fondo);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-lg);
+}
+
+/* Estados de carga / error */
+.aptitud-estado {
+    text-align: center;
+    padding: var(--espacio-xl) var(--espacio-md);
+    color: var(--color-gris-500);
+    font-size: var(--tamano-md);
+}
+
+.aptitud-estado-error {
+    color: var(--color-rojo);
+    font-weight: var(--peso-semibold);
+}
+
+.aptitud-boton-volver {
+    align-self: center;
+    margin: var(--espacio-md) auto 0 auto;
+    padding: 10px 24px;
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+}
+
+.aptitud-boton-volver:hover {
+    background: var(--color-primario-oscuro);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-md);
+}
+
+/* Pantalla de bloqueo */
+.aptitud-bloqueada {
+    justify-content: center;
+    align-items: center;
+    padding: var(--espacio-md);
+    background: linear-gradient(135deg, #FDECEC 0%, #F8D7D7 100%);
+}
+
+.aptitud-bloqueada-tarjeta {
+    background: var(--superficie);
+    border-radius: var(--radio-lg);
+    padding: var(--espacio-xl) var(--espacio-lg);
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--sombra-xl);
+    border: 3px solid var(--color-rojo);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espacio-md);
+    position: relative;
+}
+
+.aptitud-bloqueada-tarjeta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radio-lg);
+    box-shadow: inset 0 0 0 1px rgba(211, 47, 47, 0.15);
+    pointer-events: none;
+}
+
+.aptitud-bloqueada-icono {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+    line-height: 1;
+    box-shadow: 0 6px 20px rgba(211, 47, 47, 0.45);
+}
+
+.aptitud-bloqueada-titulo {
+    color: var(--color-rojo);
+    font-size: var(--tamano-xl);
+    font-weight: var(--peso-bold);
+    margin: 0;
+    letter-spacing: 0.3px;
+}
+
+.aptitud-bloqueada-texto {
+    color: var(--color-gris-900);
+    font-size: var(--tamano-md);
+    line-height: 1.5;
+    margin: 0;
+    font-weight: var(--peso-medio);
+}
+
+.aptitud-bloqueada-detalle {
+    width: 100%;
+    background: var(--estado-error-fondo);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-md);
+    text-align: left;
+    border: 2px solid var(--color-rojo);
+}
+
+.aptitud-bloqueada-detalle-titulo {
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--espacio-xs);
+}
+
+.aptitud-bloqueada-lista {
+    margin: 0;
+    padding-left: var(--espacio-md);
+    color: var(--color-gris-700);
+    font-size: var(--tamano-sm);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Modal de confirmacion */
+.aptitud-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--espacio-md);
+    z-index: 1000;
+    animation: aptitud-fade-in var(--velocidad-rapida) var(--suavizado);
+}
+
+.aptitud-modal {
+    background: var(--superficie);
+    border-radius: var(--radio-lg);
+    padding: var(--espacio-lg) var(--espacio-md);
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--sombra-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espacio-md);
+    animation: aptitud-pop-in var(--velocidad-media) var(--suavizado);
+}
+
+.aptitud-modal-icono {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: var(--peso-bold);
+}
+
+.aptitud-modal-pregunta {
+    color: var(--color-gris-700);
+    font-size: var(--tamano-sm);
+    font-style: italic;
+    line-height: 1.4;
+}
+
+.aptitud-modal-confirma {
+    color: var(--color-gris-900);
+    font-size: var(--tamano-md);
+}
+
+.aptitud-modal-confirma strong {
+    color: var(--color-primario-oscuro);
+    font-weight: var(--peso-bold);
+}
+
+.aptitud-modal-botones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--espacio-sm);
+    width: 100%;
+    margin-top: var(--espacio-xs);
+}
+
+.aptitud-modal-boton {
+    padding: 12px var(--espacio-sm);
+    border-radius: var(--radio-md);
+    border: none;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+}
+
+.aptitud-modal-boton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.aptitud-modal-boton-cancelar {
+    background: var(--superficie-sutil);
+    color: var(--color-gris-700);
+    border: 1px solid var(--color-gris-200);
+}
+
+.aptitud-modal-boton-cancelar:hover:not(:disabled) {
+    background: var(--color-gris-200);
+    color: var(--color-gris-900);
+}
+
+.aptitud-modal-boton-confirmar {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+}
+
+.aptitud-modal-boton-confirmar:hover:not(:disabled) {
+    background: var(--color-primario-oscuro);
+    transform: translateY(-1px);
+    box-shadow: var(--sombra-md);
+}
+
+/* Animaciones */
+@keyframes aptitud-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes aptitud-pop-in {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .aptitud-pregunta {
+        font-size: var(--tamano-lg);
+        min-height: 120px;
+    }
+
+    .aptitud-boton {
+        font-size: var(--tamano-xl);
+        min-height: 100px;
+    }
+
+    .aptitud-bloqueada-titulo {
+        font-size: var(--tamano-lg);
+    }
+
+    .aptitud-bloqueada-icono {
+        font-size: 52px;
+    }
+}
+
+/* === Modo oscuro === */
+/* El fondo de la pantalla de bloqueo era un gradiente rojo claro: se aplana
+   al fondo de error oscuro para no quedar luminoso. */
+[data-tema="oscuro"] .aptitud-bloqueada {
+    background: var(--estado-error-fondo);
+}

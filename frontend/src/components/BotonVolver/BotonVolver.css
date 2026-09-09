@@ -1,0 +1,45 @@
+/* =================================================================
+   BotonVolver — boton prominente para paginas de detalle.
+   Siguiendo convencion seccion 17: bordes 2px+, sombras md+,
+   coloreado color primario para que destaque como "accion principal de
+   navegacion" en una pagina que no tiene sidebar.
+   ================================================================= */
+
+.boton-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+    padding: var(--espacio-sm) var(--espacio-lg);
+    background: var(--superficie);
+    color: var(--color-primario-oscuro);
+    border: 2px solid var(--color-primario);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    box-shadow: var(--sombra-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.boton-volver:hover {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    transform: translateX(-2px);
+    box-shadow: var(--sombra-md);
+}
+
+.boton-volver:active {
+    transform: translateX(-2px) scale(0.97);
+}
+
+.boton-volver svg {
+    flex-shrink: 0;
+    transition: transform var(--velocidad-rapida) var(--suavizado);
+}
+
+.boton-volver:hover svg {
+    transform: translateX(-2px);
+}

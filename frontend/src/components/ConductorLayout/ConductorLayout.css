@@ -1,0 +1,158 @@
+/* =================================================================
+   ConductorLayout — layout simple para las pantallas del conductor.
+   Sin sidebar (el flujo es lineal). Solo header + main + footer.
+   Convencion §17: bordes 2px+, sombras md+, texto gris-900.
+   ================================================================= */
+
+.cond-layout {
+    min-height: 100vh;
+    background: var(--superficie-sutil);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Header sticky en todas las pantallas del conductor ===== */
+.cond-layout-header {
+    background: var(--superficie);
+    border-bottom: 2px solid var(--color-gris-300);
+    padding: var(--espacio-md) var(--espacio-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--sombra-sm);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    gap: var(--espacio-md);
+}
+
+.cond-layout-logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+    min-width: 0;
+}
+
+.cond-layout-logo {
+    height: 36px;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.cond-layout-titulo-app {
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    color: var(--color-primario-oscuro);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cond-layout-acciones {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+    flex-shrink: 0;
+}
+
+.cond-layout-usuario {
+    text-align: right;
+}
+
+.cond-layout-usuario-nombre {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+    line-height: 1.2;
+    text-transform: capitalize;
+}
+
+.cond-layout-usuario-rol {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Conductor del pool de transporte: se resalta en morado (igual que el badge VIP) */
+.cond-layout-usuario-rol-pool {
+    color: var(--suplencia-color);
+    font-weight: var(--peso-bold);
+}
+
+.cond-layout-cerrar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--superficie);
+    color: var(--color-rojo);
+    border: 2px solid var(--color-rojo);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    box-shadow: var(--sombra-sm);
+}
+
+.cond-layout-cerrar:hover {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    box-shadow: var(--sombra-md);
+}
+
+.cond-layout-cerrar:active {
+    transform: scale(0.96);
+}
+
+/* ===== Main (contenido) ===== */
+.cond-layout-main {
+    flex: 1;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--espacio-xl) var(--espacio-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xl);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+    .cond-layout-header {
+        padding: var(--espacio-sm) var(--espacio-md);
+    }
+    .cond-layout-titulo-app {
+        display: none; /* en movil solo se ve el logo, ahorra espacio */
+    }
+    /* Dejamos que el bloque de acciones se comprima (de base es flex-shrink:0),
+       para que el header no desborde al sumarle el interruptor de tema. */
+    .cond-layout-acciones {
+        gap: var(--espacio-sm);
+        min-width: 0;
+        flex-shrink: 1;
+    }
+    /* El nombre/rol del usuario se recorta con "…" en vez de empujar el ancho */
+    .cond-layout-usuario {
+        min-width: 0;
+    }
+    .cond-layout-usuario-nombre,
+    .cond-layout-usuario-rol {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    /* En movil ocultamos el texto "Cerrar sesion", queda solo el icono */
+    .cond-layout-cerrar-texto {
+        display: none;
+    }
+    .cond-layout-cerrar {
+        padding: 8px;
+        flex-shrink: 0;
+    }
+    .cond-layout-main {
+        padding: var(--espacio-md);
+    }
+}

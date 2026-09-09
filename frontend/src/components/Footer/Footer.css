@@ -1,0 +1,54 @@
+/* ============================================================
+   COMPONENTE: Footer (marca del producto + organizacion cliente)
+   ============================================================ */
+
+.footer {
+  background: var(--superficie);
+  border-top: var(--borde-fino);
+  padding: var(--espacio-lg) var(--espacio-xl);
+  margin-top: auto;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--espacio-sm) var(--espacio-lg);
+}
+
+.footer-marca {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.footer-logo {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}
+
+.footer-nombre {
+  font-size: var(--tamano-sm);
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--titulo);
+}
+
+.footer-texto {
+  color: var(--color-gris-500);
+  font-size: var(--tamano-xs);
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .footer {
+    flex-direction: column;
+    gap: var(--espacio-xs);
+    text-align: center;
+  }
+
+  .footer-logo {
+    height: 24px;
+  }
+}

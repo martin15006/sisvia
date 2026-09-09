@@ -1,0 +1,45 @@
+# Dependencias instaladas (se reinstalan con npm install)
+node_modules/
+
+# Variables de entorno (contraseñas, secretos)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos temporales de Office (Word, Excel, PowerPoint)
+# Cuando tienes un .docx abierto, Word crea estos archivos de bloqueo/recuperacion
+# que no deben llegar al repo.
+~$*.docx
+~$*.xlsx
+~$*.pptx
+~WRL*.tmp
+~WRD*.tmp
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Build
+dist/
+build/
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Base de datos local (backups)
+*.sql.gz
+backups/
+
+# Documentacion: SI va al repo (es parte del producto).

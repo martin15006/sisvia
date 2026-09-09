@@ -1,0 +1,243 @@
+/* ============================================================
+   COMPONENTE: Login
+   ============================================================ */
+
+.login-pagina {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espacio-lg);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    var(--color-primario-oscuro) 0%,
+    var(--color-primario-muy-oscuro) 100%
+  );
+}
+
+/* Decoraciones de fondo */
+.login-fondo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.login-formas::before,
+.login-formas::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(19, 80, 216, 0.7) 0%,
+    rgba(19, 80, 216, 0.3) 60%,
+    transparent 100%
+  );
+}
+
+.login-formas::before {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  right: -100px;
+  animation: pulse 6s ease-in-out infinite;
+}
+
+.login-formas::after {
+  width: 350px;
+  height: 350px;
+  bottom: -80px;
+  left: -80px;
+  animation: pulse 8s ease-in-out infinite 1s;
+}
+
+
+/* Tarjeta principal */
+.login-tarjeta {
+  position: relative;
+  z-index: 1;
+  background: var(--superficie);
+  padding: var(--espacio-xxl);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-xl);
+  width: 100%;
+  max-width: 440px;
+}
+
+.login-cabecera {
+  text-align: center;
+  margin-bottom: var(--espacio-xl);
+}
+
+.login-logo-img {
+  width: 90px;
+  height: auto;
+  margin: 0 auto var(--espacio-md);
+  display: block;
+  animation: scaleIn 0.5s var(--suavizado);
+}
+
+.login-logo-texto {
+  display: inline-block;
+  background: var(--acento-suave);
+  color: var(--color-primario-oscuro);
+  padding: var(--espacio-xs) var(--espacio-md);
+  border-radius: var(--radio-xl);
+  font-size: var(--tamano-xs);
+  font-weight: var(--peso-semibold);
+  letter-spacing: 0.5px;
+  margin-bottom: var(--espacio-md);
+}
+
+.login-titulo {
+  font-size: var(--tamano-xxl);
+  color: var(--color-primario-oscuro);
+  margin-bottom: var(--espacio-xs);
+}
+
+.login-subtitulo {
+  font-size: var(--tamano-sm);
+  color: var(--color-gris-500);
+}
+
+/* Formulario */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+}
+
+.login-campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.login-label {
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-semibold);
+  color: var(--color-gris-700);
+}
+
+.login-input {
+  padding: var(--espacio-md);
+  border: 2px solid var(--color-gris-200);
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-md);
+  transition: all var(--velocidad-rapida) var(--suavizado);
+  background: var(--color-gris-100);
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  background: var(--superficie);
+  box-shadow: 0 0 0 4px var(--color-primario-claro);
+}
+
+.login-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* (El boton del ojo para mostrar contraseña vive en
+   components/InputPassword/InputPassword.css — usado tambien aqui) */
+
+.login-error {
+  background: var(--estado-error-fondo);
+  color: var(--color-rojo);
+  padding: var(--espacio-md);
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-sm);
+  border-left: 4px solid var(--color-rojo);
+}
+
+/* Variante para "Cuenta desactivada" — asunto administrativo, no error de typo.
+   Mismo peach/dorado del resto del proyecto + icono de candado para que sea
+   visualmente distinguible del rojo de validacion. */
+.login-error-advertencia {
+  background: var(--estado-adv-solido);
+  color: #1A1A1A;
+  border: 2px solid #e29a2d;
+  border-left: 4px solid #e29a2d;
+  font-weight: var(--peso-semibold);
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  box-shadow: var(--sombra-md);
+}
+
+.login-error-icono {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.login-boton {
+  padding: var(--espacio-md);
+  background: var(--color-primario);
+  color: var(--color-blanco);
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-md);
+  font-weight: var(--peso-semibold);
+  cursor: pointer;
+  transition: all var(--velocidad-media) var(--suavizado);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-sm);
+  min-height: 48px;
+}
+
+.login-boton:hover:not(:disabled) {
+  background: var(--color-primario-oscuro);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-md);
+}
+
+.login-boton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.login-boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--color-blanco);
+  border-radius: 50%;
+  animation: rotate 0.8s linear infinite;
+}
+
+.login-pie {
+  text-align: center;
+  margin-top: var(--espacio-xl);
+  font-size: var(--tamano-xs);
+  color: var(--color-gris-500);
+  letter-spacing: 0.5px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .login-tarjeta {
+    padding: var(--espacio-xl);
+  }
+
+  .login-titulo {
+    font-size: var(--tamano-xl);
+  }
+}
+
+/* === Modo oscuro === */
+/* El borde dorado (#e29a2d) del aviso de "cuenta desactivada" se aclara de mas
+   sobre el solido oscuro de advertencia; lo apagamos para que case mejor. */
+[data-tema="oscuro"] .login-error-advertencia {
+  border-color: #A65A14;
+}

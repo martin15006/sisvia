@@ -1,0 +1,544 @@
+/* 
+   PAGINA: UsuariosAdmin
+    */
+
+.usuarios-admin {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-gris-100);
+}
+
+/*  HEADER  */
+.usuarios-admin-header {
+    background: var(--superficie);
+    padding: var(--espacio-md) var(--espacio-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: var(--borde-fino);
+    box-shadow: var(--sombra-sm);
+}
+
+.usuarios-admin-logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+}
+
+.usuarios-admin-logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+.usuarios-admin-logo {
+    font-weight: var(--peso-bold);
+    color: var(--color-primario-oscuro);
+    font-size: var(--tamano-md);
+}
+
+.usuarios-admin-usuario {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+}
+
+.usuarios-admin-usuario-info {
+    text-align: right;
+}
+
+.usuarios-admin-usuario-nombre {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+}
+
+.usuarios-admin-usuario-rol {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.usuarios-admin-logout {
+    padding: var(--espacio-sm) var(--espacio-md);
+    background: var(--superficie);
+    color: var(--color-rojo);
+    border: 2px solid var(--color-rojo);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+}
+
+.usuarios-admin-logout:hover {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+}
+
+/*  MAIN  */
+.usuarios-admin-main {
+    flex: 1;
+    padding: var(--espacio-xl) var(--espacio-xxl);
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.usuarios-admin-volver {
+    background: none;
+    border: none;
+    color: var(--color-primario-oscuro);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    padding: var(--espacio-sm) 0;
+    margin-bottom: var(--espacio-md);
+    transition: opacity var(--velocidad-rapida);
+}
+
+.usuarios-admin-volver:hover {
+    opacity: 0.7;
+}
+
+/*  ENCABEZADO  */
+.usuarios-admin-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--espacio-xl);
+    gap: var(--espacio-md);
+    flex-wrap: wrap;
+}
+
+.usuarios-admin-titulo {
+    font-size: var(--tamano-xxl);
+    color: var(--color-primario-oscuro);
+    margin-bottom: var(--espacio-xs);
+}
+
+.usuarios-admin-subtitulo {
+    color: var(--color-gris-500);
+    font-size: var(--tamano-sm);
+}
+
+.usuarios-admin-boton-crear {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    border: none;
+    padding: var(--espacio-md) var(--espacio-xl);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    transition: all var(--velocidad-media) var(--suavizado);
+    box-shadow: var(--sombra-md);
+}
+
+.usuarios-admin-boton-crear:hover {
+    background: var(--color-primario-oscuro);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-lg);
+}
+
+/* Contenedor de los dos botones del encabezado (refrescar + crear) */
+.usuarios-admin-acciones-encabezado {
+    display: flex;
+    gap: var(--espacio-sm);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.usuarios-admin-boton-refrescar {
+    background: var(--superficie);
+    color: var(--color-primario-oscuro);
+    border: 2px solid var(--color-primario);
+    padding: var(--espacio-md) var(--espacio-lg);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    transition: all var(--velocidad-media) var(--suavizado);
+    box-shadow: var(--sombra-sm);
+    font-family: inherit;
+}
+
+.usuarios-admin-boton-refrescar:hover:not(:disabled) {
+    background: var(--acento-suave);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-md);
+}
+
+.usuarios-admin-boton-refrescar:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/*  FILTROS  */
+.usuarios-admin-filtros {
+    background: var(--superficie);
+    padding: var(--espacio-md);
+    border-radius: var(--radio-md);
+    box-shadow: var(--sombra-sm);
+    border: var(--borde-card);
+    display: flex;
+    gap: var(--espacio-md);
+    margin-bottom: var(--espacio-lg);
+    flex-wrap: wrap;
+}
+
+.usuarios-admin-busqueda {
+    flex: 1;
+    min-width: 200px;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-input-borde);
+    background: var(--color-input-bg);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    transition: all var(--velocidad-rapida);
+}
+
+.usuarios-admin-busqueda:focus {
+    outline: none;
+    border-color: var(--color-primario);
+}
+
+.usuarios-admin-select {
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-input-borde);
+    background: var(--color-input-bg);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida);
+}
+
+.usuarios-admin-select:focus {
+    outline: none;
+    border-color: var(--color-primario);
+}
+
+/*  TABLA  */
+.usuarios-admin-tabla-wrapper {
+    background: var(--superficie);
+    border-radius: var(--radio-md);
+    box-shadow: var(--sombra-sm);
+    border: var(--borde-card);
+    overflow-x: auto;
+}
+
+.usuarios-admin-tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.usuarios-admin-tabla thead {
+    background: var(--color-primario-oscuro);
+    color: var(--color-blanco);
+}
+
+.usuarios-admin-tabla th {
+    padding: var(--espacio-md);
+    text-align: left;
+    font-weight: var(--peso-semibold);
+    font-size: var(--tamano-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.usuarios-admin-tabla td {
+    padding: var(--espacio-md);
+    border-bottom: 1px solid var(--color-gris-200);
+    vertical-align: middle;
+}
+
+.usuarios-admin-tabla tbody tr {
+    transition: background var(--velocidad-rapida);
+}
+
+.usuarios-admin-tabla tbody tr:hover {
+    background: var(--color-gris-100);
+}
+
+.usuarios-admin-fila-inactiva {
+    opacity: 0.55;
+}
+
+.usuarios-admin-foto {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-primario-claro);
+}
+
+.usuarios-admin-foto-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--peso-bold);
+    font-size: var(--tamano-lg);
+}
+
+.usuarios-admin-nombre {
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-900);
+}
+
+/*  BADGES  */
+.usuarios-admin-rol {
+    display: inline-block;
+    padding: 2px var(--espacio-sm);
+    border-radius: var(--radio-xl);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.usuarios-admin-rol-admin {
+    background: var(--estado-adv-fondo);
+    color: var(--color-naranja);
+}
+
+.usuarios-admin-rol-conductor {
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+}
+
+/* Pool de transporte: conductor de vehículos VIP (docs/diseno-pool-vip.md) */
+.usuarios-admin-rol-pool {
+    background: var(--suplencia-fondo);
+    color: var(--suplencia-color);
+}
+
+/* Marca de suplencia ACTIVA: el pool esta reemplazando al Coordinador ahora mismo.
+   Va AL LADO del pill "POOL" (inline). */
+.usuarios-admin-supliendo {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px var(--espacio-sm);
+    border-radius: var(--radio-xl);
+    background: var(--suplencia-solido);
+    color: var(--color-blanco);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    white-space: nowrap;
+}
+
+/* Columna Ámbito: de dónde es (conductor) / qué administra (admin) */
+.usuarios-admin-ambito {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.25;
+}
+
+.usuarios-admin-ambito-nombre {
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-900);
+}
+
+.usuarios-admin-ambito-nivel {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+}
+
+.usuarios-admin-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-xs);
+    padding: 2px var(--espacio-sm);
+    border-radius: var(--radio-xl);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+}
+
+.usuarios-admin-estado.activo {
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+}
+
+.usuarios-admin-estado.activo::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-primario);
+}
+
+.usuarios-admin-estado.inactivo {
+    background: var(--estado-error-fondo);
+    color: var(--color-rojo);
+}
+
+.usuarios-admin-estado.inactivo::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-rojo);
+}
+
+/* ============ ACCIONES ============ */
+.usuarios-admin-acciones {
+    display: flex;
+    gap: var(--espacio-xs);
+    flex-wrap: wrap;
+}
+
+/* Fila propia para descargar la ficha (PDF/Word), con botones más grandes */
+.usuarios-admin-acciones-exportar {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--color-gris-300);
+}
+
+.usuarios-admin-acciones-exportar .boton-exportar button {
+    padding: 9px 26px;
+    font-size: var(--tamano-sm);
+}
+
+.usuarios-admin-accion {
+    padding: 6px 14px;
+    border: 2px solid var(--color-gris-200);
+    background: var(--superficie);
+    border-radius: var(--radio-md);
+    cursor: pointer;
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-700);
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.usuarios-admin-accion:hover {
+    background: var(--acento-suave);
+    border-color: var(--color-primario);
+    color: var(--color-primario-oscuro);
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-sm);
+}
+
+.usuarios-admin-accion-warning {
+    border-color: var(--color-naranja);
+    color: var(--color-naranja);
+}
+
+.usuarios-admin-accion-warning:hover {
+    background: var(--color-naranja);
+    color: var(--color-blanco);
+    border-color: var(--color-naranja);
+}
+
+.usuarios-admin-accion-success {
+    border-color: var(--color-primario);
+    color: var(--color-primario-oscuro);
+}
+
+.usuarios-admin-accion-success:hover {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    border-color: var(--color-primario);
+}
+
+.usuarios-admin-accion-danger {
+    border-color: var(--color-rojo);
+    color: var(--color-rojo);
+}
+
+.usuarios-admin-accion-danger:hover {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    border-color: var(--color-rojo);
+}
+
+/* Acciones propias del Pool de transporte: grupo aparte (fila separada en morado) */
+.usuarios-admin-acciones-pool {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-xs);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #D1C4E9;
+}
+
+.usuarios-admin-accion-pool {
+    border-color: var(--suplencia-color);
+    color: var(--suplencia-color);
+}
+
+.usuarios-admin-accion-pool:hover {
+    background: var(--suplencia-solido);
+    color: var(--color-blanco);
+    border-color: var(--suplencia-solido);
+}
+
+/*  ESTADOS  */
+.usuarios-admin-estado-cargando,
+.usuarios-admin-vacio {
+    background: var(--superficie);
+    padding: var(--espacio-xxl);
+    border-radius: var(--radio-md);
+    text-align: center;
+    color: var(--color-gris-500);
+    box-shadow: var(--sombra-sm);
+    border: var(--borde-card);
+}
+
+.usuarios-admin-estado-error {
+    background: var(--estado-error-fondo);
+    color: var(--color-rojo);
+    padding: var(--espacio-md);
+    border-radius: var(--radio-md);
+    border-left: 4px solid var(--color-rojo);
+}
+
+/*  RESPONSIVE  */
+@media (max-width: 768px) {
+    .usuarios-admin-main {
+        padding: var(--espacio-md);
+    }
+
+    .usuarios-admin-encabezado {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .usuarios-admin-boton-crear {
+        width: 100%;
+    }
+}
+
+/* === Modo oscuro === */
+/* El borde dashed morado claro se aclara en oscuro para verse sobre el fondo. */
+[data-tema="oscuro"] .usuarios-admin-acciones-pool {
+    border-top-color: var(--suplencia-color);
+}
+
+/* Sobre el tint rojo en oscuro, el rojo de marca queda muy oscuro: texto/borde
+   pasan al rojo claro del estado de error. */
+[data-tema="oscuro"] .usuarios-admin-estado.inactivo {
+    color: var(--estado-error-texto);
+}
+
+[data-tema="oscuro"] .usuarios-admin-estado.inactivo::before {
+    background: var(--estado-error-texto);
+}
+
+[data-tema="oscuro"] .usuarios-admin-estado-error {
+    color: var(--estado-error-texto);
+    border-left-color: var(--estado-error-texto);
+}

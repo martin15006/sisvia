@@ -1,0 +1,211 @@
+/* ============================================================
+   VARIABLES GLOBALES
+   ------------------------------------------------------------
+   Aquí van TODOS los colores, tamaños, espacios y fuentes
+   del sistema. Si quieres cambiar el color primario en toda la
+   aplicación, lo cambias acá una vez y se actualiza en todo.
+   ============================================================ */
+
+:root {
+  /* === COLORES DE MARCA === */
+  --color-primario: #1350D8;
+  --color-primario-oscuro: #0E3CA3;
+  --color-primario-muy-oscuro: #082663;
+  --color-primario-claro: #E6EEFE;
+
+  /* Verde reservado para el SIGNIFICADO "exito", no para la marca. */
+  --color-verde-exito: #1E8E3E;
+
+  /* === COLORES DE ACENTO === */
+  --color-naranja: #FF8200;
+  --color-rojo: #D32F2F;
+  --color-amarillo: #FFB300;
+  --color-azul: #1976D2;
+
+  /* === GRISES === */
+  --color-blanco: #FFFFFF;
+  --color-gris-50: #F5F7FA;
+  --color-gris-100: #BFC5CD;
+  --color-gris-200: #C9C9C9;   /* ajustado: era #E0E0E0 (muy claro) */
+  --color-gris-300: #A0A0A0;   /* ajustado: era #BDBDBD */
+  --color-gris-500: #757575;
+  --color-gris-700: #424242;
+  --color-gris-900: #212121;
+  --color-negro: #000000;
+
+  /* === FORMULARIOS === */
+  --color-input-bg: #F0F2F5;       /* fondo sutil para diferenciar input */
+  --color-input-borde: #B0B0B0;    /* borde mas visible para inputs */
+
+  /* === COLORES DE ESTADO === */
+  --color-exito: var(--color-verde-exito);
+  --color-error: var(--color-rojo);
+  --color-advertencia: var(--color-amarillo);
+  --color-info: var(--color-azul);
+
+  /* === ESTADOS DEL VEHICULO ===
+     Son el MENSAJE del producto, no decoracion: verde = puede salir,
+     rojo = no puede salir. Ningun tema debe repintarlos; lo unico que
+     cambia entre claro y oscuro es su luminosidad, para que sigan
+     legibles. --veh-tinta es el color del TEXTO que va encima de ellos:
+     en claro es blanco, en oscuro es tinta oscura, porque al aclarar
+     los estados para fondo negro el texto blanco baja a 2:1. */
+  --veh-operativo:     #157F3D;
+  --veh-observacion:   #A66A00;
+  --veh-alerta:        #C2410C;
+  --veh-critico:       #B3261E;
+  --veh-no-operativo:  #6B7280;
+  --veh-tinta:         #FFFFFF;
+
+  /* === ESPACIADOS (multiplos de 4px para mantener consistencia) === */
+  --espacio-xs: 4px;
+  --espacio-sm: 8px;
+  --espacio-md: 16px;
+  --espacio-lg: 24px;
+  --espacio-xl: 32px;
+  --espacio-xxl: 48px;
+  --espacio-xxxl: 64px;
+
+  /* === TIPOGRAFIA === */
+  --fuente-principal: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                      "Helvetica Neue", Arial, sans-serif;
+  --fuente-monospace: "Consolas", "Monaco", "Courier New", monospace;
+
+  --tamano-xs: 12px;
+  --tamano-sm: 14px;
+  --tamano-md: 16px;
+  --tamano-lg: 20px;
+  --tamano-xl: 24px;
+  --tamano-xxl: 32px;
+  --tamano-xxxl: 48px;
+
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-semibold: 600;
+  --peso-bold: 700;
+
+  /* === BORDES Y RADIOS === */
+  --radio-sm: 4px;
+  --radio-md: 8px;
+  --radio-lg: 12px;
+  --radio-xl: 20px;
+  --radio-circular: 50%;
+
+  --borde-fino: 1px solid var(--color-gris-200);
+  --borde-medio: 2px solid var(--color-gris-200);
+
+  /* === SOMBRAS === */
+  --sombra-sm: 0 2px 6px rgba(0, 0, 0, 0.12);
+  --sombra-md: 0 4px 14px rgba(0, 0, 0, 0.18);
+  --sombra-lg: 0 10px 28px rgba(0, 0, 0, 0.22);
+  --sombra-xl: 0 18px 44px rgba(0, 0, 0, 0.28);
+
+  /* === BORDE DE CARDS (mas marcado para mejor contraste) === */
+  --borde-card: 2px solid #6F7785;
+  --color-separador: #95A0AC;
+
+  /* === TRANSICIONES (velocidades estandar) === */
+  --velocidad-rapida: 150ms;
+  --velocidad-media: 300ms;
+  --velocidad-lenta: 500ms;
+  --suavizado: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* === Z-INDEX (capas de profundidad) === */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-overlay: 500;
+  --z-modal: 1000;
+  --z-notificacion: 2000;
+
+  /* === TOKENS SEMANTICOS DE TEMA (claro = comportamiento actual) ===
+     Estos son los que cambian en modo oscuro. La regla: los FONDOS usan
+     --superficie/--fondo; el TEXTO usa --texto/--texto-suave; los estados
+     usan --estado-*. Asi un solo override de [data-tema] repinta todo. */
+  --fondo: var(--color-gris-100);          /* fondo de pagina (body) */
+  --superficie: var(--color-blanco);       /* tarjetas, modales, barras, sidebar */
+  --superficie-alta: var(--color-blanco);  /* elevacion sobre superficie */
+  --texto: var(--color-gris-900);
+  --texto-suave: var(--color-gris-500);
+  --borde: var(--color-gris-200);
+  --titulo: var(--color-primario-oscuro);     /* h1/h2/h3 */
+  --texto-inverso: #FFFFFF;                /* texto que SIEMPRE es blanco (sobre el primario) */
+  --acento-luz: var(--color-primario);    /* acento luminoso (en claro = primario normal) */
+
+  /* Estados (claro = pasteles actuales) */
+  --estado-error-fondo: #FFEBEE;  --estado-error-texto: #B71C1C;  --estado-error-borde: #FFCDD2;
+  --estado-adv-fondo:   #FFF3E0;  --estado-adv-texto:   #E65100;  --estado-adv-borde:   #FFE082;
+  --estado-info-fondo:  #E3F2FD;  --estado-info-texto:  #1565C0;  --estado-info-borde:  #BBDEFB;
+  --estado-exito-fondo: #E8F5E9;  --estado-exito-texto: #2E7D32;  --estado-exito-borde: #C8E6C9;
+  --estado-neutro-fondo:#374151;  --estado-neutro-texto:#FFFFFF;
+
+  /* Suplencia (morado) */
+  --suplencia-fondo: #EDE7F6;  --suplencia-color: #5E35B1;  --suplencia-fuerte: #4527A0;  --suplencia-solido: #5E35B1;
+
+  /* Variantes que tambien cambian en oscuro */
+  --superficie-sutil: var(--color-gris-50);  /* fills gris muy claro (no es la pagina) */
+  --acento-suave: var(--color-primario-claro);   /* tints del primario (activos/hover) */
+  --badge-gris: var(--color-gris-500);       /* fondo de badges grises solidos (texto blanco) */
+  /* SOLIDO = color saturado para FONDO de boton (texto blanco encima); el -texto
+     se aclara en oscuro y NO sirve de fondo de boton, por eso van separados. */
+  --estado-error-solido: #B71C1C;  --estado-adv-solido: #eb943e;  --estado-info-solido: #1565C0;
+}
+
+/* ============================================================
+   TEMA OSCURO (OLED: sobre negro, el primario es la unica luz)
+   Se activa con <html data-tema="oscuro">. Solo redefine tokens
+   SEMANTICOS; los tokens de marca/grises base no cambian.
+   ============================================================ */
+[data-tema="oscuro"] {
+  --fondo: #05070A;
+  --superficie: #0C1015;
+  --superficie-alta: #141A21;
+  --texto: #EAF2EC;
+  --texto-suave: #9AAAA0;
+  --borde: #1E262E;
+  --titulo: var(--acento-luz);
+  --texto-inverso: #FFFFFF;
+  --acento-luz: #4C8DFF;
+
+  --estado-error-fondo: rgba(211,47,47,.16);  --estado-error-texto: #F09595;  --estado-error-borde: rgba(211,47,47,.38);
+  --estado-adv-fondo:   rgba(255,179,0,.14);  --estado-adv-texto:   #FAC775;  --estado-adv-borde:   rgba(255,179,0,.32);
+  --estado-info-fondo:  rgba(25,118,210,.18); --estado-info-texto:  #85B7EB;  --estado-info-borde:  rgba(25,118,210,.40);
+  --estado-exito-fondo: rgba(30,142,62,.18);  --estado-exito-texto: #7FCB98;  --estado-exito-borde: rgba(30,142,62,.42);
+  --estado-neutro-fondo:#222A32;              --estado-neutro-texto:#C9D3CC;
+
+  /* Estados del vehiculo aclarados para fondo oscuro. Medido: con estos
+     tonos el texto BLANCO encima cae a 2.0-3.1:1 (ilegible), por eso
+     --veh-tinta pasa a oscuro y sube a 6.2-9.6:1. */
+  --veh-operativo:     #3DD07A;
+  --veh-observacion:   #E5A93A;
+  --veh-alerta:        #FF8A4C;
+  --veh-critico:       #FF5A52;
+  --veh-no-operativo:  #7A8398;
+  --veh-tinta:         #0A1014;
+
+  --suplencia-fondo: rgba(126,87,194,.18);  --suplencia-color: #B7A6EC;  --suplencia-fuerte: #9579D6;  --suplencia-solido: #7E57C2;
+
+  --superficie-sutil: #141A21;
+  --acento-suave: rgba(19,80,216,.20);
+  --estado-error-solido: #C62828;  --estado-adv-solido: #C9701C;  --estado-info-solido: #2E7DD0;
+
+  /* Inputs en oscuro (los tokens ya eran semanticos: se sobre-escriben directo) */
+  --color-input-bg: #141A21;
+  --color-input-borde: #2C3644;
+  --badge-gris: #5A6470;
+
+  /* === RAMPA DE GRISES EN OSCURO ===
+     Clave para que todo el texto y los bordes que usan grises DIRECTOS
+     funcionen sin tocar cada archivo. Los grises oscuros (texto) se aclaran;
+     los grises claros (bordes/fills) se oscurecen. */
+  --color-gris-900: #EAF2EC;   /* texto principal -> claro */
+  --color-gris-700: #C2CCC6;   /* texto secundario */
+  --color-gris-500: #9AAAA0;   /* texto terciario / suave */
+  --color-gris-300: #2C3644;   /* bordes / fills fuertes -> oscuro */
+  --color-gris-200: #222A32;   /* bordes / fills sutiles -> oscuro */
+  --color-gris-100: #141A21;   /* fondos gris claro -> superficie */
+  --color-gris-50:  #0F141A;
+
+  /* Tokens de borde con valor fijo */
+  --borde-card: 2px solid #2C3644;
+  --color-separador: #2C3644;
+}

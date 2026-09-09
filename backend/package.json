@@ -1,0 +1,36 @@
+{
+  "name": "sisvia-backend",
+  "version": "1.0.0",
+  "description": "API de SISVIA - control de vehiculos y chequeo preoperacional",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js"
+  },
+  "keywords": [],
+  "author": "Juan Sebastián Martín Moncada",
+  "license": "UNLICENSED",
+  "type": "module",
+  "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
+    "@supabase/supabase-js": "^2.106.1",
+    "cloudinary": "^2.10.0",
+    "cors": "^2.8.6",
+    "docx": "^9.7.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "multer": "^2.1.1",
+    "node-cron": "^4.4.0",
+    "nodemailer": "^9.0.1",
+    "react": "^19.2.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

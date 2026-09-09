@@ -1,0 +1,84 @@
+/* ============================================================
+   COMPONENTE: Modal (base reutilizable)
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: var(--espacio-md);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-contenedor {
+  background: var(--superficie);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-xl);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: scaleIn 0.25s ease-out;
+}
+
+.modal-ancho-pequeno { max-width: 400px; }
+.modal-ancho-mediano { max-width: 560px; }
+.modal-ancho-grande { max-width: 800px; }
+
+.modal-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--espacio-lg) var(--espacio-xl);
+  border-bottom: var(--borde-fino);
+  position: sticky;
+  top: 0;
+  background: var(--superficie);
+  z-index: 1;
+}
+
+.modal-titulo {
+  margin: 0;
+  font-size: var(--tamano-xl);
+  color: var(--color-primario-oscuro);
+}
+
+.modal-cerrar {
+  width: 36px;
+  height: 36px;
+  background: var(--color-gris-100);
+  border: none;
+  border-radius: 50%;
+  color: var(--color-gris-700);
+  cursor: pointer;
+  transition: background var(--velocidad-media) var(--suavizado),
+              color var(--velocidad-media) var(--suavizado),
+              transform var(--velocidad-media) var(--suavizado),
+              box-shadow var(--velocidad-media) var(--suavizado);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.modal-cerrar:hover {
+  background: var(--color-rojo);
+  color: var(--color-blanco);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.18);
+}
+
+.modal-cuerpo {
+  padding: var(--espacio-xl);
+}
+
+@media (max-width: 640px) {
+  .modal-cabecera,
+  .modal-cuerpo {
+    padding: var(--espacio-md);
+  }
+}

@@ -1,0 +1,91 @@
+/* ============================================================
+   RESET CSS
+   ------------------------------------------------------------
+   Los navegadores (Chrome, Firefox, Safari) traen estilos por
+   defecto diferentes entre si. Este archivo los normaliza para
+   que todos partan del mismo punto y la app se vea igual en
+   cualquier navegador.
+   ============================================================ */
+
+/* Aplicar box-sizing a todo: el ancho/alto incluye padding y borde */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Quitar margenes y padding por defecto */
+html,
+body,
+h1, h2, h3, h4, h5, h6,
+p,
+ul, ol, li,
+figure,
+blockquote,
+dl, dd {
+  margin: 0;
+  padding: 0;
+}
+
+/* Listas sin viñetas por defecto */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Imagenes y videos responsivos por defecto */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Inputs y botones heredan la fuente del padre */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Botones sin estilos por defecto del navegador */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Links sin subrayado por defecto (lo agregamos cuando lo necesitemos) */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Suavizado de fuente para mejor lectura */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Permitir scroll suave al hacer clic en anclas */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Tablas */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Selección de texto con color primario */
+::selection {
+  background-color: var(--color-primario);
+  color: var(--color-blanco);
+}

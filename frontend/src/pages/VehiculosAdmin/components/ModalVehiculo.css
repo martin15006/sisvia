@@ -1,0 +1,546 @@
+.form-vehiculo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xl);
+}
+
+.form-vehiculo-seccion {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+    padding-bottom: var(--espacio-lg);
+    border-bottom: 1px dashed var(--color-separador);
+}
+
+.form-vehiculo-seccion:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.form-vehiculo-seccion-titulo {
+    font-size: var(--tamano-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-primario-oscuro);
+    font-weight: var(--peso-semibold);
+    margin: 0;
+}
+
+.form-vehiculo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--espacio-md);
+}
+
+.form-vehiculo-campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+}
+
+.form-vehiculo-label {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-700);
+}
+
+.form-vehiculo-input {
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-input-borde);
+    background: var(--color-input-bg);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    transition: all var(--velocidad-rapida);
+    font-family: inherit;
+}
+
+.form-vehiculo-input:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    background: var(--superficie);
+}
+
+.form-vehiculo-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.form-vehiculo-textarea {
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-input-borde);
+    background: var(--color-input-bg);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    transition: all var(--velocidad-rapida);
+}
+
+.form-vehiculo-textarea:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    background: var(--superficie);
+}
+
+.form-vehiculo-rango {
+    width: 100%;
+    accent-color: var(--color-primario);
+}
+
+.form-vehiculo-rango-criticidad {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 10px;
+    border-radius: var(--radio-xl);
+    background: linear-gradient(
+        to right,
+        var(--color-primario) 0%,
+        var(--color-primario) 19%,
+        var(--color-azul) 20%,
+        var(--color-azul) 39%,
+        var(--color-amarillo) 40%,
+        var(--color-amarillo) 59%,
+        var(--color-rojo) 60%,
+        var(--color-rojo) 89%,
+        var(--color-gris-500) 90%,
+        var(--color-gris-500) 100%
+    );
+    outline: none;
+    cursor: pointer;
+}
+
+.form-vehiculo-rango-criticidad::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--superficie);
+    border: 3px solid var(--color-gris-700);
+    cursor: pointer;
+    box-shadow: var(--sombra-md);
+    transition: transform var(--velocidad-rapida) var(--suavizado);
+}
+
+.form-vehiculo-rango-criticidad::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+.form-vehiculo-rango-criticidad::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--superficie);
+    border: 3px solid var(--color-gris-700);
+    cursor: pointer;
+    box-shadow: var(--sombra-md);
+}
+
+.form-vehiculo-rango-leyenda {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--espacio-xs);
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-500);
+    font-weight: var(--peso-medio);
+}
+
+.form-vehiculo-select-estado {
+    font-weight: var(--peso-bold);
+}
+
+.form-vehiculo-select-operativo { border-left: 5px solid var(--color-primario); }
+.form-vehiculo-select-observacion { border-left: 5px solid var(--color-azul); }
+.form-vehiculo-select-alerta { border-left: 5px solid var(--color-amarillo); }
+.form-vehiculo-select-critico { border-left: 5px solid var(--color-rojo); }
+.form-vehiculo-select-no_operativo { border-left: 5px solid var(--color-gris-500); }
+
+.form-vehiculo-ayuda {
+    color: var(--color-gris-500);
+    font-size: var(--tamano-sm);
+    margin: 0;
+}
+
+.form-vehiculo-ayuda-secundaria {
+    margin-top: var(--espacio-sm);
+    font-style: italic;
+}
+
+/* RUNT */
+.form-vehiculo-archivo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+}
+
+.form-vehiculo-archivo-boton {
+    padding: var(--espacio-md);
+    background: var(--color-gris-100);
+    border: 2px dashed var(--color-input-borde);
+    border-radius: var(--radio-md);
+    text-align: center;
+    color: var(--color-gris-700);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.form-vehiculo-archivo-limite {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-500);
+    font-weight: var(--peso-medio);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.form-vehiculo-archivo-boton:hover {
+    border-color: var(--color-primario);
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+}
+
+.form-vehiculo-archivo-seleccionado {
+    padding: var(--espacio-md);
+    background: var(--acento-suave);
+    border: 2px solid var(--color-primario);
+    border-radius: var(--radio-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--color-primario-oscuro);
+    font-weight: var(--peso-semibold);
+}
+
+.form-vehiculo-runt-actual {
+    padding: var(--espacio-md);
+    background: var(--color-input-bg);
+    border: 2px solid var(--color-input-borde);
+    border-radius: var(--radio-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--espacio-md);
+}
+
+.form-vehiculo-runt-actual-link {
+    color: var(--color-primario-oscuro);
+    font-weight: var(--peso-semibold);
+    text-decoration: none;
+    font-size: var(--tamano-sm);
+}
+
+.form-vehiculo-runt-actual-link:hover {
+    text-decoration: underline;
+}
+
+.form-vehiculo-quitar {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    border: none;
+    padding: 4px 12px;
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+}
+
+.form-vehiculo-quitar:hover { background: var(--estado-error-solido); }
+
+.form-vehiculo-link-runt {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--espacio-sm);
+    margin-top: var(--espacio-sm);
+    padding: var(--espacio-sm) var(--espacio-md);
+    background: linear-gradient(
+        135deg,
+        var(--color-primario-claro) 0%,
+        rgba(232, 245, 233, 0.5) 100%
+    );
+    border: 1px dashed var(--color-primario);
+    border-radius: var(--radio-md);
+    flex-wrap: wrap;
+    align-self: flex-start;
+    max-width: 100%;
+}
+
+.form-vehiculo-link-runt-texto {
+    color: var(--color-primario-oscuro);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-medio);
+}
+
+.form-vehiculo-link-runt-boton {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-xs);
+    background: var(--color-primario);
+    color: #FFFFFF;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border-radius: var(--radio-md);
+    text-decoration: none;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    transition: background var(--velocidad-rapida) var(--suavizado),
+                box-shadow var(--velocidad-rapida) var(--suavizado);
+    white-space: nowrap;
+    box-shadow: var(--sombra-sm);
+}
+
+.form-vehiculo-link-runt-boton:hover {
+    background: var(--color-primario-oscuro);
+    color: #FFFFFF;
+    box-shadow: var(--sombra-md);
+}
+
+.form-vehiculo-link-runt-boton:visited,
+.form-vehiculo-link-runt-boton:active {
+    color: #FFFFFF;
+}
+
+/* FOTOS */
+.form-vehiculo-foto-add {
+    padding: var(--espacio-md);
+    background: var(--color-gris-100);
+    border: 2px dashed var(--color-input-borde);
+    border-radius: var(--radio-md);
+    text-align: center;
+    color: var(--color-gris-700);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.form-vehiculo-foto-add:hover {
+    border-color: var(--color-primario);
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+}
+
+.form-vehiculo-fotos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--espacio-md);
+}
+
+.form-vehiculo-foto-item {
+    position: relative;
+    aspect-ratio: 4/3;
+    border-radius: var(--radio-md);
+    overflow: hidden;
+    border: 2px solid var(--color-input-borde);
+    background: var(--color-gris-100);
+}
+
+.form-vehiculo-foto-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.form-vehiculo-foto-principal-badge {
+    position: absolute;
+    top: var(--espacio-xs);
+    left: var(--espacio-xs);
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    padding: 2px 8px;
+    border-radius: var(--radio-xl);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    box-shadow: var(--sombra-sm);
+    z-index: 2;
+}
+
+.form-vehiculo-foto-quitar {
+    position: absolute;
+    top: var(--espacio-xs);
+    right: var(--espacio-xs);
+    width: 26px;
+    height: 26px;
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--sombra-md);
+    z-index: 2;
+    transition: transform var(--velocidad-rapida) var(--suavizado);
+}
+
+.form-vehiculo-foto-quitar:hover {
+    background: var(--estado-error-solido);
+    transform: scale(1.1);
+}
+
+.form-vehiculo-foto-controles {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 4px;
+    padding: var(--espacio-xs);
+    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+    opacity: 0;
+    transition: opacity var(--velocidad-rapida) var(--suavizado);
+}
+
+.form-vehiculo-foto-item:hover .form-vehiculo-foto-controles {
+    opacity: 1;
+}
+
+.form-vehiculo-foto-control {
+    flex: 1;
+    padding: 4px 6px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-gris-900);
+    border: none;
+    border-radius: var(--radio-sm);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    transition: background var(--velocidad-rapida) var(--suavizado);
+}
+
+.form-vehiculo-foto-control:hover {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+}
+
+.form-vehiculo-foto-control-peligro:hover {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+}
+
+/* MENSAJES */
+.form-vehiculo-error {
+    background: var(--estado-error-fondo);
+    color: var(--color-rojo);
+    padding: var(--espacio-md);
+    border-radius: var(--radio-md);
+    border-left: 4px solid var(--color-rojo);
+    font-size: var(--tamano-sm);
+}
+
+.form-vehiculo-info {
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+    padding: var(--espacio-md);
+    border-radius: var(--radio-md);
+    border-left: 4px solid var(--color-primario);
+    font-size: var(--tamano-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+}
+
+.form-vehiculo-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(14, 60, 163, 0.3);
+    border-top-color: var(--color-primario);
+    border-radius: 50%;
+    animation: rotate 0.8s linear infinite;
+}
+
+/* BOTONES */
+.form-vehiculo-acciones {
+    display: flex;
+    gap: var(--espacio-md);
+    justify-content: flex-end;
+    padding-top: var(--espacio-md);
+    border-top: var(--borde-fino);
+}
+
+.form-vehiculo-boton {
+    padding: var(--espacio-md) var(--espacio-xl);
+    border: none;
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    transition: all var(--velocidad-media) var(--suavizado);
+}
+
+.form-vehiculo-boton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.form-vehiculo-boton-cancelar {
+    background: var(--color-gris-100);
+    color: var(--color-gris-700);
+}
+
+.form-vehiculo-boton-cancelar:hover:not(:disabled) {
+    background: var(--color-separador);
+}
+
+.form-vehiculo-boton-crear {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    box-shadow: var(--sombra-sm);
+}
+
+.form-vehiculo-boton-crear:hover:not(:disabled) {
+    background: var(--color-primario-oscuro);
+    transform: translateY(-1px);
+    box-shadow: var(--sombra-md);
+}
+
+@media (max-width: 640px) {
+    .form-vehiculo-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-vehiculo-acciones {
+        flex-direction: column-reverse;
+    }
+    .form-vehiculo-boton {
+        width: 100%;
+    }
+    .form-vehiculo-foto-controles {
+        opacity: 1;
+    }
+}
+
+/* Casilla "Vehiculo especial (VIP)" — Pool de transporte (ver docs/diseno-pool-vip.md) */
+.form-vehiculo-campo-ancho {
+    grid-column: 1 / -1;
+}
+
+.form-vehiculo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie-sutil);
+    cursor: pointer;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-900);
+}
+
+.form-vehiculo-checkbox input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primario);
+    cursor: pointer;
+    flex-shrink: 0;
+}

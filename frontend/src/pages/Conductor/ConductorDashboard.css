@@ -1,0 +1,350 @@
+/* =================================================================
+   Dashboard del conductor — rediseño Tarea #103.
+   El header/footer vienen de ConductorLayout. Aqui solo el contenido.
+   ================================================================= */
+
+/* ===== Contenedor grande que agrupa hero + circulos + licencia ===== */
+.cond-contenedor {
+    background: var(--superficie);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-md);
+    padding: var(--espacio-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xl);
+}
+
+/* ===== HERO: foto + saludo (sin fondo propio porque va dentro del contenedor) ===== */
+.cond-hero {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding-bottom: var(--espacio-lg);
+    border-bottom: 2px dashed var(--color-gris-200);
+}
+
+.cond-hero-foto,
+.cond-hero-foto-placeholder {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--color-primario);
+    box-shadow: var(--sombra-md);
+    margin-bottom: var(--espacio-md);
+}
+
+.cond-hero-foto-placeholder {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    font-size: 48px;
+    font-weight: var(--peso-bold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-color: var(--color-primario-oscuro);
+}
+
+.cond-hero-saludo {
+    color: var(--color-gris-700);
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-semibold);
+}
+
+.cond-hero-nombre {
+    margin: 0;
+    color: var(--color-primario-oscuro);
+    font-size: 32px;
+    font-weight: var(--peso-bold);
+    line-height: 1.1;
+    text-transform: capitalize;
+}
+
+.cond-hero-rol {
+    color: var(--color-gris-900);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 6px;
+}
+
+/* Conductor del pool de transporte: pastilla morada (mismo color que el badge VIP) */
+.cond-hero-rol-pool {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: var(--espacio-sm);
+    padding: 6px 14px;
+    background: var(--suplencia-fondo);
+    color: var(--suplencia-color);
+    border: 2px solid var(--suplencia-color);
+    border-radius: var(--radio-xl);
+}
+
+/* Chip con la sede (icono + nombre) */
+.cond-hero-sede {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: var(--espacio-sm);
+    padding: 6px 14px;
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+    border: 2px solid var(--color-primario-oscuro);
+    border-radius: var(--radio-xl);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    box-shadow: var(--sombra-sm);
+}
+
+.cond-hero-fecha {
+    color: var(--color-gris-700);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    text-transform: capitalize;
+    margin-top: var(--espacio-sm);
+}
+
+/* Aviso de licencia vencida (Tarea #106): bloquea el inicio de chequeos */
+.cond-licencia-bloqueo {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    border: 2px solid var(--estado-error-texto);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-md) var(--espacio-lg);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    line-height: 1.4;
+    text-align: center;
+    box-shadow: var(--sombra-md);
+}
+
+/* ===== CIRCULOS centrales (mantengo el diseño original, refinado) ===== */
+.cond-circulos {
+    display: flex;
+    gap: var(--espacio-xl);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Circulo deshabilitado cuando la licencia esta vencida */
+.cond-circulo-bloqueado {
+    opacity: 0.45;
+    filter: grayscale(0.7);
+    cursor: not-allowed;
+}
+
+.cond-circulo-bloqueado:hover {
+    transform: none;
+    box-shadow: var(--sombra-md);
+}
+
+/* Mientras se verifica la disponibilidad de vehículos (antes de la aptitud) */
+.cond-circulo:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.cond-circulo:disabled:hover {
+    transform: none;
+    box-shadow: var(--sombra-md);
+}
+
+.cond-circulo {
+    width: 230px;
+    height: 230px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: var(--espacio-md);
+    cursor: pointer;
+    transition: all var(--velocidad-media) var(--suavizado);
+    font-family: inherit;
+    text-align: center;
+    box-shadow: var(--sombra-md);
+    border: 3px solid;
+}
+
+.cond-circulo:active {
+    transform: scale(0.96);
+}
+
+.cond-circulo:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: var(--sombra-lg);
+}
+
+.cond-circulo-pre {
+    background: var(--color-primario);
+    color: var(--color-blanco);
+    border-color: var(--color-primario-oscuro);
+}
+
+.cond-circulo-pre:hover {
+    background: var(--color-primario-oscuro);
+}
+
+.cond-circulo-post {
+    background: var(--superficie);
+    color: #1A1A1A;
+    border-color: var(--estado-adv-texto);
+}
+
+.cond-circulo-post:hover {
+    background: var(--estado-adv-fondo);
+}
+
+.cond-circulo-icono {
+    font-size: 60px;
+    line-height: 1;
+}
+
+.cond-circulo-titulo {
+    font-size: var(--tamano-lg);
+    font-weight: var(--peso-bold);
+    letter-spacing: 0.3px;
+}
+
+.cond-circulo-sub {
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    opacity: 0.95;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+/* ===== Bloque de licencia (sin fondo propio, dentro del contenedor) ===== */
+.cond-licencia {
+    padding-top: var(--espacio-lg);
+    border-top: 2px dashed var(--color-gris-200);
+}
+
+.cond-licencia-encabezado {
+    margin-bottom: var(--espacio-lg);
+    text-align: center;
+}
+
+.cond-licencia-titulo {
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    color: var(--color-primario-oscuro);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cond-licencia-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--espacio-lg);
+}
+
+.cond-licencia-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cond-licencia-label {
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cond-licencia-valor {
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+}
+
+/* Vencimiento con color segun nivel de urgencia */
+.cond-licencia-vencimiento {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    border: 2px solid;
+    align-self: flex-start;
+}
+
+.cond-licencia-vencimiento-normal {
+    background: var(--acento-suave);
+    color: var(--color-primario-oscuro);
+    border-color: var(--color-primario-oscuro);
+}
+
+.cond-licencia-vencimiento-urgente {
+    background: var(--estado-adv-solido);
+    color: #1A1A1A;
+    border-color: var(--estado-adv-solido);
+}
+
+.cond-licencia-vencimiento-critico {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    border-color: var(--estado-error-texto);
+}
+
+.cond-licencia-vencimiento-vencido {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+    border-color: var(--estado-error-texto);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+    .cond-hero-nombre {
+        font-size: 26px;
+    }
+    .cond-hero-foto,
+    .cond-hero-foto-placeholder {
+        width: 90px;
+        height: 90px;
+        font-size: 38px;
+    }
+    .cond-circulo {
+        width: 180px;
+        height: 180px;
+    }
+    .cond-circulo-icono {
+        font-size: 48px;
+    }
+    .cond-circulo-titulo {
+        font-size: var(--tamano-md);
+    }
+}
+
+/* Banner de suplencia (Pool · Paso 2): el pool esta reemplazando al Coordinador */
+.cond-suplencia-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--espacio-md);
+    flex-wrap: wrap;
+    background: var(--suplencia-fondo); border: 2px solid var(--suplencia-color); color: var(--suplencia-fuerte);
+    border-radius: var(--radio-md); padding: var(--espacio-md);
+    margin: var(--espacio-md) 0;
+}
+.cond-suplencia-texto { font-size: var(--tamano-sm); line-height: 1.4; }
+.cond-suplencia-boton {
+    background: var(--suplencia-solido); color: #fff; border: none; border-radius: var(--radio-md);
+    padding: 10px 16px; font-weight: var(--peso-bold); font-size: var(--tamano-sm); cursor: pointer;
+    white-space: nowrap;
+}
+.cond-suplencia-boton:hover { background: var(--suplencia-fuerte); }
+
+/* === Modo oscuro === */
+/* El circulo "post-operacional" usa fondo --superficie (claro en claro, oscuro en oscuro).
+   En claro su texto #1A1A1A casi-negro va perfecto; en oscuro el fondo se vuelve oscuro
+   y ese texto se pierde -> lo subimos a --texto (claro en oscuro). */
+[data-tema="oscuro"] .cond-circulo-post {
+    color: var(--texto);
+}

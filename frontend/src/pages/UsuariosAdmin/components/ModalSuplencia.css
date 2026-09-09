@@ -1,0 +1,48 @@
+.modal-suplencia { display: flex; flex-direction: column; gap: var(--espacio-sm); }
+.modal-suplencia-cargando { color: var(--color-gris-700); }
+.modal-suplencia-info { color: var(--color-gris-900); font-size: var(--tamano-sm); line-height: 1.5; }
+.modal-suplencia-label { font-size: var(--tamano-sm); font-weight: var(--peso-semibold); margin-top: var(--espacio-sm); }
+.modal-suplencia-input {
+    padding: 10px 12px; border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md); font-size: var(--tamano-sm);
+}
+.modal-suplencia-ayuda { color: var(--color-gris-700); font-size: var(--tamano-xs); }
+.modal-suplencia-error {
+    background: var(--estado-error-fondo); color: var(--estado-error-texto); padding: 8px 12px;
+    border-radius: var(--radio-md); font-size: var(--tamano-sm);
+}
+.modal-suplencia-acciones { display: flex; gap: var(--espacio-sm); justify-content: flex-end; margin-top: var(--espacio-md); }
+.modal-suplencia-acciones button {
+    padding: 10px 16px; border-radius: var(--radio-md); font-weight: var(--peso-semibold);
+    font-size: var(--tamano-sm); cursor: pointer; border: none;
+}
+.modal-suplencia-boton-cancelar { background: var(--color-gris-100); color: var(--color-gris-900); }
+.modal-suplencia-boton-activar { background: var(--suplencia-solido); color: var(--texto-inverso); }
+.modal-suplencia-boton-fin { background: var(--estado-error-solido); color: var(--texto-inverso); }
+.modal-suplencia-acciones button:disabled { opacity: 0.6; cursor: progress; }
+
+/* Quien activo la suplencia + cuando + motivo */
+.modal-suplencia-meta {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+    background: var(--superficie-sutil);
+    padding: 8px 12px;
+    border-radius: var(--radio-md);
+    line-height: 1.5;
+}
+
+/* Selector de alcance (una sede / toda la regional) */
+.modal-suplencia-radios {
+    display: flex;
+    gap: var(--espacio-md);
+    flex-wrap: wrap;
+}
+.modal-suplencia-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+    cursor: pointer;
+}
+.modal-suplencia-radio input { accent-color: var(--suplencia-solido); cursor: pointer; }

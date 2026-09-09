@@ -1,0 +1,194 @@
+.toast {
+    position: fixed;
+    background: var(--superficie);
+    border-radius: var(--radio-md);
+    box-shadow: var(--sombra-lg);
+    padding: var(--espacio-md) var(--espacio-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+    z-index: var(--z-notificacion);
+    min-width: 280px;
+    max-width: 480px;
+    border: var(--borde-card);
+    overflow: hidden;
+}
+
+.toast-pos-abajo-derecha {
+    bottom: var(--espacio-xl);
+    right: var(--espacio-xl);
+    animation: slideInRight 0.3s var(--suavizado);
+}
+
+.toast-pos-arriba-medio {
+    top: var(--espacio-xl);
+    left: 50%;
+    transform: translateX(-50%);
+    animation: slideInDown 0.3s var(--suavizado);
+}
+
+.toast-saliendo.toast-pos-abajo-derecha {
+    animation: slideOutRight 0.3s var(--suavizado) forwards;
+}
+
+.toast-saliendo.toast-pos-arriba-medio {
+    animation: slideOutUp 0.3s var(--suavizado) forwards;
+}
+
+.toast-saliendo .toast-progreso {
+    animation-play-state: paused;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -100%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes slideOutUp {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -100%);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(110%);
+    }
+}
+
+.toast-icono {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-blanco);
+    flex-shrink: 0;
+    box-shadow: var(--sombra-sm);
+}
+
+.toast-exito .toast-icono {
+    background: var(--color-primario);
+}
+
+.toast-error .toast-icono {
+    background: var(--color-rojo);
+}
+
+.toast-advertencia .toast-icono {
+    background: var(--color-naranja);
+}
+
+.toast-info .toast-icono {
+    background: var(--color-azul);
+}
+
+.toast-mensaje {
+    flex: 1;
+    color: var(--color-gris-900);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    line-height: 1.4;
+}
+
+.toast-cerrar {
+    background: transparent;
+    border: none;
+    color: var(--color-gris-500);
+    cursor: pointer;
+    padding: var(--espacio-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radio-sm);
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    flex-shrink: 0;
+}
+
+.toast-cerrar:hover {
+    color: var(--color-gris-900);
+    background: var(--color-gris-100);
+}
+
+.toast-progreso {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background: var(--color-primario);
+    transform-origin: left;
+    animation: toastProgreso 3.5s linear forwards;
+}
+
+.toast-error .toast-progreso {
+    background: var(--color-rojo);
+}
+
+.toast-advertencia .toast-progreso {
+    background: var(--color-naranja);
+}
+
+.toast-info .toast-progreso {
+    background: var(--color-azul);
+}
+
+@keyframes toastProgreso {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+@media (max-width: 640px) {
+    .toast-pos-abajo-derecha {
+        bottom: var(--espacio-md);
+        right: var(--espacio-md);
+        left: var(--espacio-md);
+        min-width: 0;
+        max-width: none;
+    }
+    .toast-pos-arriba-medio {
+        top: var(--espacio-md);
+        left: var(--espacio-md);
+        right: var(--espacio-md);
+        transform: none;
+        min-width: 0;
+        max-width: none;
+    }
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @keyframes slideOutUp {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-100%);
+        }
+    }
+}

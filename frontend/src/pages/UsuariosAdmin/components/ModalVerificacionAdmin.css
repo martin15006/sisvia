@@ -1,0 +1,229 @@
+/* Modal de verificacion de admin (cambiar correo/cedula). Sigue convencion seccion 17:
+   bordes 2px+, sombras md+, texto gris-900, sin matices claros. */
+
+.verifadmin-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+/* Bloque informativo arriba con el usuario que se esta editando */
+.verifadmin-usuario {
+  background: var(--superficie-sutil);
+  border: 2px solid var(--color-gris-300);
+  border-radius: var(--radio-md);
+  padding: var(--espacio-sm) var(--espacio-md);
+}
+
+.verifadmin-usuario-label {
+  font-size: var(--tamano-xs);
+  color: var(--color-gris-900);
+  font-weight: var(--peso-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.verifadmin-usuario-nombre {
+  margin-top: 2px;
+  font-size: var(--tamano-md);
+  color: var(--color-gris-900);
+  font-weight: var(--peso-bold);
+}
+
+/* Aviso amarillo de precaucion (solo para cedula) - alto contraste */
+.verifadmin-aviso-critico {
+  background: var(--color-amarillo);
+  color: #1A1A1A;
+  border: 2px solid #1A1A1A;
+  border-radius: var(--radio-md);
+  padding: 10px 14px;
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-semibold);
+  line-height: 1.4;
+  box-shadow: var(--sombra-md);
+}
+
+/* Campos */
+.verifadmin-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.verifadmin-campo-password {
+  margin-top: var(--espacio-xs);
+  padding-top: var(--espacio-md);
+  border-top: 2px dashed var(--color-gris-300);
+}
+
+.verifadmin-label {
+  font-size: var(--tamano-xs);
+  color: var(--color-gris-900);
+  font-weight: var(--peso-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.verifadmin-input {
+  padding: 10px 12px;
+  border: 2px solid var(--color-gris-300);
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-md);
+  background: var(--superficie);
+  color: var(--color-gris-900);
+  font-family: inherit;
+  transition: all var(--velocidad-rapida) var(--suavizado);
+}
+
+.verifadmin-input:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.verifadmin-input-readonly {
+  background: var(--superficie-sutil);
+  color: var(--color-gris-700);
+}
+
+.verifadmin-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.verifadmin-hint {
+  margin-top: 4px;
+  font-size: var(--tamano-xs);
+  color: var(--color-gris-900);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Aviso temporal cuando se intenta escribir un caracter no permitido en la
+   cedula. Mismo color peach + borde dorado que en ModalCrear/Editar para
+   mantener consistencia visual con el resto del formulario. */
+.verifadmin-aviso-validacion {
+  display: block;
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: var(--estado-adv-solido);
+  color: #1A1A1A;
+  border: 2px solid #e29a2d;
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-semibold);
+  line-height: 1.35;
+  box-shadow: var(--sombra-md);
+  animation: verifadmin-aviso-aparecer 0.18s ease-out;
+}
+
+@keyframes verifadmin-aviso-aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Error en el modal */
+.verifadmin-error {
+  background: var(--estado-error-solido);
+  color: #FFFFFF;
+  border: 2px solid #7F0000;
+  border-radius: var(--radio-md);
+  padding: 10px 14px;
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-semibold);
+  box-shadow: var(--sombra-md);
+}
+
+/* Botones */
+.verifadmin-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--espacio-sm);
+  padding-top: var(--espacio-sm);
+  border-top: 1px solid var(--color-gris-300);
+}
+
+.verifadmin-boton {
+  padding: 10px 18px;
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-bold);
+  cursor: pointer;
+  transition: all var(--velocidad-rapida) var(--suavizado);
+  font-family: inherit;
+  border: 2px solid;
+  letter-spacing: 0.3px;
+}
+
+.verifadmin-boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.verifadmin-boton-cancelar {
+  background: var(--color-gris-200);
+  color: var(--color-gris-900);
+  border-color: var(--color-gris-300);
+}
+
+.verifadmin-boton-cancelar:hover:not(:disabled) {
+  background: var(--color-gris-300);
+}
+
+.verifadmin-boton-confirmar {
+  background: var(--color-primario);
+  color: var(--color-blanco);
+  border-color: var(--color-primario-oscuro);
+  box-shadow: var(--sombra-sm);
+}
+
+.verifadmin-boton-confirmar:hover:not(:disabled) {
+  background: var(--color-primario-oscuro);
+  transform: translateY(-1px);
+  box-shadow: var(--sombra-md);
+}
+
+/* Confirmar para acciones criticas (cedula): mas serio */
+.verifadmin-boton-confirmar-critico {
+  background: #E65100;
+  color: var(--color-blanco);
+  border-color: #BF360C;
+  box-shadow: var(--sombra-sm);
+}
+
+.verifadmin-boton-confirmar-critico:hover:not(:disabled) {
+  background: #BF360C;
+  transform: translateY(-1px);
+  box-shadow: var(--sombra-md);
+}
+
+/* === Modo oscuro === */
+/* Aviso naranja solido: en oscuro el solido se oscurece, asi que el texto
+   oscuro y el borde dorado pasan a tonos legibles sobre el. */
+[data-tema="oscuro"] .verifadmin-aviso-validacion {
+  color: var(--texto-inverso);
+  border-color: var(--estado-adv-texto);
+}
+
+/* Error rojo solido: el borde rojo muy oscuro se aclara para verse en oscuro. */
+[data-tema="oscuro"] .verifadmin-error {
+  border-color: var(--estado-error-texto);
+}
+
+/* Boton confirmar critico: gradiente naranja fuerte aplanado a un naranja
+   solido apropiado para oscuro (texto sigue blanco). */
+[data-tema="oscuro"] .verifadmin-boton-confirmar-critico {
+  background: var(--estado-adv-solido);
+  border-color: var(--estado-adv-texto);
+}
+
+[data-tema="oscuro"] .verifadmin-boton-confirmar-critico:hover:not(:disabled) {
+  background: var(--estado-adv-texto);
+  color: var(--color-negro);
+}
