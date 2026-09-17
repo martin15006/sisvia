@@ -267,7 +267,7 @@ function Dashboard() {
                         {stats.no_pueden_salir.map((v) => (
                             <button
                                 key={v.id}
-                                className={`dashboard-bloqueado dashboard-bloqueado-${v.bloqueo}`}
+                                className="dashboard-bloqueado"
                                 onClick={() => navigate(`/admin/vehiculos/${v.id}`)}
                                 title="Ver detalle del vehículo"
                             >
@@ -281,14 +281,6 @@ function Dashboard() {
                                 </span>
                                 <span className="dashboard-bloqueado-placa">{v.placa}</span>
                                 <span className="dashboard-bloqueado-motivo">{v.detalle}</span>
-                                {v.bloqueo === "blando" && (
-                                    <span
-                                        className="dashboard-bloqueado-aviso"
-                                        title="El sistema todavía le permite arrancar un chequeo"
-                                    >
-                                        no se le impide
-                                    </span>
-                                )}
                                 <span className="dashboard-bloqueado-sede">{v.sede_nombre}</span>
                             </button>
                         ))}

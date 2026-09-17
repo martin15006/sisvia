@@ -504,7 +504,7 @@
 
 .dashboard-bloqueado {
   display: grid;
-  grid-template-columns: 116px 100px 1fr auto auto;
+  grid-template-columns: 116px 100px 1fr auto;
   align-items: center;
   gap: var(--espacio-md);
   width: 100%;
@@ -566,26 +566,13 @@
   white-space: nowrap;
 }
 
-/* Aviso honesto: su estado dice que no deberia salir, pero hoy el
-   sistema le deja arrancar el chequeo igual (solo bloquean de verdad
-   el vehiculo desactivado y los documentos vencidos). */
-.dashboard-bloqueado-aviso {
-  padding: 2px 8px;
-  border: 1px dashed var(--borde);
-  border-radius: var(--radio-sm);
-  font-size: var(--tamano-xs);
-  color: var(--texto-suave);
-  white-space: nowrap;
-}
-
 @media (max-width: 860px) {
   .dashboard-bloqueado {
     grid-template-columns: 1fr auto;
     grid-template-areas:
       "banda sede"
       "placa placa"
-      "motivo motivo"
-      "aviso aviso";
+      "motivo motivo";
     align-items: start;
     row-gap: var(--espacio-sm);
   }
@@ -593,7 +580,6 @@
   .dashboard-bloqueado-sede   { grid-area: sede; }
   .dashboard-bloqueado-placa  { grid-area: placa; }
   .dashboard-bloqueado-motivo { grid-area: motivo; }
-  .dashboard-bloqueado-aviso  { grid-area: aviso; justify-self: start; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -11,6 +11,7 @@
 
 import { supabase } from '../config/supabase.js';
 import { obtenerScope, aplicarScope } from '../services/scope.service.js';
+import { motivoBloqueo, GRAVEDAD_BLOQUEO } from '../services/bloqueoVehiculo.js';
 
 // Helper: devuelve el ISO string de la medianoche de hoy en hora local
 const inicioDelDiaISO = () => {
@@ -195,13 +196,9 @@ export const obtenerStatsDashboard = async (req, res) => {
         // 4) "No pueden salir" — una sola lista ordenada por gravedad
         // ====================================================================
         // Reemplaza el tener que leer cuatro grupos sueltos para saber que te
-        // frena hoy. Distingue dos cosas que NO son lo mismo:
-        //   bloqueo 'duro'   -> el sistema le impide arrancar el chequeo hoy
-        //                       (vehiculo desactivado, o SOAT/RTM/extintor vencido:
-        //                        ver chequeos.service.js -> primerDocumentoVencido)
-        //   bloqueo 'blando' -> su estado dice que no deberia salir, pero HOY el
-        //                       sistema lo deja arrancar igual. Es una brecha real
-        //                       del producto, no un descuido de esta consulta.
+        // frena hoy. Usa la MISMA regla que frena al conductor al iniciar
+        // (services/bloqueoVehiculo.js): lo que esta en esta lista es exactamente
+        // lo que el sistema no deja sacar, ni mas ni menos.
         let bloqueadosQuery = supabase
             .from('vehiculos')
             .select(`
@@ -212,58 +209,23 @@ export const obtenerStatsDashboard = async (req, res) => {
         bloqueadosQuery = aplicarScope(bloqueadosQuery, scope);
         const { data: candidatosRaw } = await bloqueadosQuery;
 
-        const hoySolo = new Date(desdeHoy);
-        hoySolo.setHours(0, 0, 0, 0);
-
-        // Devuelve el primer documento vencido del vehiculo, o null.
-        // Espejo de primerDocumentoVencido() en chequeos.service.js: si cambian
-        // las reglas alla, hay que cambiarlas aca.
-        const documentoVencido = (v) => {
-            const docs = [
-                ['SOAT', v.soat_vencimiento],
-                ['revisión técnico-mecánica', v.rtm_vencimiento],
-                ['extintor', v.extintor_vencimiento],
-            ];
-            for (const [nombre, fecha] of docs) {
-                if (!fecha) continue;
-                const f = new Date(fecha);
-                f.setHours(0, 0, 0, 0);
-                if (f < hoySolo) {
-                    const dias = Math.floor((hoySolo - f) / (1000 * 60 * 60 * 24));
-                    return { nombre, fecha, dias_vencido: dias };
-                }
-            }
-            return null;
-        };
-
-        // Menor numero = mas grave. Ordena la lista.
-        const GRAVEDAD = { desactivado: 1, documento_vencido: 2, no_operativo: 3, critico: 4 };
-
+        const hoy = new Date(desdeHoy);
         const noPuedenSalir = [];
         for (const v of candidatosRaw || []) {
-            const sedeNombre = v.sede?.nombre || '—';
-            const base = { id: v.id, placa: v.placa, tipo: v.tipo, estado: v.estado, sede_nombre: sedeNombre };
-
-            if (!v.activo) {
-                noPuedenSalir.push({ ...base, motivo: 'desactivado', bloqueo: 'duro',
-                    detalle: 'Vehículo desactivado' });
-                continue;
-            }
-            const doc = documentoVencido(v);
-            if (doc) {
-                noPuedenSalir.push({ ...base, motivo: 'documento_vencido', bloqueo: 'duro',
-                    detalle: `${doc.nombre} vencido hace ${doc.dias_vencido} ${doc.dias_vencido === 1 ? 'día' : 'días'}` });
-                continue;
-            }
-            if (v.estado === 'no_operativo' || v.estado === 'critico') {
-                noPuedenSalir.push({ ...base, motivo: v.estado, bloqueo: 'blando',
-                    detalle: v.estado === 'critico'
-                        ? 'Estado crítico tras el último chequeo'
-                        : 'Marcado como no operativo' });
-            }
+            const bloqueo = motivoBloqueo(v, 'preoperacional', hoy);
+            if (!bloqueo) continue;
+            noPuedenSalir.push({
+                id: v.id,
+                placa: v.placa,
+                tipo: v.tipo,
+                estado: v.estado,
+                sede_nombre: v.sede?.nombre || '—',
+                motivo: bloqueo.razon,
+                detalle: bloqueo.detalle,
+            });
         }
         noPuedenSalir.sort((a, b) =>
-            (GRAVEDAD[a.motivo] || 9) - (GRAVEDAD[b.motivo] || 9) || a.placa.localeCompare(b.placa)
+            (GRAVEDAD_BLOQUEO[a.motivo] || 9) - (GRAVEDAD_BLOQUEO[b.motivo] || 9) || a.placa.localeCompare(b.placa)
         );
 
         // ====================================================================

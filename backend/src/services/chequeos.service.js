@@ -1,5 +1,6 @@
 import { supabase } from "../config/supabase.js";
 import { obtenerScope } from "./scope.service.js";
+import { motivoBloqueo } from "./bloqueoVehiculo.js";
 
 // Trae todas las preguntas de aptitud activas indexadas por id para evaluacion rapida
 // Incluye el texto de la pregunta para devolver mensajes claros al frontend
@@ -114,30 +115,6 @@ const verificarVehiculoParaChequeo = async (vehiculoId, sedeDelConductor, esPool
     return { valido: true, vehiculo };
 };
 
-// Documentos legales del vehiculo que, vencidos, impiden circular. Devuelve el
-// PRIMERO vencido { nombre, fechaLegible } o null si estan todos al dia.
-const primerDocumentoVencido = (vehiculo) => {
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    const docs = [
-        ["SOAT", vehiculo.soat_vencimiento],
-        ["revisión técnico-mecánica (RTM)", vehiculo.rtm_vencimiento],
-        ["extintor", vehiculo.extintor_vencimiento],
-    ];
-    for (const [nombre, fecha] of docs) {
-        if (!fecha) continue;
-        const v = new Date(fecha);
-        v.setHours(0, 0, 0, 0);
-        if (v < hoy) {
-            return {
-                nombre,
-                fechaLegible: v.toLocaleDateString("es-CO", { day: "2-digit", month: "long", year: "numeric" }),
-            };
-        }
-    }
-    return null;
-};
-
 // Decide si este chequeo cuenta como "oficial" del dia (el primer preoperacional del dia para el vehiculo)
 const esPrimerChequeoDelDia = async (vehiculoId, tipo) => {
     if (tipo !== "preoperacional") return false;
@@ -248,21 +225,25 @@ export const iniciarChequeo = async ({
         };
     }
 
-    // 2.5 Documentos del vehiculo vencidos (SOAT/RTM/extintor): bloquean el
-    // PREOPERACIONAL — legalmente no puede circular. No bloquea el postoperacional
-    // porque el recorrido ya ocurrio y hay que poder registrar el cierre.
-    // Sin aviso al admin: el Coordinador ya se entera por el aviso diario de
-    // vencimientos; aqui solo se le impide salir al conductor.
-    if (tipo === "preoperacional") {
-        const doc = primerDocumentoVencido(verif.vehiculo);
-        if (doc) {
-            return {
-                exito: false,
-                status: 403,
-                error: `No puedes operar este vehículo: el ${doc.nombre} está vencido (desde el ${doc.fechaLegible}). Avísale al Coordinador de sede para que lo renueve.`,
-                razon: "documento_vencido",
-            };
-        }
+    // 2.5 Estado y documentos del vehiculo (RN-01 del pacto identidad-y-correcciones):
+    // documento vencido, no operativo y critico bloquean el PREOPERACIONAL. El
+    // postoperacional no se bloquea porque el recorrido ya ocurrio y hay que poder
+    // registrar el cierre. La regla vive en bloqueoVehiculo.js, compartida con la
+    // lista "No pueden salir" del panel para que nunca digan cosas distintas.
+    //
+    // RN-02: se evalua con verif.vehiculo, recien leido de la base en este mismo
+    // pedido; si el coordinador cambio el estado hace un segundo, ya cuenta.
+    //
+    // Sin registro en intentos_chequeo_bloqueado: su CHECK de razones no admite
+    // estas, y el pacto lo dejo afuera a proposito.
+    const bloqueo = motivoBloqueo(verif.vehiculo, tipo);
+    if (bloqueo) {
+        return {
+            exito: false,
+            status: 403,
+            error: bloqueo.mensaje,
+            razon: bloqueo.razon,
+        };
     }
 
     // 3. Calcular es_oficial

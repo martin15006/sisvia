@@ -86,7 +86,7 @@ export const verificarCorreo = async () => {
 const layout = (titulo, cuerpoHtml) => `
 <div style="margin:0;padding:0;background:#f1efe8;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;">
   <div style="max-width:640px;margin:0 auto;background:#ffffff;">
-    <div style="background:${COLORES.verde};padding:18px 24px;display:flex;align-items:center;">
+    <div style="background:${COLORES.primario};padding:18px 24px;display:flex;align-items:center;">
       <img src="cid:logomarca" width="42" height="42" alt="SISVIA" style="background:#fff;border-radius:6px;padding:4px;vertical-align:middle;" />
       <span style="color:#fff;font-size:18px;font-weight:bold;margin-left:12px;vertical-align:middle;">${titulo}</span>
     </div>
@@ -100,7 +100,7 @@ const layout = (titulo, cuerpoHtml) => `
 </div>`;
 
 const boton = (texto, url) => url
-    ? `<a href="${url}" style="display:inline-block;margin-top:16px;background:${COLORES.verde};color:#fff;text-decoration:none;padding:10px 22px;border-radius:8px;font-weight:bold;">${texto}</a>`
+    ? `<a href="${url}" style="display:inline-block;margin-top:16px;background:${COLORES.primario};color:#fff;text-decoration:none;padding:10px 22px;border-radius:8px;font-weight:bold;">${texto}</a>`
     : '';
 
 // Correo inmediato de falla critica (vehiculo no operativo).
@@ -167,7 +167,7 @@ export const plantillaInforme = ({ deQuien, cargo, area, asunto, mensaje, resume
     </tr></table>` : '';
     const cuerpo = `
     <div style="font-size:13px;color:#5f5e5a;">Informe enviado por <b>${deQuien}</b>${cargo ? ` · ${cargo}` : ''}${area ? ` · ${area}` : ''}.</div>
-    <div style="font-size:17px;font-weight:bold;color:${COLORES.verdeOscuro};margin-top:12px;">${asunto || 'Informe'}</div>
+    <div style="font-size:17px;font-weight:bold;color:${COLORES.primarioOscuro};margin-top:12px;">${asunto || 'Informe'}</div>
     <div style="margin-top:8px;font-size:14px;white-space:pre-line;">${(mensaje || '').replace(/</g, '&lt;')}</div>
     ${bloqueResumen}`;
     return layout('Informe de un administrador', cuerpo);
