@@ -26,7 +26,7 @@
     gap: var(--espacio-sm);
     border-bottom: 2px solid var(--color-gris-200);
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     flex-shrink: 0;
     min-height: 73px;  /* mismo alto que el header del main para alineacion */
     box-sizing: border-box;
@@ -51,13 +51,13 @@
     font-size: var(--tamano-md);
     font-weight: var(--peso-bold);
     line-height: 1.2;
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .sidebar-cabecera-org {
     font-size: var(--tamano-xs);
     opacity: 0.9;
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 /* ===== Lista de navegacion ===== */
@@ -99,14 +99,14 @@
 
 .sidebar-item--activo {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border-color: var(--color-primario-oscuro);
     box-shadow: var(--sombra-sm);
 }
 
 .sidebar-item--activo:hover {
-    background: var(--color-primario-oscuro);
-    color: var(--color-blanco);
+    background: var(--color-primario-hover);
+    color: var(--texto-sobre-marca);
 }
 
 .sidebar-item-icono {

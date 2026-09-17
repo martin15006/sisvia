@@ -53,7 +53,7 @@ export const fechaHora = (iso) => {
 };
 
 // Etiquetas legibles (espejo de las del frontend) para los documentos.
-const TIPOS_VEHICULO = { camion: 'Camión', camioneta: 'Camioneta', tractocamion: 'Tractocamión', microbus: 'Microbús', buseta: 'Buseta', bus: 'Bus' };
+const TIPOS_VEHICULO = { camion: 'Camión', camioneta: 'Camioneta', tractocamion: 'Tractocamión', automovil: 'Automóvil', motocicleta: 'Motocicleta', motocarro: 'Motocarro', microbus: 'Microbús', buseta: 'Buseta', bus: 'Bus' };
 export const etiquetaTipo = (t) => TIPOS_VEHICULO[t] || t || '—';
 
 const ESTADOS_VEHICULO = { operativo: 'Operativo', observacion: 'Observación', alerta: 'Alerta', critico: 'Crítico', no_operativo: 'No operativo' };

@@ -23,7 +23,7 @@
     padding: 10px 18px;
     border: 2px solid var(--color-primario-oscuro);
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
     font-weight: var(--peso-bold);
@@ -33,7 +33,7 @@
     transition: all var(--velocidad-rapida) var(--suavizado);
 }
 .dashboard-boton-informe:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-1px);
     box-shadow: var(--sombra-sm);
 }
@@ -285,7 +285,7 @@
 
 .dashboard-grupo-cantidad {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     font-size: var(--tamano-xs);
     font-weight: var(--peso-bold);
     padding: 2px 10px;

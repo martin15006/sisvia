@@ -11,7 +11,8 @@
     font-family: inherit;
 }
 .boton-exportar-pdf { background: var(--color-rojo); }
-.boton-exportar-word { background: var(--color-primario); }
+/* Mas especifico que ".boton-exportar button" (letra blanca): sobre el naranja va negra. */
+.boton-exportar .boton-exportar-word { background: var(--color-primario); color: var(--texto-sobre-marca); }
 .boton-exportar button:hover:not(:disabled) { filter: brightness(0.92); }
 .boton-exportar button:disabled { opacity: 0.6; cursor: progress; }
 .boton-exportar-compacto button { padding: 4px 10px; font-size: var(--tamano-xs); }

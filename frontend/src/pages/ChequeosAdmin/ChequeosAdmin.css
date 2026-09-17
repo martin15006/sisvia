@@ -381,7 +381,7 @@
 
 .cheqadmin-badge-oficial {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .cheqadmin-badge-rechequeo {
@@ -460,11 +460,11 @@
     letter-spacing: 0.5px;
 }
 
-.cheqadmin-resultado-operativo { background: var(--color-primario); }
-.cheqadmin-resultado-observacion { background: var(--color-azul); }
-.cheqadmin-resultado-alerta { background: var(--color-amarillo); color: var(--color-gris-900); }
-.cheqadmin-resultado-critico { background: var(--color-rojo); }
-.cheqadmin-resultado-no_operativo { background: var(--estado-neutro-fondo); }
+.cheqadmin-resultado-operativo { background: var(--veh-operativo); color: var(--veh-tinta); }
+.cheqadmin-resultado-observacion { background: var(--veh-observacion); color: var(--veh-tinta); }
+.cheqadmin-resultado-alerta { background: var(--veh-alerta); color: var(--veh-tinta); }
+.cheqadmin-resultado-critico { background: var(--veh-critico); color: var(--veh-tinta); }
+.cheqadmin-resultado-no_operativo { background: var(--veh-no-operativo); color: var(--veh-tinta); }
 
 .cheqadmin-card-resumen {
     display: flex;
@@ -525,7 +525,7 @@
 .cheqadmin-paginacion button {
     padding: 10px 18px;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: none;
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -537,7 +537,7 @@
 }
 
 .cheqadmin-paginacion button:hover:not(:disabled) {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     box-shadow: var(--sombra-md);
     transform: translateY(-1px);
 }

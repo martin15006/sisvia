@@ -118,7 +118,7 @@
 
 .vehiculos-admin-boton-crear {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: none;
     padding: var(--espacio-md) var(--espacio-xl);
     border-radius: var(--radio-md);
@@ -130,7 +130,7 @@
 }
 
 .vehiculos-admin-boton-crear:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-2px);
     box-shadow: var(--sombra-lg);
 }
@@ -356,11 +356,11 @@
     box-shadow: var(--sombra-md);
 }
 
-.vehiculo-card-badge-verde { background: var(--color-primario); color: var(--color-blanco); }
-.vehiculo-card-badge-azul { background: var(--color-azul); color: var(--color-blanco); }
-.vehiculo-card-badge-amarillo { background: var(--color-amarillo); color: var(--color-gris-900); }
-.vehiculo-card-badge-rojo { background: var(--color-rojo); color: var(--color-blanco); animation: pulse 2s infinite; }
-.vehiculo-card-badge-oscuro { background: var(--estado-neutro-fondo); color: var(--color-blanco); }
+.vehiculo-card-badge-verde { background: var(--veh-operativo); color: var(--veh-tinta); }
+.vehiculo-card-badge-azul { background: var(--veh-observacion); color: var(--veh-tinta); }
+.vehiculo-card-badge-amarillo { background: var(--veh-alerta); color: var(--veh-tinta); }
+.vehiculo-card-badge-rojo { background: var(--veh-critico); color: var(--veh-tinta); animation: pulse 2s infinite; }
+.vehiculo-card-badge-oscuro { background: var(--veh-no-operativo); color: var(--veh-tinta); }
 .vehiculo-card-badge-gris { background: var(--badge-gris); color: var(--color-blanco); }
 
 /* INFO */
@@ -432,8 +432,11 @@
     transition: all var(--velocidad-rapida) var(--suavizado);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    flex: 1;
+    /* No encoger por debajo del texto: IBM Plex es mas ancha y "DESACTIVAR"
+       se cortaba. Si no caben, bajan a la fila siguiente. */
+    flex: 1 0 auto;
     min-width: 80px;
+    white-space: nowrap;
 }
 
 .vehiculo-card-accion:hover {
@@ -446,7 +449,7 @@
 .vehiculo-card-accion-warning:hover { background: var(--color-naranja); color: var(--color-blanco); border-color: var(--color-naranja); }
 
 .vehiculo-card-accion-success { border-color: var(--color-primario); color: var(--color-primario-oscuro); }
-.vehiculo-card-accion-success:hover { background: var(--color-primario); color: var(--color-blanco); }
+.vehiculo-card-accion-success:hover { background: var(--color-primario); color: var(--texto-sobre-marca); }
 
 .vehiculo-card-accion-danger { border-color: var(--color-rojo); color: var(--color-rojo); }
 .vehiculo-card-accion-danger:hover { background: var(--color-rojo); color: var(--color-blanco); }

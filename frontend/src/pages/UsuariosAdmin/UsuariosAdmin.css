@@ -125,7 +125,7 @@
 
 .usuarios-admin-boton-crear {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: none;
     padding: var(--espacio-md) var(--espacio-xl);
     border-radius: var(--radio-md);
@@ -137,7 +137,7 @@
 }
 
 .usuarios-admin-boton-crear:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-2px);
     box-shadow: var(--sombra-lg);
 }
@@ -234,8 +234,8 @@
 }
 
 .usuarios-admin-tabla thead {
-    background: var(--color-primario-oscuro);
-    color: var(--color-blanco);
+    background: var(--color-primario);
+    color: var(--texto-sobre-marca);
 }
 
 .usuarios-admin-tabla th {
@@ -278,7 +278,7 @@
     height: 48px;
     border-radius: 50%;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -361,8 +361,8 @@
 }
 
 .usuarios-admin-estado.activo {
-    background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    background: var(--estado-exito-fondo);
+    color: var(--estado-exito-texto);
 }
 
 .usuarios-admin-estado.activo::before {
@@ -370,7 +370,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--color-primario);
+    background: var(--color-exito);
 }
 
 .usuarios-admin-estado.inactivo {
@@ -449,7 +449,7 @@
 
 .usuarios-admin-accion-success:hover {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border-color: var(--color-primario);
 }
 

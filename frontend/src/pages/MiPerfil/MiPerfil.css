@@ -40,7 +40,7 @@
 
 .mi-perfil-foto-placeholder {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     font-size: 56px;
     font-weight: var(--peso-bold);
     display: flex;
@@ -82,7 +82,7 @@
     margin-top: var(--espacio-md);
     padding: 10px 22px;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: 2px solid var(--color-primario-oscuro);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -96,7 +96,7 @@
 }
 
 .mi-perfil-boton-foto:hover:not(:disabled) {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-1px);
     box-shadow: var(--sombra-md);
 }
@@ -288,7 +288,7 @@
 .mi-perfil-boton-guardar {
     padding: 12px 28px;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: 2px solid var(--color-primario-oscuro);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -302,7 +302,7 @@
 }
 
 .mi-perfil-boton-guardar:hover:not(:disabled) {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-1px);
     box-shadow: var(--sombra-md);
 }

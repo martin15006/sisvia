@@ -137,13 +137,13 @@
 
 .perfil-volver:hover {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .perfil-boton-editar {
     padding: var(--espacio-sm) var(--espacio-lg);
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: 2px solid var(--color-primario-oscuro);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -156,7 +156,7 @@
 }
 
 .perfil-boton-editar:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-1px);
     box-shadow: var(--sombra-md);
 }
@@ -187,7 +187,7 @@
     width: 160px;
     height: 160px;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border-radius: var(--radio-md);
     border: 2px solid var(--color-primario-oscuro);
     display: flex;

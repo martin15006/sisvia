@@ -85,7 +85,7 @@
 }
 
 .toast-exito .toast-icono {
-    background: var(--color-primario);
+    background: var(--color-exito);
 }
 
 .toast-error .toast-icono {

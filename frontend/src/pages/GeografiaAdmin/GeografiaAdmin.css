@@ -55,13 +55,13 @@
 .geografia-tab--activa {
     background: var(--color-primario);
     border-color: var(--color-primario-oscuro);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     box-shadow: var(--sombra-sm);
 }
 
 .geografia-tab--activa:hover {
-    background: var(--color-primario-oscuro);
-    color: var(--color-blanco);
+    background: var(--color-primario-hover);
+    color: var(--texto-sobre-marca);
 }
 
 /* ===== Barra de filtros + crear ===== */
@@ -114,7 +114,7 @@
 .geografia-boton-crear {
     padding: var(--espacio-sm) var(--espacio-lg);
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: 2px solid var(--color-primario-oscuro);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -125,7 +125,7 @@
 }
 
 .geografia-boton-crear:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     box-shadow: var(--sombra-md);
 }
 
@@ -220,12 +220,12 @@
 
 .geografia-boton-guardar {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: 2px solid var(--color-primario-oscuro);
 }
 
 .geografia-boton-guardar:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     box-shadow: var(--sombra-md);
 }
 
@@ -245,13 +245,13 @@
 }
 
 .geografia-tabla thead {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario);
 }
 
 .geografia-tabla th {
     padding: var(--espacio-sm) var(--espacio-md);
     text-align: left;
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     font-weight: var(--peso-bold);
     white-space: nowrap;
 }

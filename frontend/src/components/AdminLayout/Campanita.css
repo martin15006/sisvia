@@ -94,7 +94,7 @@
 .campanita-dropdown-header {
     padding: var(--espacio-md) var(--espacio-lg);
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -179,7 +179,7 @@
 }
 
 /* Colores del icono segun el tipo de notificacion (semaforo del sistema) */
-.campanita-icono-verde    { background: var(--color-primario); }
+.campanita-icono-verde    { background: var(--color-exito); }
 .campanita-icono-azul     { background: var(--estado-info-solido); }
 .campanita-icono-amarillo { background: #F9A825; color: #1A1A1A; }
 .campanita-icono-rojo     { background: var(--color-rojo); }
@@ -216,7 +216,7 @@
 /* El hover de la no-leida usaba un verde claro quemado (#C5E1A5) que en oscuro
    choca; lo bajamos a un tint verde translucido coherente con --acento-suave. */
 [data-tema="oscuro"] .campanita-item-no-leida:hover {
-    background: rgba(19, 80, 216, 0.22);
+    background: var(--marca-velo-22);
 }
 
 /* Responsive: dropdown ocupa casi todo el ancho en movil */

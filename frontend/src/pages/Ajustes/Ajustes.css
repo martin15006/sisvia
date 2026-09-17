@@ -72,7 +72,7 @@
 
 .ajustes-row--activa .ajustes-row-ic {
     background: var(--color-primario);
-    color: #fff;
+    color: var(--texto-sobre-marca);
     border-color: var(--color-primario);
 }
 

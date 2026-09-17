@@ -202,11 +202,11 @@
     margin-top: var(--espacio-sm);
 }
 
-.vehiculo-detalle-badge-verde { background: var(--color-primario); }
-.vehiculo-detalle-badge-azul { background: var(--color-azul); }
-.vehiculo-detalle-badge-amarillo { background: var(--color-amarillo); color: var(--color-gris-900); }
-.vehiculo-detalle-badge-rojo { background: var(--color-rojo); animation: pulse 2s infinite; }
-.vehiculo-detalle-badge-oscuro { background: var(--estado-neutro-fondo); }
+.vehiculo-detalle-badge-verde { background: var(--veh-operativo); color: var(--veh-tinta); }
+.vehiculo-detalle-badge-azul { background: var(--veh-observacion); color: var(--veh-tinta); }
+.vehiculo-detalle-badge-amarillo { background: var(--veh-alerta); color: var(--veh-tinta); }
+.vehiculo-detalle-badge-rojo { background: var(--veh-critico); color: var(--veh-tinta); animation: pulse 2s infinite; }
+.vehiculo-detalle-badge-oscuro { background: var(--veh-no-operativo); color: var(--veh-tinta); }
 
 .vehiculo-detalle-badge-inactivo {
     display: inline-block;
@@ -244,12 +244,12 @@
 
 .vehiculo-detalle-boton-primario {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     box-shadow: var(--sombra-sm);
 }
 
 .vehiculo-detalle-boton-primario:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     box-shadow: var(--sombra-md);
 }
 
@@ -408,7 +408,7 @@
     top: var(--espacio-xs);
     left: var(--espacio-xs);
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     padding: 2px 8px;
     border-radius: var(--radio-xl);
     font-size: var(--tamano-xs);

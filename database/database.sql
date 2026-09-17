@@ -160,6 +160,7 @@ CREATE TABLE IF NOT EXISTS vehiculos (
     marca                   TEXT NOT NULL,
     linea                   TEXT,
     tipo                    TEXT NOT NULL CHECK (tipo IN (
+                                'automovil', 'motocicleta', 'motocarro',
                                 'camion', 'camioneta', 'tractocamion',
                                 'microbus', 'buseta', 'bus'
                             )),

@@ -22,7 +22,7 @@
     align-items: center;
     justify-content: space-between;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     padding: var(--espacio-md) var(--espacio-lg);
     border-radius: var(--radio-lg, 12px) var(--radio-lg, 12px) 0 0;
 }
@@ -115,7 +115,7 @@
     padding: 9px 22px;
     border: none;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border-radius: var(--radio-md);
     font-weight: var(--peso-bold);
     font-family: inherit;

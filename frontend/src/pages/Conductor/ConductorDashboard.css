@@ -39,7 +39,7 @@
 
 .cond-hero-foto-placeholder {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     font-size: 48px;
     font-weight: var(--peso-bold);
     display: flex;
@@ -183,12 +183,12 @@
 
 .cond-circulo-pre {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border-color: var(--color-primario-oscuro);
 }
 
 .cond-circulo-pre:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
 }
 
 .cond-circulo-post {

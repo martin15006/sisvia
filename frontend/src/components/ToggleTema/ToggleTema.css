@@ -23,7 +23,7 @@
     height: 22px;
     border-radius: 50%;
     background: var(--color-primario);
-    color: #04120a;
+    color: var(--texto-sobre-marca);
     display: flex;
     align-items: center;
     justify-content: center;

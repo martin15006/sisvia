@@ -87,5 +87,5 @@ table {
 /* Selección de texto con color primario */
 ::selection {
   background-color: var(--color-primario);
-  color: var(--color-blanco);
+  color: var(--texto-sobre-marca);
 }

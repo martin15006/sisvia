@@ -220,7 +220,7 @@
 
 .cheqdet-badge-oficial {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .cheqdet-badge-rechequeo {
@@ -241,11 +241,11 @@
     text-align: center;
 }
 
-.cheqdet-resultado-estado-ok { background: var(--color-primario); }
-.cheqdet-resultado-estado-obs { background: var(--color-azul); }
-.cheqdet-resultado-estado-alerta { background: var(--color-amarillo); color: var(--color-gris-900); }
-.cheqdet-resultado-estado-critico { background: var(--color-rojo); }
-.cheqdet-resultado-estado-no-op { background: var(--estado-neutro-fondo); }
+.cheqdet-resultado-estado-ok { background: var(--veh-operativo); color: var(--veh-tinta); }
+.cheqdet-resultado-estado-obs { background: var(--veh-observacion); color: var(--veh-tinta); }
+.cheqdet-resultado-estado-alerta { background: var(--veh-alerta); color: var(--veh-tinta); }
+.cheqdet-resultado-estado-critico { background: var(--veh-critico); color: var(--veh-tinta); }
+.cheqdet-resultado-estado-no-op { background: var(--veh-no-operativo); color: var(--veh-tinta); }
 
 .cheqdet-resultado-estado-label {
     font-size: var(--tamano-xs);
@@ -453,7 +453,7 @@
 
 .cheqdet-link-vehiculo:hover {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     box-shadow: var(--sombra-md);
 }
 
@@ -526,7 +526,7 @@
 }
 
 .cheqdet-aptitud-apta .cheqdet-aptitud-icono {
-    background: var(--color-primario);
+    background: var(--color-exito);
 }
 
 .cheqdet-aptitud-no-apta .cheqdet-aptitud-icono {
@@ -567,7 +567,7 @@
     align-items: center;
     gap: var(--espacio-sm);
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     padding: var(--espacio-sm) var(--espacio-md);
     border-radius: var(--radio-md);
 }
@@ -653,7 +653,7 @@
     white-space: nowrap;
 }
 
-.cheqdet-item-estado-cumple { background: var(--color-primario); }
+.cheqdet-item-estado-cumple { background: var(--veh-operativo); color: var(--veh-tinta); }
 .cheqdet-item-estado-no_cumple { background: var(--color-rojo); }
 .cheqdet-item-estado-no_aplica { background: var(--badge-gris); }
 

@@ -3,6 +3,7 @@ import Modal from "../../../components/Modal/Modal.jsx";
 import { api, API_URL } from "../../../lib/api.js";
 import { useAuth } from "../../../hooks/useAuth.js";
 import { esDirector } from "../../../lib/roles.js";
+import { filtrarPlaca, validarPlaca, ayudaPlaca, ejemploPlaca, filtrarColor } from "../../../lib/placa.js";
 import "./ModalVehiculo.css";
 
 const ESTADO_INICIAL = {
@@ -26,6 +27,9 @@ const ESTADO_INICIAL = {
 };
 
 const TIPOS = [
+    { value: "automovil", label: "Automóvil" },
+    { value: "motocicleta", label: "Motocicleta" },
+    { value: "motocarro", label: "Motocarro" },
     { value: "camion", label: "Camión" },
     { value: "camioneta", label: "Camioneta" },
     { value: "tractocamion", label: "Tractocamión" },
@@ -279,6 +283,12 @@ function ModalVehiculo({ abierto, onCerrar, onGuardado, vehiculo = null, mostrar
         e.preventDefault();
         setError(null);
 
+        const errorPlaca = validarPlaca(form.placa, form.tipo);
+        if (errorPlaca) {
+            setError(errorPlaca);
+            return;
+        }
+
         // Al crear, la sede es obligatorio (lo hereda el Coordinador o lo elige
         // el Director Regional/Nacional). Al editar no se toca.
         if (!esEdicion) {
@@ -462,11 +472,14 @@ function ModalVehiculo({ abierto, onCerrar, onGuardado, vehiculo = null, mostrar
                                 type="text"
                                 className="form-vehiculo-input"
                                 value={form.placa}
-                                onChange={(e) => cambiarCampo("placa", e.target.value.toUpperCase())}
-                                placeholder="OCJ 123"
+                                onChange={(e) => cambiarCampo("placa", filtrarPlaca(e.target.value, form.tipo))}
+                                placeholder={ejemploPlaca(form.tipo)}
+                                maxLength={6}
+                                autoCapitalize="characters"
                                 required
                                 disabled={cargando}
                             />
+                            <p className="form-vehiculo-ayuda">{ayudaPlaca(form.tipo)}</p>
                         </div>
                         <div className="form-vehiculo-campo">
                             <label className="form-vehiculo-label">Marca *</label>
@@ -533,7 +546,7 @@ function ModalVehiculo({ abierto, onCerrar, onGuardado, vehiculo = null, mostrar
                                 type="text"
                                 className="form-vehiculo-input"
                                 value={form.color}
-                                onChange={(e) => cambiarCampo("color", e.target.value)}
+                                onChange={(e) => cambiarCampo("color", filtrarColor(e.target.value))}
                                 disabled={cargando}
                             />
                         </div>

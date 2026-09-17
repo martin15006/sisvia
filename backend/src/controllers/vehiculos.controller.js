@@ -7,6 +7,7 @@ import {
     extraerPublicId,
 } from "../services/vehiculos.service.js";
 import { obtenerScope, aplicarScope, puedeAccederSede } from "../services/scope.service.js";
+import { normalizarPlaca, validarPlaca, validarColor } from "../utils/placa.js";
 
 // Verifica que el vehiculo exista Y que el admin tenga la sede del vehiculo
 // dentro de su scope territorial (Tarea #102). Recibe el usuario completo.
@@ -98,7 +99,7 @@ export const obtenerVehiculo = async (req, res) => {
 export const crearVehiculo = async (req, res) => {
     try {
         const {
-            placa,
+            placa: placaRecibida,
             vin,
             marca,
             linea,
@@ -115,10 +116,16 @@ export const crearVehiculo = async (req, res) => {
             notas,
         } = req.body;
 
-        if (!placa || !marca || !tipo) {
+        if (!placaRecibida || !marca || !tipo) {
             return res.status(400).json({
                 error: "placa, marca y tipo son obligatorios",
             });
+        }
+
+        const placa = normalizarPlaca(placaRecibida);
+        const errorPlaca = validarPlaca(placa, tipo) || validarColor(color);
+        if (errorPlaca) {
+            return res.status(400).json({ error: errorPlaca });
         }
 
         const { data: existente } = await supabase
@@ -200,7 +207,7 @@ export const actualizarVehiculo = async (req, res) => {
 
         const { data: existente } = await supabase
             .from("vehiculos")
-            .select("sede_id")
+            .select("sede_id, placa, tipo")
             .eq("id", id)
             .single();
 
@@ -222,6 +229,16 @@ export const actualizarVehiculo = async (req, res) => {
             ["superadmin", "admin_departamental"].includes(req.usuario.rol)) {
             datos.es_vip = es_vip === true;
         }
+
+        // Placa y tipo se validan juntos: cambiar solo el tipo tambien puede
+        // dejar una placa que no corresponde.
+        if (datos.placa !== undefined || datos.tipo !== undefined) {
+            if (datos.placa !== undefined) datos.placa = normalizarPlaca(datos.placa);
+            const errorPlaca = validarPlaca(datos.placa ?? existente.placa, datos.tipo ?? existente.tipo);
+            if (errorPlaca) return res.status(400).json({ error: errorPlaca });
+        }
+        const errorColor = validarColor(datos.color);
+        if (errorColor) return res.status(400).json({ error: errorColor });
 
         const { data, error } = await supabase
             .from("vehiculos")

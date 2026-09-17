@@ -178,13 +178,13 @@
 
 .verifadmin-boton-confirmar {
   background: var(--color-primario);
-  color: var(--color-blanco);
+  color: var(--texto-sobre-marca);
   border-color: var(--color-primario-oscuro);
   box-shadow: var(--sombra-sm);
 }
 
 .verifadmin-boton-confirmar:hover:not(:disabled) {
-  background: var(--color-primario-oscuro);
+  background: var(--color-primario-hover);
   transform: translateY(-1px);
   box-shadow: var(--sombra-md);
 }

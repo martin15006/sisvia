@@ -88,28 +88,32 @@
 }
 
 .estado-operativo .resultado-icono {
-    background: var(--color-primario);
+    background: var(--veh-operativo);
+    color: var(--veh-tinta);
     box-shadow: 0 6px 20px rgba(46, 125, 50, 0.45);
 }
 
 .estado-observacion .resultado-icono {
-    background: var(--color-azul);
+    background: var(--veh-observacion);
+    color: var(--veh-tinta);
     box-shadow: 0 6px 20px rgba(33, 150, 243, 0.45);
 }
 
 .estado-alerta .resultado-icono {
-    background: var(--color-amarillo);
-    color: var(--color-gris-900);
+    background: var(--veh-alerta);
+    color: var(--veh-tinta);
     box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
 }
 
 .estado-critico .resultado-icono {
-    background: var(--color-rojo);
+    background: var(--veh-critico);
+    color: var(--veh-tinta);
     box-shadow: 0 6px 20px rgba(211, 47, 47, 0.45);
 }
 
 .estado-no-operativo .resultado-icono {
-    background: var(--estado-neutro-fondo);
+    background: var(--veh-no-operativo);
+    color: var(--veh-tinta);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
@@ -281,7 +285,7 @@
 .resultado-boton-volver {
     padding: 14px var(--espacio-lg);
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: none;
     border-radius: var(--radio-md);
     font-size: var(--tamano-md);
@@ -296,7 +300,7 @@
 }
 
 .resultado-boton-volver:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-2px);
     box-shadow: var(--sombra-lg);
 }

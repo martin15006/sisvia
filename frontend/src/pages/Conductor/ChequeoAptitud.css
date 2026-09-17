@@ -147,11 +147,11 @@
 
 .aptitud-boton-si {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .aptitud-boton-si:hover:not(:disabled) {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-2px);
     box-shadow: var(--sombra-lg);
 }
@@ -186,7 +186,7 @@
     margin: var(--espacio-md) auto 0 auto;
     padding: 10px 24px;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: none;
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -197,7 +197,7 @@
 }
 
 .aptitud-boton-volver:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-2px);
     box-shadow: var(--sombra-md);
 }
@@ -389,11 +389,11 @@
 
 .aptitud-modal-boton-confirmar {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .aptitud-modal-boton-confirmar:hover:not(:disabled) {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-1px);
     box-shadow: var(--sombra-md);
 }

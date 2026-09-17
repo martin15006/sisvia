@@ -26,7 +26,7 @@
 
 .boton-volver:hover {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     transform: translateX(-2px);
     box-shadow: var(--sombra-md);
 }

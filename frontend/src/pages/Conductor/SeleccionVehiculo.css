@@ -225,11 +225,11 @@
     letter-spacing: 0.5px;
 }
 
-.selveh-card-estado-operativo { background: var(--color-primario); }
-.selveh-card-estado-observacion { background: var(--color-azul); }
-.selveh-card-estado-alerta { background: var(--color-amarillo); color: var(--color-gris-900); }
-.selveh-card-estado-critico { background: var(--color-rojo); }
-.selveh-card-estado-no_operativo { background: var(--estado-neutro-fondo); }
+.selveh-card-estado-operativo { background: var(--veh-operativo); color: var(--veh-tinta); }
+.selveh-card-estado-observacion { background: var(--veh-observacion); color: var(--veh-tinta); }
+.selveh-card-estado-alerta { background: var(--veh-alerta); color: var(--veh-tinta); }
+.selveh-card-estado-critico { background: var(--veh-critico); color: var(--veh-tinta); }
+.selveh-card-estado-no_operativo { background: var(--veh-no-operativo); color: var(--veh-tinta); }
 
 .selveh-card-km {
     font-size: var(--tamano-xs);
@@ -391,11 +391,11 @@
 
 .selveh-modal-boton-confirmar {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .selveh-modal-boton-confirmar:hover:not(:disabled) {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-1px);
     box-shadow: var(--sombra-md);
 }

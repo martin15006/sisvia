@@ -7,11 +7,28 @@
    ============================================================ */
 
 :root {
-  /* === COLORES DE MARCA === */
-  --color-primario: #1350D8;
-  --color-primario-oscuro: #0E3CA3;
-  --color-primario-muy-oscuro: #082663;
-  --color-primario-claro: #E6EEFE;
+  /* === COLORES DE MARCA ===
+     Naranja vivo (provisional, pacto identidad-y-correcciones, enmienda 1).
+     El naranja no aguanta letra blanca (3.6:1): lo que va ENCIMA usa
+     --texto-sobre-marca (negro, 5.9:1). Por lo mismo el hover de un boton
+     de marca ACLARA (--color-primario-hover) en vez de oscurecer: el negro
+     sobre el naranja oscuro baja a 4.1:1. -oscuro y -muy-oscuro quedan
+     para texto, bordes y degradados, no para fondos con letra encima. */
+  --color-primario: #EA580C;
+  --color-primario-hover: #F97316;
+  --color-primario-oscuro: #C2410C;
+  --color-primario-muy-oscuro: #9A3412;
+  --color-primario-claro: #FFEDD5;
+  --texto-sobre-marca: #000000;
+
+  /* Velos del primario (halos, degradados, anillos). Salen del token, asi
+     cambiar la marca no deja restos del color anterior en rgba() sueltos. */
+  --marca-velo-70: color-mix(in srgb, var(--color-primario) 70%, transparent);
+  --marca-velo-50: color-mix(in srgb, var(--color-primario) 50%, transparent);
+  --marca-velo-30: color-mix(in srgb, var(--color-primario) 30%, transparent);
+  --marca-velo-22: color-mix(in srgb, var(--color-primario) 22%, transparent);
+  --marca-velo-0: color-mix(in srgb, var(--color-primario) 0%, transparent);
+  --marca-anillo: color-mix(in srgb, var(--color-primario-oscuro) 30%, transparent);
 
   /* Verde reservado para el SIGNIFICADO "exito", no para la marca. */
   --color-verde-exito: #1E8E3E;
@@ -67,9 +84,10 @@
   --espacio-xxxl: 64px;
 
   /* === TIPOGRAFIA === */
-  --fuente-principal: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                      "Helvetica Neue", Arial, sans-serif;
-  --fuente-monospace: "Consolas", "Monaco", "Courier New", monospace;
+  /* IBM Plex: se carga en index.html. Mono para placas, kilometraje y fechas. */
+  --fuente-principal: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI",
+                      Roboto, Arial, sans-serif;
+  --fuente-monospace: "IBM Plex Mono", ui-monospace, "Consolas", "Courier New", monospace;
 
   --tamano-xs: 12px;
   --tamano-sm: 14px;
@@ -121,12 +139,13 @@
      Estos son los que cambian en modo oscuro. La regla: los FONDOS usan
      --superficie/--fondo; el TEXTO usa --texto/--texto-suave; los estados
      usan --estado-*. Asi un solo override de [data-tema] repinta todo. */
-  --fondo: var(--color-gris-100);          /* fondo de pagina (body) */
+  /* Neutros de la paleta A "Parte de inspeccion": croma casi cero. */
+  --fondo: #F6F7F8;                        /* fondo de pagina (body) */
   --superficie: var(--color-blanco);       /* tarjetas, modales, barras, sidebar */
   --superficie-alta: var(--color-blanco);  /* elevacion sobre superficie */
-  --texto: var(--color-gris-900);
-  --texto-suave: var(--color-gris-500);
-  --borde: var(--color-gris-200);
+  --texto: #14181B;
+  --texto-suave: #5A646E;
+  --borde: #DDE2E6;
   --titulo: var(--color-primario-oscuro);     /* h1/h2/h3 */
   --texto-inverso: #FFFFFF;                /* texto que SIEMPRE es blanco (sobre el primario) */
   --acento-luz: var(--color-primario);    /* acento luminoso (en claro = primario normal) */

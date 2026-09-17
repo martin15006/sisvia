@@ -95,16 +95,16 @@
     border-radius: var(--radio-xl);
     background: linear-gradient(
         to right,
-        var(--color-primario) 0%,
-        var(--color-primario) 19%,
-        var(--color-azul) 20%,
-        var(--color-azul) 39%,
-        var(--color-amarillo) 40%,
-        var(--color-amarillo) 59%,
-        var(--color-rojo) 60%,
-        var(--color-rojo) 89%,
-        var(--color-gris-500) 90%,
-        var(--color-gris-500) 100%
+        var(--veh-operativo) 0%,
+        var(--veh-operativo) 19%,
+        var(--veh-observacion) 20%,
+        var(--veh-observacion) 39%,
+        var(--veh-alerta) 40%,
+        var(--veh-alerta) 59%,
+        var(--veh-critico) 60%,
+        var(--veh-critico) 89%,
+        var(--veh-no-operativo) 90%,
+        var(--veh-no-operativo) 100%
     );
     outline: none;
     cursor: pointer;
@@ -281,7 +281,7 @@
     align-items: center;
     gap: var(--espacio-xs);
     background: var(--color-primario);
-    color: #FFFFFF;
+    color: var(--texto-sobre-marca);
     padding: var(--espacio-sm) var(--espacio-md);
     border-radius: var(--radio-md);
     text-decoration: none;
@@ -294,8 +294,8 @@
 }
 
 .form-vehiculo-link-runt-boton:hover {
-    background: var(--color-primario-oscuro);
-    color: #FFFFFF;
+    background: var(--color-primario-hover);
+    color: var(--texto-sobre-marca);
     box-shadow: var(--sombra-md);
 }
 
@@ -354,7 +354,7 @@
     top: var(--espacio-xs);
     left: var(--espacio-xs);
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     padding: 2px 8px;
     border-radius: var(--radio-xl);
     font-size: var(--tamano-xs);
@@ -419,7 +419,7 @@
 
 .form-vehiculo-foto-control:hover {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .form-vehiculo-foto-control-peligro:hover {
@@ -452,7 +452,7 @@
 .form-vehiculo-spinner {
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(14, 60, 163, 0.3);
+    border: 2px solid var(--marca-anillo);
     border-top-color: var(--color-primario);
     border-radius: 50%;
     animation: rotate 0.8s linear infinite;
@@ -493,12 +493,12 @@
 
 .form-vehiculo-boton-crear {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     box-shadow: var(--sombra-sm);
 }
 
 .form-vehiculo-boton-crear:hover:not(:disabled) {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-1px);
     box-shadow: var(--sombra-md);
 }

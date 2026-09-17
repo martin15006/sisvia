@@ -168,7 +168,7 @@
 .form-usuario-boton-cambiar {
   padding: 8px 14px;
   background: var(--color-primario);
-  color: var(--color-blanco);
+  color: var(--texto-sobre-marca);
   border: 2px solid var(--color-primario-oscuro);
   border-radius: var(--radio-md);
   font-size: var(--tamano-xs);
@@ -184,7 +184,7 @@
 }
 
 .form-usuario-boton-cambiar:hover:not(:disabled) {
-  background: var(--color-primario-oscuro);
+  background: var(--color-primario-hover);
   transform: translateY(-1px);
   box-shadow: var(--sombra-md);
 }
@@ -282,12 +282,12 @@
 
 .form-usuario-boton-crear {
   background: var(--color-primario);
-  color: var(--color-blanco);
+  color: var(--texto-sobre-marca);
   box-shadow: var(--sombra-sm);
 }
 
 .form-usuario-boton-crear:hover:not(:disabled) {
-  background: var(--color-primario-oscuro);
+  background: var(--color-primario-hover);
   transform: translateY(-1px);
   box-shadow: var(--sombra-md);
 }

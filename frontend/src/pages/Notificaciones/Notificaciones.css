@@ -50,7 +50,7 @@
 
 .notif-filtro-activo {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border-color: var(--color-primario-oscuro);
 }
 
@@ -141,7 +141,7 @@
 }
 
 /* Colores del icono segun el tipo (semaforo del sistema) */
-.notif-icono-verde    { background: var(--color-primario); }
+.notif-icono-verde    { background: var(--color-exito); }
 .notif-icono-azul     { background: var(--estado-info-solido); }
 .notif-icono-amarillo { background: #F9A825; color: #1A1A1A; }
 .notif-icono-rojo     { background: var(--color-rojo); }
@@ -197,7 +197,7 @@
 .notif-pag-boton {
     padding: 8px 16px;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: 2px solid var(--color-primario-oscuro);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -208,7 +208,7 @@
 }
 
 .notif-pag-boton:hover:not(:disabled) {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
 }
 
 .notif-pag-boton:disabled {

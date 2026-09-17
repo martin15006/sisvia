@@ -93,10 +93,10 @@
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(19, 80, 216, 0.5);
+    box-shadow: 0 0 0 0 var(--marca-velo-50);
   }
   50% {
-    box-shadow: 0 0 0 12px rgba(19, 80, 216, 0);
+    box-shadow: 0 0 0 12px var(--marca-velo-0);
   }
 }
 

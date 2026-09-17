@@ -104,7 +104,7 @@
 
 .lightbox-badge-principal {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     padding: 2px 10px;
     border-radius: var(--radio-xl);
     font-size: var(--tamano-xs);

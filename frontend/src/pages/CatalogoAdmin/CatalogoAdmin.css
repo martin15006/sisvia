@@ -203,7 +203,7 @@
 .catadmin-boton-crear {
     padding: 10px 18px;
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border: none;
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -215,7 +215,7 @@
 }
 
 .catadmin-boton-crear:hover:not(:disabled) {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-1px);
     box-shadow: var(--sombra-md);
 }
@@ -367,7 +367,7 @@
 
 .catadmin-boton-editar:hover {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .catadmin-boton-eliminar {
@@ -625,7 +625,7 @@
 
 .catadmin-radio-activo-si {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     border-color: var(--color-primario-oscuro);
 }
 
@@ -670,12 +670,12 @@
 
 .catadmin-boton-guardar {
     background: var(--color-primario);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     box-shadow: var(--sombra-sm);
 }
 
 .catadmin-boton-guardar:hover {
-    background: var(--color-primario-oscuro);
+    background: var(--color-primario-hover);
     transform: translateY(-1px);
     box-shadow: var(--sombra-md);
 }
