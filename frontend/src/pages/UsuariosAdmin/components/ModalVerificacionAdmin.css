@@ -33,8 +33,8 @@
 /* Aviso amarillo de precaucion (solo para cedula) - alto contraste */
 .verifadmin-aviso-critico {
   background: var(--color-amarillo);
-  color: #1A1A1A;
-  border: 2px solid #1A1A1A;
+  color: var(--tinta-oscura);
+  border: 2px solid var(--tinta-oscura);
   border-radius: var(--radio-md);
   padding: 10px 14px;
   font-size: var(--tamano-sm);
@@ -78,7 +78,7 @@
 .verifadmin-input:focus {
   outline: none;
   border-color: var(--color-primario);
-  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+  box-shadow: 0 0 0 3px var(--marca-velo-15);
 }
 
 .verifadmin-input-readonly {
@@ -107,8 +107,8 @@
   margin-top: 6px;
   padding: 8px 12px;
   background: var(--estado-adv-solido);
-  color: #1A1A1A;
-  border: 2px solid #e29a2d;
+  color: var(--tinta-oscura);
+  border: 2px solid var(--estado-adv-borde-fuerte);
   border-radius: var(--radio-md);
   font-size: var(--tamano-sm);
   font-weight: var(--peso-semibold);
@@ -131,8 +131,8 @@
 /* Error en el modal */
 .verifadmin-error {
   background: var(--estado-error-solido);
-  color: #FFFFFF;
-  border: 2px solid #7F0000;
+  color: var(--texto-inverso);
+  border: 2px solid var(--rojo-oscuro);
   border-radius: var(--radio-md);
   padding: 10px 14px;
   font-size: var(--tamano-sm);
@@ -191,14 +191,14 @@
 
 /* Confirmar para acciones criticas (cedula): mas serio */
 .verifadmin-boton-confirmar-critico {
-  background: #E65100;
-  color: var(--color-blanco);
-  border-color: #BF360C;
+  background: var(--naranja-fuerte);
+  color: var(--texto-sobre-marca);
+  border-color: var(--naranja-mas-fuerte);
   box-shadow: var(--sombra-sm);
 }
 
 .verifadmin-boton-confirmar-critico:hover:not(:disabled) {
-  background: #BF360C;
+  background: var(--naranja-mas-fuerte);
   transform: translateY(-1px);
   box-shadow: var(--sombra-md);
 }
@@ -207,7 +207,7 @@
 /* Aviso naranja solido: en oscuro el solido se oscurece, asi que el texto
    oscuro y el borde dorado pasan a tonos legibles sobre el. */
 [data-tema="oscuro"] .verifadmin-aviso-validacion {
-  color: var(--texto-inverso);
+  color: var(--tinta-oscura);
   border-color: var(--estado-adv-texto);
 }
 

@@ -139,13 +139,8 @@ export const obtenerStatsDashboard = async (req, res) => {
         sinRuntQuery = aplicarScope(sinRuntQuery, scope);
         const { data: vehiculosSinRunt } = await sinRuntQuery;
 
-        // c) Vehiculos no operativos (estado='no_operativo' o inactivos)
-        let noOperativosQuery = supabase
-            .from('vehiculos')
-            .select('id, placa, marca, linea, estado, activo')
-            .or('estado.eq.no_operativo,activo.eq.false');
-        noOperativosQuery = aplicarScope(noOperativosQuery, scope);
-        const { data: vehiculosNoOperativos } = await noOperativosQuery;
+        // (Los vehiculos no operativos o desactivados ya no van aca: salen solo en
+        // "No pueden salir", mas abajo. Pacto identidad-y-correcciones, HU-04.)
 
         // d) Chequeos abandonados hoy (con datos del conductor y vehiculo).
         // Solo para visualizacion — el contador completo del dia ya esta en kpis.
@@ -252,7 +247,6 @@ export const obtenerStatsDashboard = async (req, res) => {
             alertas: {
                 licencias_por_vencer: licenciasPorVencer,
                 vehiculos_sin_runt: vehiculosSinRunt || [],
-                vehiculos_no_operativos: vehiculosNoOperativos || [],
                 chequeos_abandonados: chequeosAbandonados,
             },
         });

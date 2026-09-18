@@ -10,23 +10,23 @@
 
 /* Fondo segun el estado final */
 .resultado-pagina.estado-operativo {
-    background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+    background: var(--resultado-fondo-operativo);
 }
 
 .resultado-pagina.estado-observacion {
-    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    background: var(--resultado-fondo-observacion);
 }
 
 .resultado-pagina.estado-alerta {
-    background: linear-gradient(135deg, #FFF8E1 0%, #FFE082 100%);
+    background: var(--resultado-fondo-alerta);
 }
 
 .resultado-pagina.estado-critico {
-    background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+    background: var(--resultado-fondo-critico);
 }
 
 .resultado-pagina.estado-no-operativo {
-    background: linear-gradient(135deg, #ECEFF1 0%, #B0BEC5 100%);
+    background: var(--resultado-fondo-no-operativo);
 }
 
 /* Mini header con logo */
@@ -68,7 +68,7 @@
     border-top: 8px solid currentColor;
 }
 
-.estado-operativo .resultado-tarjeta { border-top-color: var(--color-primario); }
+.estado-operativo .resultado-tarjeta { border-top-color: var(--veh-operativo); }
 .estado-observacion .resultado-tarjeta { border-top-color: var(--color-azul); }
 .estado-alerta .resultado-tarjeta { border-top-color: var(--color-amarillo); }
 .estado-critico .resultado-tarjeta { border-top-color: var(--color-rojo); }
@@ -90,31 +90,31 @@
 .estado-operativo .resultado-icono {
     background: var(--veh-operativo);
     color: var(--veh-tinta);
-    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.45);
+    box-shadow: 0 6px 20px var(--halo-operativo);
 }
 
 .estado-observacion .resultado-icono {
     background: var(--veh-observacion);
     color: var(--veh-tinta);
-    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.45);
+    box-shadow: 0 6px 20px var(--halo-observacion);
 }
 
 .estado-alerta .resultado-icono {
     background: var(--veh-alerta);
     color: var(--veh-tinta);
-    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
+    box-shadow: 0 6px 20px var(--halo-alerta);
 }
 
 .estado-critico .resultado-icono {
     background: var(--veh-critico);
     color: var(--veh-tinta);
-    box-shadow: 0 6px 20px rgba(211, 47, 47, 0.45);
+    box-shadow: 0 6px 20px var(--halo-critico);
 }
 
 .estado-no-operativo .resultado-icono {
     background: var(--veh-no-operativo);
     color: var(--veh-tinta);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px var(--velo-40);
 }
 
 .resultado-titulo {
@@ -124,11 +124,11 @@
     letter-spacing: 0.3px;
 }
 
-.estado-operativo .resultado-titulo { color: var(--color-primario-oscuro); }
+.estado-operativo .resultado-titulo { color: var(--texto-marca); }
 .estado-observacion .resultado-titulo { color: var(--estado-info-texto); }
 .estado-alerta .resultado-titulo { color: var(--estado-adv-texto); }
-.estado-critico .resultado-titulo { color: var(--color-rojo); }
-.estado-no-operativo .resultado-titulo { color: #263238; }
+.estado-critico .resultado-titulo { color: var(--estado-error-texto); }
+.estado-no-operativo .resultado-titulo { color: var(--texto); }
 
 .resultado-subtitulo {
     margin: 0;
@@ -194,8 +194,8 @@
     line-height: 1;
 }
 
-.resultado-numero-cumple { color: var(--color-primario); }
-.resultado-numero-no-cumple { color: var(--color-rojo); }
+.resultado-numero-cumple { color: var(--veh-operativo); }
+.resultado-numero-no-cumple { color: var(--estado-error-texto); }
 .resultado-numero-na { color: var(--color-gris-500); }
 
 .resultado-resumen-label {
@@ -211,7 +211,7 @@
     border: 2px solid var(--color-rojo);
     border-radius: var(--radio-md);
     padding: var(--espacio-sm) var(--espacio-md);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     font-size: var(--tamano-sm);
     font-weight: var(--peso-semibold);
     display: flex;
@@ -244,6 +244,7 @@
 }
 
 .resultado-vehiculo-placa {
+    font-family: var(--fuente-monospace);
     font-size: var(--tamano-xxl);
     font-weight: var(--peso-bold);
     color: var(--color-gris-900);

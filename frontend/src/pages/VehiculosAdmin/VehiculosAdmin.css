@@ -29,7 +29,7 @@
 
 .vehiculos-admin-titulo-pagina {
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-md);
 }
 
@@ -58,7 +58,7 @@
 .vehiculos-admin-logout {
     padding: var(--espacio-sm) var(--espacio-md);
     background: var(--superficie);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border: 2px solid var(--color-rojo);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -83,7 +83,7 @@
 .vehiculos-admin-volver {
     background: none;
     border: none;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-sm);
     font-weight: var(--peso-semibold);
     cursor: pointer;
@@ -107,7 +107,7 @@
 
 .vehiculos-admin-titulo {
     font-size: var(--tamano-xxl);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     margin-bottom: var(--espacio-xs);
 }
 
@@ -146,7 +146,7 @@
     align-items: center;
     gap: var(--espacio-sm);
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border: 2px solid var(--color-primario);
     padding: var(--espacio-sm) var(--espacio-md);
     border-radius: var(--radio-md);
@@ -175,7 +175,7 @@
 }
 
 .vehiculos-admin-actualizado {
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-weight: var(--peso-semibold);
     margin-left: var(--espacio-sm);
 }
@@ -205,7 +205,7 @@
     box-shadow: var(--sombra-md);
 }
 
-.vehiculos-admin-resumen-verde { border-top-color: var(--color-primario); }
+.vehiculos-admin-resumen-verde { border-top-color: var(--veh-operativo); }
 .vehiculos-admin-resumen-azul { border-top-color: var(--color-azul); }
 .vehiculos-admin-resumen-amarillo { border-top-color: var(--color-amarillo); }
 .vehiculos-admin-resumen-rojo { border-top-color: var(--color-rojo); }
@@ -297,7 +297,7 @@
     box-shadow: var(--sombra-lg);
 }
 
-.vehiculo-card-verde { border-top-color: var(--color-primario); }
+.vehiculo-card-verde { border-top-color: var(--veh-operativo); }
 .vehiculo-card-azul { border-top-color: var(--color-azul); }
 .vehiculo-card-amarillo { border-top-color: var(--color-amarillo); }
 .vehiculo-card-rojo { border-top-color: var(--color-rojo); }
@@ -370,9 +370,10 @@
 }
 
 .vehiculo-card-placa {
+    font-family: var(--fuente-monospace);
     font-size: var(--tamano-xl);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     letter-spacing: 1px;
     margin-bottom: var(--espacio-xs);
 }
@@ -393,7 +394,7 @@
 .vehiculo-card-tipo,
 .vehiculo-card-anio {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     padding: 2px 10px;
     border-radius: var(--radio-xl);
     font-size: var(--tamano-xs);
@@ -442,16 +443,16 @@
 .vehiculo-card-accion:hover {
     background: var(--acento-suave);
     border-color: var(--color-primario);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
-.vehiculo-card-accion-warning { border-color: var(--color-naranja); color: var(--color-naranja); }
-.vehiculo-card-accion-warning:hover { background: var(--color-naranja); color: var(--color-blanco); border-color: var(--color-naranja); }
+.vehiculo-card-accion-warning { border-color: var(--color-naranja); color: var(--estado-adv-texto); }
+.vehiculo-card-accion-warning:hover { background: var(--color-naranja); color: var(--texto-sobre-marca); border-color: var(--color-naranja); }
 
-.vehiculo-card-accion-success { border-color: var(--color-primario); color: var(--color-primario-oscuro); }
+.vehiculo-card-accion-success { border-color: var(--color-primario); color: var(--texto-marca); }
 .vehiculo-card-accion-success:hover { background: var(--color-primario); color: var(--texto-sobre-marca); }
 
-.vehiculo-card-accion-danger { border-color: var(--color-rojo); color: var(--color-rojo); }
+.vehiculo-card-accion-danger { border-color: var(--color-rojo); color: var(--estado-error-texto); }
 .vehiculo-card-accion-danger:hover { background: var(--color-rojo); color: var(--color-blanco); }
 
 /* ESTADOS */
@@ -468,7 +469,7 @@
 
 .vehiculos-admin-estado-error {
     background: var(--estado-error-fondo);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     padding: var(--espacio-md);
     border-radius: var(--radio-md);
     border-left: 4px solid var(--color-rojo);
@@ -500,7 +501,7 @@
     font-weight: var(--peso-bold);
     letter-spacing: 0.5px;
     background: var(--suplencia-solido);
-    color: #fff;
+    color: var(--texto-inverso);
     box-shadow: var(--sombra-md);
 }
 
@@ -516,7 +517,7 @@
     padding: 6px 16px;
     border: 2px solid var(--color-primario);
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-radius: var(--radio-md);
     font-weight: var(--peso-semibold);
     font-family: inherit;
@@ -558,7 +559,7 @@
 .vehiculos-nivel-card-nombre {
     font-size: var(--tamano-lg);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 .vehiculos-nivel-card-sub {
     font-size: var(--tamano-sm);
@@ -581,13 +582,13 @@
     padding: 3px 10px;
     border-radius: var(--radio-xl);
 }
-.vehiculos-nivel-alerta.rojo { background: var(--estado-error-fondo); color: var(--color-rojo); }
+.vehiculos-nivel-alerta.rojo { background: var(--estado-error-fondo); color: var(--estado-error-texto); }
 .vehiculos-nivel-alerta.gris { background: var(--color-gris-200); color: var(--color-gris-700); }
-.vehiculos-nivel-alerta.ok { background: var(--acento-suave); color: var(--color-primario-oscuro); }
+.vehiculos-nivel-alerta.ok { background: var(--acento-suave); color: var(--texto-marca); }
 .vehiculos-nivel-card-flecha {
     margin-top: 8px;
     align-self: flex-end;
     font-weight: var(--peso-bold);
-    color: var(--color-primario);
+    color: var(--texto-marca);
     font-size: var(--tamano-sm);
 }

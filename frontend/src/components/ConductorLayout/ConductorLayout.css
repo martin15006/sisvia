@@ -42,7 +42,7 @@
 .cond-layout-titulo-app {
     font-size: var(--tamano-md);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--titulo); /* igual que el pie: naranja en claro, azul en oscuro */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -81,12 +81,13 @@
 }
 
 .cond-layout-cerrar {
+    min-width: 44px; min-height: 44px; /* toque minimo (CL-08) */
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 8px 14px;
     background: var(--superficie);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border: 2px solid var(--color-rojo);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);

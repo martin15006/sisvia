@@ -26,7 +26,7 @@
 
 .campanita:hover {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-color: var(--color-primario-oscuro);
 }
 
@@ -116,7 +116,7 @@
 
 .campanita-link-leer-todas:hover {
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
 .campanita-dropdown-body {
@@ -161,7 +161,7 @@
 }
 
 .campanita-item-no-leida:hover {
-    background: #C5E1A5;
+    background: var(--acento-suave);
 }
 
 .campanita-item-icono {
@@ -175,16 +175,16 @@
     font-size: 18px;
     font-weight: var(--peso-bold);
     flex-shrink: 0;
-    border: 2px solid rgba(0, 0, 0, 0.25);
+    border: 2px solid var(--velo-25);
 }
 
 /* Colores del icono segun el tipo de notificacion (semaforo del sistema) */
 .campanita-icono-verde    { background: var(--color-exito); }
 .campanita-icono-azul     { background: var(--estado-info-solido); }
-.campanita-icono-amarillo { background: #F9A825; color: #1A1A1A; }
+.campanita-icono-amarillo { background: var(--amarillo-fuerte); color: var(--tinta-oscura); }
 .campanita-icono-rojo     { background: var(--color-rojo); }
 .campanita-icono-gris     { background: var(--estado-neutro-fondo); }
-.campanita-icono-naranja  { background: #E65100; }
+.campanita-icono-naranja  { background: var(--naranja-fuerte); }
 
 .campanita-item-cuerpo {
     flex: 1;

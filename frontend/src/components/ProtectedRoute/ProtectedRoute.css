@@ -22,7 +22,7 @@
    }
 
    .protected-cargando p {
-       color: var(--color-primario-oscuro);
+       color: var(--texto-marca);
        font-size: var(--tamano-md);
        font-weight: var(--peso-semibold);
    }

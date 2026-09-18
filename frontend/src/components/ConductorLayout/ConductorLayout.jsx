@@ -15,6 +15,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.js";
 import { etiquetaCargoCorta } from "../../lib/roles.js";
+import { MARCA } from "../../lib/marca.js";
 import Footer from "../Footer/Footer.jsx";
 import ToggleTema from "../ToggleTema/ToggleTema.jsx";
 import "./ConductorLayout.css";
@@ -39,7 +40,7 @@ function ConductorLayout({ children }) {
                         alt="SISVIA"
                         className="cond-layout-logo"
                     />
-                    <div className="cond-layout-titulo-app">Gestión de Flota</div>
+                    <div className="cond-layout-titulo-app">{MARCA.nombre}</div>
                 </div>
 
                 <div className="cond-layout-acciones">

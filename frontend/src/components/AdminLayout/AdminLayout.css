@@ -66,7 +66,7 @@
 
 .admin-layout-hamburguesa:hover {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-color: var(--color-primario-oscuro);
 }
 
@@ -206,7 +206,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(0, 0, 0, 0.4);
+        background: var(--velo-40);
         z-index: 99;
         animation: backdrop-aparecer var(--velocidad-rapida) ease-out;
     }
@@ -243,7 +243,7 @@
     align-items: center;
     gap: var(--espacio-md);
     background: var(--suplencia-solido);
-    color: #fff;
+    color: var(--texto-inverso);
     padding: var(--espacio-md) var(--espacio-xl);
     flex-wrap: wrap;
 }
@@ -260,7 +260,7 @@
     font-weight: var(--peso-bold);
 }
 .admin-layout-suplencia-regional {
-    background: rgba(255, 255, 255, 0.18);
+    background: var(--blanco-18);
     padding: 4px 12px;
     border-radius: var(--radio-xl);
     font-size: var(--tamano-sm);
@@ -269,8 +269,8 @@
 }
 .admin-layout-suplencia-cambiar {
     margin-left: auto;
-    background: #fff;
-    color: #5E35B1;
+    background: var(--color-blanco);
+    color: var(--suplencia-solido);
     border: none;
     border-radius: var(--radio-md);
     padding: 8px 16px;
@@ -279,4 +279,4 @@
     cursor: pointer;
     white-space: nowrap;
 }
-.admin-layout-suplencia-cambiar:hover { background: #EDE7F6; }
+.admin-layout-suplencia-cambiar:hover { background: var(--suplencia-fondo-claro); }

@@ -8,7 +8,7 @@ creado: 2026-09-16
 # Pacto · Identidad propia y correcciones de SISVIA
 
 > **Dónde quedamos**
-> 2026-09-16 · Última hecha: **tanda 2 cerrada** (OB-08, OB-09, OB-10, OB-26 y OB-27 nueva: naranja vivo con letra negra, paleta A, IBM Plex, logo nuevo y estados con sus propios colores); enmienda 1 firmada; tanda 1 y PC-HU-03 ✅ · Sigue: tanda 3 = OB-11, OB-14, OB-24, OB-25; tanda 4 = OB-12, OB-13, OB-15 y PC-HU-01 · Bloqueos: ninguno. Datos de prueba (`prueba.*@sisvia.test`, `TST-*`) siguen en la base mientras Martín recorre la ventana; se borran al terminar. Antes de OB-16 (HU-02) se responde la `[DUDA]` de HU-02.1. El pedido "para empresas" quedó separado: pacto propio después de este.
+> 2026-09-17 · Última hecha: **sello, intento 1** — todas las obligaciones y los puntos de control tildados; Must, casos borde y suite ✅ · Sigue: sellar cuando Martín confirme lo suyo · Bloqueos: **esperando a Martín** — (1) abrir en Word un chequeo exportado (cabecera naranja, letra negra), (2) mirar en oscuro la cabecera del menú con SISVIA en azul (enmienda 3) y (3) después de su push, ver que `sisvia.pages.dev` quedó igual y que Railway responde. Con eso se escribe "Pacto sellado". Después: pacto "para empresas" (una app para muchas empresas, mismos roles, cada una ve lo suyo).
 
 ## 1. Qué y por qué
 
@@ -45,7 +45,7 @@ creado: 2026-09-16
 
 **Criterios de aceptación**
 
-1. [ventana] **Dado** Ajustes (o el interruptor del header del conductor), **cuando** se elige "Oscuro", **entonces** las pantallas de HU-01.1 usan fondo negro con el acento naranja de la marca (ya no cian ni violeta). *(Enmienda 1.)* [DUDA: en oscuro el acento naranja `#FB923C` y el color de "alerta" `#FF8A4C` no se distinguen (1.03:1) · propuesta: se decide antes de OB-16, en la primera tanda de HU-02]
+1. [ventana] **Dado** Ajustes (o el interruptor del header del conductor), **cuando** se elige "Oscuro", **entonces** las pantallas de HU-01.1 usan fondo negro, **acento azul `#4C8DFF`** en textos y realces (nombre SISVIA del pie y del header del conductor, títulos, cifras) y el **naranja de la marca** en botones, ítem activo del menú y logo. La cabecera del menú pasa a fondo oscuro con el nombre SISVIA en azul, como el pie. Ya no hay cian ni violeta. *(Enmiendas 1, 2 y 3.)*
 2. [ventana] **Dado** el tema oscuro, **cuando** se mide el contraste en las pantallas de HU-01.2, **entonces** cumple los mismos mínimos: **≥ 4.5:1** y **≥ 3:1**.
 3. [ventana] **Dado** un vehículo en cada uno de los cinco estados, **cuando** se ve en claro y en oscuro, **entonces** cada estado conserva su color (verde, ámbar, naranja, rojo, gris) y solo cambia su luminosidad.
 4. [ventana] **Dado** que la app se abre por primera vez en un navegador, **cuando** carga, **entonces** arranca en tema claro.
@@ -114,6 +114,7 @@ creado: 2026-09-16
 | 2026-09-16 | Enmienda 1 · Letra sobre el naranja vivo (choca con CL-07: blanca da 3.56:1) | Letra oscura `#1C1917` (4.91:1), mostrada en la ventana | Letra oscura, **más oscura**: casi negra `#0C0A09` (5.55:1), también mostrada en la ventana — *"la letra oscura pero que sea un negro oscuro o asi como esta pero mas oscuro para que se vea mejor"*. Después, viendo el login: *"la letra de inicio de sesion que sea mucho mas negra"* → **negro puro `#000000`** (5.90:1). El botón se veía gris porque estaba desactivado (opacidad 0.5); se le propuso otro aspecto para el desactivado y Martín prefirió dejarlo como está: *"si asi esta bien como lo dejo mientras esta desactivado para que se vea bien que esta desactivado"*. Son ajustes de la opción recomendada con más contraste: no cambian qué se construye, no piden otra firma. |
 | 2026-09-16 | Enmienda 1 · En oscuro el acento `#FB923C` y alerta `#FF8A4C` no se distinguen (1.03:1) | Se decide al llegar a HU-02 (Should, todavía sin construir) | Al llegar al tema oscuro: queda como `[DUDA]` en HU-02.1 y se pregunta antes de OB-16. |
 | 2026-09-16 | Enmienda 1 · ¿Se firma? | Sí | **Sí, firmada.** |
+| 2026-09-17 | Enmienda 2 · Acento del tema oscuro (resuelve la `[DUDA]` de HU-02.1) | — | Martín, viendo el oscuro: *"en el modo oscuro esto aparece azul me gusta · ahora en el conductor tambien quiero que pase lo mismo pero arriba que se coloque en azul"* → acento azul en oscuro, superficies naranjas. Como el azul no se confunde con alerta, la duda queda resuelta. HU-02 es Should: basta su OK, sin firma. |
 | 2026-09-16 | Enmienda 1 · Acento del tema oscuro | Sigue a la marca del claro | Sigue a la marca del claro (se va el cian y el violeta) |
 | 2026-09-16 | Enmienda 1 · ¿Verlo antes de firmar? | Sí, en el lienzo | Sí. Como el pedido es "todo lo azul", la prueba se hace **sobre la app real** en la ventana, con los colores puestos solo en el navegador (sin tocar el código; al recargar vuelve el azul), en vez del lienzo. |
 
@@ -156,31 +157,31 @@ creado: 2026-09-16
 - [x] OB-09 · HU-01.1 · Reemplazar por tokens los 7 `rgba()` del azul provisional en `Login.css`, `CambiarPassword.css`, `Campanita.css`, `ModalVehiculo.css` y `animations.css`. *Enmienda 1: no cambia; los tokens nuevos salen del primario naranja.*
 - [x] OB-10 · HU-01.1 · Regenerar `frontend/public/logo.png` con fondo naranja vivo y el mismo dibujo (el dibujo claro sobre `#EA580C` da 3.25:1; un gráfico pide ≥ 3:1). *Reescrita por la enmienda 1: antes decía petróleo.*
 - [x] OB-26 · HU-01.1,2 · Letra negra sobre el naranja: token `--texto-sobre-marca: #000000` (5.90:1) en las reglas que hoy pintan blanco sobre el primario (68 con blanco explícito, más las que lo heredan o usan `--texto-inverso`). Los fondos de *hover* de la marca **aclaran** en vez de oscurecer: la letra negra sobre `#C2410C` da 4.06:1 y no pasa CL-07; sobre `#F97316` da 7.49:1. Los botones desactivados conservan su opacidad actual (decisión de Martín). *Nueva por la enmienda 1.*
-- [x] OB-27 · HU-01.1 · CL-05 · El primario hacía de "operativo / cumple / éxito" en 14 lugares (herencia del verde del SENA): con naranja, un vehículo operativo se vería del color de alerta. Los grupos de estado del vehículo donde estaba (tarjeta de selección del conductor, resultado en Chequeos y en el detalle, insignias de Vehículos y del detalle del vehículo, ícono del resultado del conductor, regla de criticidad) pasan **enteros** a `--veh-*` con `--veh-tinta`; "Cumple" pasa a `--veh-operativo`; el éxito genérico (toast, campanita, notificaciones, aptitud apta, usuario activo) pasa a `--color-exito` y `--estado-exito-*`. *Apareció en la tanda 2.*
-- [ ] OB-11 · HU-01.1 · Monoespaciada en placas, kilometraje y fechas en las pantallas de HU-01.1 que hoy los muestran en la fuente de interfaz.
-- [ ] OB-12 · HU-01.2 · Medir el contraste en tema claro en las 5 pantallas del criterio y corregir los tokens que no lleguen.
-- [ ] OB-13 · HU-01.3 · Medir los controles de las 4 pantallas del conductor y llevar a ≥ 44 px los que no lleguen.
-- [ ] OB-14 · HU-01.4 · Naranja vivo en `export/branding.js` y `export/word/brandingWord.js`, logo nuevo en `export/assets/logo.png`, y el mismo color en `docs/generar_manual.cjs`. La cabecera del PDF hoy lleva letra blanca (`documentoBase.js`): pasa a negra. *Reescrita por la enmienda 1: antes decía petróleo.*
-- [ ] OB-15 · CB-03 · Probar a 360 px una placa y una sede largas en "No pueden salir"; corregir si se desborda.
-- [ ] OB-24 · HU-01.1 · El header del conductor dice "Gestión de Flota" escrito a mano en `components/ConductorLayout/ConductorLayout.jsx`: leerlo de `lib/marca.js` (incumple CL-02). *Apareció en PC-HU-03.*
-- [ ] OB-25 · HU-01.1 · Las tarjetas de `pages/Conductor/SeleccionVehiculo.jsx` muestran el estado crudo en mayúsculas ("NO_OPERATIVO", "CRITICO", sin tilde): mostrar la etiqueta legible ("No operativo", "Crítico"). *Apareció en PC-HU-03.*
-- [ ] **PC-HU-01** · suite completa + HU-01.1-4 + CB-03 + CL-04, CL-06, CL-07, CL-08
+- [x] OB-27 · HU-01.1 · CL-05 · El primario hacía de "operativo / cumple / éxito" en 14 lugares (herencia del verde del SENA): con naranja, un vehículo operativo se vería del color de alerta. Los grupos de estado del vehículo donde estaba (tarjeta de selección del conductor, resultado en Chequeos y en el detalle, insignias de Vehículos y del detalle del vehículo, ícono del resultado del conductor, regla de criticidad) pasan **enteros** a `--veh-*` con `--veh-tinta`; "Cumple" pasa a `--veh-operativo`; el éxito genérico (toast, campanita, notificaciones, aptitud apta, usuario activo) pasa a `--color-exito` y `--estado-exito-*`. En la tanda 3 aparecieron 11 bordes y números más (tarjetas, resumen, conteos de "cumple") que también pasan a `--veh-operativo`. *Apareció en la tanda 2.*
+- [x] OB-11 · HU-01.1 · Monoespaciada en placas, kilometraje y fechas en las pantallas de HU-01.1 que hoy los muestran en la fuente de interfaz.
+- [x] OB-12 · HU-01.2 · Medir el contraste en tema claro en las 5 pantallas del criterio y corregir los tokens que no lleguen.
+- [x] OB-13 · HU-01.3 · Medir los controles de las 4 pantallas del conductor y llevar a ≥ 44 px los que no lleguen.
+- [x] OB-14 · HU-01.4 · Naranja vivo en `export/branding.js` y `export/word/brandingWord.js`, logo nuevo en `export/assets/logo.png`, y el mismo color en `docs/generar_manual.cjs`. La cabecera del PDF hoy lleva letra blanca (`documentoBase.js`): pasa a negra. *Reescrita por la enmienda 1: antes decía petróleo.*
+- [x] OB-15 · CB-03 · Probar a 360 px una placa y una sede largas en "No pueden salir"; corregir si se desborda.
+- [x] OB-24 · HU-01.1 · El header del conductor dice "Gestión de Flota" escrito a mano en `components/ConductorLayout/ConductorLayout.jsx`: leerlo de `lib/marca.js` (incumple CL-02). *Apareció en PC-HU-03.*
+- [x] OB-25 · HU-01.1 · Las tarjetas de `pages/Conductor/SeleccionVehiculo.jsx` muestran el estado crudo en mayúsculas ("NO_OPERATIVO", "CRITICO", sin tilde): mostrar la etiqueta legible ("No operativo", "Crítico"). *Apareció en PC-HU-03.*
+- [x] **PC-HU-01** · suite completa + HU-01.1-4 + CB-03 + CL-04, CL-06, CL-07, CL-08
 
 **HU-02 · Should**
 
-- [ ] OB-16 · HU-02.1 · Paleta Medianoche en el bloque `[data-tema="oscuro"]` de `variables.css`: fondo negro y el acento naranja de la marca para acción primaria, navegación activa, insignia de cargo y enlaces (se van el cian y el violeta). **Antes de construirla se responde la `[DUDA]` de HU-02.1** (naranja contra alerta en oscuro). *Reescrita por la enmienda 1.*
-- [ ] OB-17 · HU-02.1 · Pasar a tokens los colores sueltos de los `.css` del panel (`components/AdminLayout`, `pages/` de administración), con valor de claro y de oscuro.
-- [ ] OB-18 · HU-02.1 · Lo mismo en los `.css` del conductor, login, perfil y el resto de `components/`.
-- [ ] OB-19 · HU-02.2 · CB-05 · Medir el contraste en oscuro en las pantallas de HU-01.2 y corregir; verificar que todo texto sobre un estado use `--veh-tinta`.
-- [ ] OB-20 · HU-02.3 · Recorrido en ventana con un vehículo en cada estado, en claro y en oscuro.
-- [ ] OB-21 · CB-04 · Probar en ventana con `sisvia-tema=oscuro` ya guardado de antes.
-- [ ] OB-22 · HU-02.4 · Probar en ventana, con el almacenamiento vacío, que arranca en claro (ya es lo que hace `lib/tema.js`).
-- [ ] **PC-HU-02** · suite completa + HU-02.1-4 + CB-04, CB-05 + CL-04, CL-05, CL-07
+- [x] OB-16 · HU-02.1 · Bloque `[data-tema="oscuro"]` de `variables.css`: fondo negro, `--acento-luz` azul `#4C8DFF` para textos y realces, y el primario naranja sin cambios para las superficies de marca. El nombre del header del conductor pasa a `--titulo`, como el del pie. *Reescrita por las enmiendas 1 y 2; el bloque oscuro ya era así, solo cambió el header.*
+- [x] OB-17 · HU-02.1 · Pasar a tokens los colores sueltos de los `.css` del panel (`components/AdminLayout`, `pages/` de administración), con valor de claro y de oscuro.
+- [x] OB-18 · HU-02.1 · Lo mismo en los `.css` del conductor, login, perfil y el resto de `components/`.
+- [x] OB-19 · HU-02.2 · CB-05 · Medir el contraste en oscuro en las pantallas de HU-01.2 y corregir; verificar que todo texto sobre un estado use `--veh-tinta`.
+- [x] OB-20 · HU-02.3 · Recorrido en ventana con un vehículo en cada estado, en claro y en oscuro.
+- [x] OB-21 · CB-04 · Probar en ventana con `sisvia-tema=oscuro` ya guardado de antes.
+- [x] OB-22 · HU-02.4 · Probar en ventana, con el almacenamiento vacío, que arranca en claro (ya es lo que hace `lib/tema.js`).
+- [x] **PC-HU-02** · suite completa + HU-02.1-4 + CB-04, CB-05 + CL-04, CL-05, CL-07
 
 **HU-04 · Could**
 
-- [ ] OB-23 · HU-04.1,2 · Quitar el grupo "Vehículos no operativos o bloqueados" de `Dashboard.jsx` y de la suma de la insignia; quitar la consulta `vehiculos_no_operativos` de `dashboard.controller.js`.
-- [ ] **PC-HU-04** · suite completa + HU-04.1,2 + CL-06
+- [x] OB-23 · HU-04.1,2 · Quitar el grupo "Vehículos no operativos o bloqueados" de `Dashboard.jsx` y de la suma de la insignia; quitar la consulta `vehiculos_no_operativos` de `dashboard.controller.js`.
+- [x] **PC-HU-04** · suite completa + HU-04.1,2 + CL-06
 
 **Revisión antes de construir:** pasó, con hallazgos.
 
@@ -207,6 +208,9 @@ creado: 2026-09-16
 |---|---|---|---|---|
 | 1 | 2026-09-16 | OB-01 a OB-07 | PC-HU-03 ✅ | `Bloqueo por estado del vehículo con reglas compartidas` |
 | 2 | 2026-09-16 | OB-08, OB-09, OB-10, OB-26, OB-27 | Sin punto de control propio (PC-HU-01 cierra en la tanda 4). Suite: 11 de 11 tests · build OK · lint 40 = línea base. Ventana: login y panel reales en claro | `Identidad naranja: paleta A, IBM Plex, logo nuevo y estados con sus colores` |
+| 3 | 2026-09-17 | OB-11, OB-14, OB-24, OB-25 (+ resto de OB-27) | Sin punto de control propio. Suite: 18 de 18 tests (11 + 7 de placa, fuera del pacto) · build OK · lint 40 = línea base. Sin ventana: Martín pidió revisar él solo para ahorrar tokens | `Documentos en naranja, placas en monoespaciada y textos del conductor` |
+| 4 | 2026-09-17 | OB-16 (enmienda 2), OB-17, OB-18, OB-23 | Sin ventana todavía: PC-HU-01, PC-HU-02 y PC-HU-04 van juntos en una sola pasada. Suite: 18 de 18 · build OK · lint 40 = línea base | `Tema oscuro sin colores sueltos y panel sin la lista repetida` |
+| 5 | 2026-09-17 | OB-12, OB-13, OB-15, OB-19 a OB-22 | PC-HU-01 ✅ · PC-HU-02 ✅ · PC-HU-04 ✅ (una sola pasada con ventana, ver el sello) | `Contraste medido en claro y oscuro, toques de 44 px y fila de 360 px` |
 
 **PC-HU-03 · 2026-09-16**
 
@@ -241,12 +245,64 @@ creado: 2026-09-16
 - **Para medir en OB-12:** `--veh-observacion #A66A00` con letra blanca da 4.48:1 (le falta un poco para 4.5); el naranja oscuro `#C2410C` sobre el tinte `#FFEDD5` da 4.52:1, justo; los campos del login siguen con fondo gris fuerte.
 - **`color-mix()`** se usa en los tokens de velo para que salgan del primario. Requiere Chrome 111, Safari 16.2 o Firefox 113 (2023 en adelante).
 
+**Hallazgos de la tanda 3**
+
+- **PDF, Word, correo y manual** llevaban letra blanca sobre el primario: pasan a negra (`COLORES.sobreMarca` en `branding.js`, `SOBRE_MARCA` en Word). Los títulos de sección usan el naranja oscuro `#C2410C` (5.18:1 sobre blanco), no el vivo. El logo de los documentos es el mismo de la app.
+- **OB-11:** monoespaciada en 10 clases de placa, kilometraje y fechas numéricas (2 ya la tenían). Las fechas escritas en palabras ("Miércoles, 16 de septiembre") quedan en la fuente de interfaz a propósito.
+- **Cómo se revisa esta tanda:** por pedido de Martín ("para de correr y yo reviso solo para que no consuma token") no se abrió ventana. Los `[ventana]` de HU-01 se prueban en PC-HU-01 (tanda 4).
+- **Fuera del pacto, el mismo día:** foto que no subía (la clave de Cloudinary no tenía permiso "create" y después quedó vivo un backend viejo con la clave anterior), placa validada por tipo de vehículo, color solo letras y tipos automóvil/motocicleta/motocarro (migración `database/migrations/2026-09-16_tipos_moto_y_carro.sql`, la corre Martín).
+
+**Hallazgos de la tanda 4**
+
+- **Colores a mano: de 143 a 0** en los CSS de componentes (y 0 en los `.jsx`). Entraron como tokens en `variables.css`: velos neutros (`--velo-*`, `--blanco-*`), halos de estado que salen de los `--veh-*`, fondos del resultado del conductor como tinte del color del estado, violeta y verde agua con valor de oscuro, y `--tinta-oscura` para la letra sobre ámbar sólido.
+- **Restos del verde del SENA que quedaban:** 6 anillos de foco `rgba(46,125,50,…)`, el hover verde `#C5E1A5` de la campanita y un degradado verde en el aviso del RUNT. Pasaron a los velos de la marca.
+- **Cambio visible:** el fondo del resultado del conductor en "observación" era azul pastel; ahora es el tinte ámbar de su estado (CL-05). Las letras sobre ámbar sólido que en oscuro se ponían blancas quedan oscuras en los dos temas: el blanco sobre ámbar no llega al contraste.
+- **HU-04:** se quitó el grupo "Vehículos no operativos o bloqueados", su suma en la insignia de "Necesita atención" y la consulta del backend.
+
+**Hallazgos de la tanda 5 (la pasada con ventana)**
+
+- **Cómo se midió:** un script en la ventana calcula el contraste WCAG de cada texto visible contra su fondo real (apila los fondos semitransparentes hasta uno opaco), lista los controles tocables de menos de 44 × 44 y busca restos del azul viejo. Se corrió en claro y en oscuro sobre las 11 pantallas del admin, la página de inicio del conductor y las 4 del chequeo, a 390 px de ancho para el conductor.
+- **Contraste, primera medición:** 5 patrones en claro y 3 en oscuro, todos de tokens. Se corrigieron en la raíz: gris secundario `#757575` → `#5A646E`, ámbar de observación `#A66A00` → `#9C6400`, letra de advertencia `#E65100` → `#A84C08`, token nuevo `--texto-marca` (naranja oscuro en claro, azul en oscuro) para 117 letras en color de marca, 49 letras rojas a `--estado-error-texto`, 5 naranjas a `--estado-adv-texto`, y letra negra sobre los naranjas de advertencia (modal de finalizar, "Desactivar", confirmar crítico). Segunda medición: **0 fallas** en todas.
+- **Toques:** los botones Cumple / No cumple / N/A y los de navegación medían 43 px; los chips "← Cancelar", 35-36 px; "Cerrar sesión", 38. Todos pasan a 44. El interruptor de tema se ve igual (52 × 28) pero su área táctil invisible mide 56 × 44 (se comprobó tocando sus bordes).
+- **CB-03 fallaba:** a 360 px la sede larga se cortaba y el motivo se salía de la tarjeta (la sede tenía `nowrap` en una columna que crece). Ahora la sede baja de línea.
+- **HU-04.2, cómo se leyó:** la insignia ya no suma el grupo repetido. Un vehículo bloqueado que además no tiene RUNT sigue contando en "Sin RUNT": es otro aviso (le falta un documento), no la misma lista.
+- **Proceso:** los scripts temporales dentro de `backend/` reiniciaban el nodemon de Martín; se movieron a la carpeta temporal. Datos de prueba borrados al final: 2 chequeos, 2 avisos, 6 vehículos `TST*`, 1 sede y 2 cuentas `@sisvia.test`.
+
 ## 7. Sello
 
-*Todavía no hay intentos.*
+**Intento 1 · 2026-09-17**
+
+| Qué | Cómo se probó | Resultado |
+|---|---|---|
+| Suite completa | `npm test` 18 de 18 · 63 módulos del backend con sintaxis OK · `npm run build` · lint 40 = línea base · 0 colores a mano en los CSS de componentes | ✅ |
+| HU-01.1 | ventana: 11 pantallas del admin, inicio del conductor y las 4 del chequeo con IBM Plex Sans; placas en IBM Plex Mono; franja, botones y logo naranjas con letra negra; 0 restos de `#1350D8` (búsqueda en los estilos calculados de cada elemento) | ✅ |
+| HU-01.2 | ventana, claro: login 5 textos, panel y "No pueden salir" 72, selección 25, ítems 29 (89 con el modal de finalizar): 0 por debajo de 4.5:1 (3:1 en letra grande). Las otras pantallas del admin, también 0 | ✅ |
+| HU-01.3 | ventana a 390 px: selección, aptitud (y su modal), ítems (y su modal) y resultado: 0 controles de menos de 44 × 44 | ✅ |
+| HU-01.4 | PDF de un chequeo abierto en la ventana: cabecera naranja, letra negra, logo naranja. Word: el `document.xml` trae la cabecera con fondo `EA580C`, letra `000000` y 0 azules; la ventana no abre .docx | ✅ PDF · ⏳ Word: que Martín lo abra en Word |
+| HU-02.1 | ventana, oscuro: fondo `#05070A`, SISVIA del pie y del header del conductor en `#4C8DFF`, franja del menú `#EA580C` | ✅ |
+| HU-02.1 (enmienda 3) | cabecera del menú en oscuro con fondo oscuro y SISVIA azul (5.96:1, medido sobre los valores de los tokens; build OK). No se abrió ventana: Martín lo ve después de su push | ⏳ que Martín lo mire |
+| HU-02.2 | ventana, oscuro: las mismas pantallas de HU-01.2 y el resto del admin, 0 fallas | ✅ |
+| HU-02.3 | los 5 estados: el tono cambia como mucho 4° entre claro y oscuro (143/145, 38/39, 17/21, 3/3, 220/222) y se ven en el panel y en la selección | ✅ |
+| HU-02.4 | ventana, sin nada guardado: arranca en claro | ✅ |
+| HU-03.1 | test `HU-03.1` · ventana: TSTCRI se rechaza con el texto exacto | ✅ |
+| HU-03.2 | test `HU-03.2` · ventana: TSTNOP con el texto exacto | ✅ |
+| HU-03.3-5 | tests `HU-03.3`, `HU-03.4`, `HU-03.5` | ✅ |
+| HU-03.6 | ventana: "No pueden salir" sin "no se le impide" | ✅ |
+| HU-04.1 | ventana: el grupo "Vehículos no operativos o bloqueados" ya no aparece; los bloqueados salen solo en "No pueden salir" | ✅ |
+| HU-04.2 | la insignia ya no suma ese grupo (ver hallazgos de la tanda 5) | ✅ |
+| CB-01, CB-02 | tests `CB-01`, `CB-02` | ✅ |
+| CB-03 | ventana a 360 px con `TSTWWWWWWWWW` y una sede de 55 caracteres: nada se sale de la tarjeta, la sede baja de línea (se corrigió en esta pasada) | ✅ |
+| CB-04 | ventana: con `sisvia-tema=oscuro` guardado, abre en oscuro | ✅ |
+| CB-05 | la letra sobre los estados en oscuro va en `--veh-tinta`: 5.04 a 9.57:1 | ✅ |
+| Cláusulas | CL-04: 0 colores sueltos · CL-05: estados solo con `--veh-*` · CL-06: sin estilos en línea nuevos · CL-07: medido en claro y oscuro · CL-08: medido · CL-01: sin git | ✅ |
+| Terminado · deploy | [Martín] después de su push, `sisvia.pages.dev` igual a lo probado y Railway respondiendo | ⏳ esperando a Martín |
+
+**Resultado del intento 1:** todos los criterios Must, los casos borde y la suite dan ✅. **No se sella todavía:** faltan dos pruebas de Martín, abrir un Word exportado y revisar el despliegue después de su push.
 
 ## 8. Enmiendas
 
 | N | Fecha | Qué cambió | Motivo (pedido textual) | Obligaciones afectadas | Firma |
 |---|---|---|---|---|---|
 | 1 | 2026-09-16 | Acento de la marca: de petróleo a **naranja vivo `#EA580C`** (provisional) en todo lo que hoy es azul, logo incluido, con **letra negra `#000000`** encima; el tema oscuro sigue a la marca (se van cian y violeta). Choques al cruzarla con lo firmado: (a) letra blanca sobre el naranja vivo da 3.56:1 y CL-07 pide 4.5:1 → se resolvió con letra negra (5.90:1); (b) en oscuro el acento naranja y alerta quedan a 1.03:1 → `[DUDA]` en HU-02.1, se decide antes de OB-16; (c) en claro, naranja vivo y alerta quedan a 1.45:1 y el tono oscuro de la marca `#C2410C` es el mismo de alerta → se revisa en la ventana en PC-HU-01. Probado sobre la app real en la ventana antes de firmar. | *"mmm ok pero antes de ingresar a la tanda 2 puedes cambiar el azul por un naranja? o bueno pues el logo tambien"* · *"dejalo con el naranja vivo mientras"* | OB-08, OB-10, OB-14, OB-16 (reescritas) · OB-09 (sin cambios) · OB-26 (nueva) · criterios HU-01.1 y HU-02.1 | Martín · 2026-09-16 |
+| 2 | 2026-09-17 | Tema oscuro: el acento de textos y realces queda **azul `#4C8DFF`** (no sigue al naranja); las superficies de marca siguen naranjas. Resuelve la `[DUDA]` de HU-02.1 sobre alerta. | *"en el modo oscuro esto aparece azul me gusta · ahora en el conductor tambien quiero que pase lo mismo pero arriba que se coloque en azul"* | OB-16 (reescrita y hecha) · criterio HU-02.1 | OK de Martín (HU-02 es Should) · 2026-09-17 |
+| 3 | 2026-09-17 | Tema oscuro: el nombre SISVIA de la cabecera del menú también va en azul. Como el azul sobre la franja naranja da 1.3:1, en oscuro esa cabecera pasa a la superficie oscura (azul 5.96:1). | *"el nombre no cambia de color como abajo cuando lo cambias a modo oscuro que tambien quede en azul"* | `components/AdminLayout/Sidebar.css` · criterio HU-02.1 | OK de Martín (HU-02 es Should) · 2026-09-17 |

@@ -70,7 +70,7 @@
     margin-top: 4px;
     padding: 4px 12px;
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border: 2px solid var(--color-primario-oscuro);
     border-radius: var(--radio-xl);
     font-size: var(--tamano-xs);
@@ -108,7 +108,7 @@
 
 .mi-perfil-foto-pendiente {
     margin-top: var(--espacio-sm);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-xs);
     font-weight: var(--peso-semibold);
     font-style: italic;
@@ -125,7 +125,7 @@
     margin: 0;
     font-size: var(--tamano-md);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding-bottom: var(--espacio-sm);
@@ -177,7 +177,7 @@
 .mi-perfil-input:focus {
     outline: none;
     border-color: var(--color-primario);
-    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+    box-shadow: 0 0 0 3px var(--marca-velo-15);
 }
 
 .mi-perfil-input-bloqueado {
@@ -195,8 +195,8 @@
     margin-top: 6px;
     padding: 8px 12px;
     background: var(--estado-adv-solido);
-    color: #1A1A1A;
-    border: 2px solid #e29a2d;
+    color: var(--tinta-oscura);
+    border: 2px solid var(--estado-adv-borde-fuerte);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
     font-weight: var(--peso-semibold);
@@ -218,8 +218,8 @@
 
 .mi-perfil-aviso-bloqueado {
     background: var(--estado-adv-fondo);
-    border: 2px solid #F9A825;
-    color: #1A1A1A;
+    border: 2px solid var(--amarillo-fuerte);
+    color: var(--tinta-oscura);
     padding: var(--espacio-md);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -236,7 +236,7 @@
 /* ===== Mensajes ===== */
 .mi-perfil-error {
     background: var(--estado-error-fondo);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     padding: var(--espacio-md);
     border-radius: var(--radio-md);
     border: 2px solid var(--color-rojo);
@@ -246,7 +246,7 @@
 
 .mi-perfil-info {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     padding: var(--espacio-md);
     border-radius: var(--radio-md);
     border: 2px solid var(--color-primario-oscuro);
@@ -268,7 +268,7 @@
 .mi-perfil-boton-pass {
     padding: 10px 18px;
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border: 2px solid var(--color-primario);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -343,7 +343,7 @@
 /* El borde dorado del aviso peach se aclara de mas sobre el solido oscuro;
    lo bajamos a un ambar mas apagado coherente con --estado-adv-solido oscuro. */
 [data-tema="oscuro"] .mi-perfil-aviso-validacion {
-    border-color: #A65A14;
+    border-color: var(--estado-adv-borde-fuerte);
 }
 /* El aviso "bloqueado" tenia fondo crema claro, borde amarillo fuerte y texto
    oscuro: en oscuro se convierte en tinte translucido + borde/texto de estado. */

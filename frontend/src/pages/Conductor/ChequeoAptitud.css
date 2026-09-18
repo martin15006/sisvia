@@ -19,6 +19,7 @@
 }
 
 .aptitud-volver-chip {
+    min-height: 44px; /* toque minimo del conductor (CL-08) */
     padding: 8px 14px;
     background: var(--color-gris-200);
     color: var(--color-gris-900);
@@ -158,7 +159,7 @@
 
 .aptitud-boton-no {
     background: var(--superficie);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border: 3px solid var(--color-rojo);
 }
 
@@ -177,7 +178,7 @@
 }
 
 .aptitud-estado-error {
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     font-weight: var(--peso-semibold);
 }
 
@@ -207,7 +208,7 @@
     justify-content: center;
     align-items: center;
     padding: var(--espacio-md);
-    background: linear-gradient(135deg, #FDECEC 0%, #F8D7D7 100%);
+    background: var(--aptitud-bloqueada-fondo);
 }
 
 .aptitud-bloqueada-tarjeta {
@@ -231,7 +232,7 @@
     position: absolute;
     inset: 0;
     border-radius: var(--radio-lg);
-    box-shadow: inset 0 0 0 1px rgba(211, 47, 47, 0.15);
+    box-shadow: inset 0 0 0 1px var(--rojo-15);
     pointer-events: none;
 }
 
@@ -246,11 +247,11 @@
     justify-content: center;
     font-size: 52px;
     line-height: 1;
-    box-shadow: 0 6px 20px rgba(211, 47, 47, 0.45);
+    box-shadow: 0 6px 20px var(--halo-critico);
 }
 
 .aptitud-bloqueada-titulo {
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     font-size: var(--tamano-xl);
     font-weight: var(--peso-bold);
     margin: 0;
@@ -298,7 +299,7 @@
 .aptitud-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: var(--velo-55);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -327,7 +328,7 @@
     height: 64px;
     border-radius: 50%;
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -348,7 +349,7 @@
 }
 
 .aptitud-modal-confirma strong {
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-weight: var(--peso-bold);
 }
 

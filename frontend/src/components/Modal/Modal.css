@@ -5,7 +5,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--velo-55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,7 +44,7 @@
 .modal-titulo {
   margin: 0;
   font-size: var(--tamano-xl);
-  color: var(--color-primario-oscuro);
+  color: var(--texto-marca);
 }
 
 .modal-cerrar {
@@ -69,7 +69,7 @@
   background: var(--color-rojo);
   color: var(--color-blanco);
   transform: scale(1.15);
-  box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.18);
+  box-shadow: 0 0 0 4px var(--rojo-18);
 }
 
 .modal-cuerpo {

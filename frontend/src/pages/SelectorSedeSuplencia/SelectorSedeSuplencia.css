@@ -23,7 +23,7 @@
 .selsede-titulo {
     font-size: var(--tamano-xl);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     margin: 0 0 var(--espacio-sm);
 }
 
@@ -98,7 +98,7 @@
     background: var(--superficie);
     border: 2px solid var(--color-primario);
     border-radius: var(--radio-md);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-weight: var(--peso-semibold);
     font-size: var(--tamano-sm);
     cursor: pointer;

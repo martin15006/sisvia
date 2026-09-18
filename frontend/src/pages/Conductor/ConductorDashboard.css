@@ -56,7 +56,7 @@
 
 .cond-hero-nombre {
     margin: 0;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: 32px;
     font-weight: var(--peso-bold);
     line-height: 1.1;
@@ -93,7 +93,7 @@
     margin-top: var(--espacio-sm);
     padding: 6px 14px;
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border: 2px solid var(--color-primario-oscuro);
     border-radius: var(--radio-xl);
     font-size: var(--tamano-sm);
@@ -193,7 +193,7 @@
 
 .cond-circulo-post {
     background: var(--superficie);
-    color: #1A1A1A;
+    color: var(--tinta-oscura);
     border-color: var(--estado-adv-texto);
 }
 
@@ -234,7 +234,7 @@
 .cond-licencia-titulo {
     font-size: var(--tamano-md);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -278,13 +278,13 @@
 
 .cond-licencia-vencimiento-normal {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-color: var(--color-primario-oscuro);
 }
 
 .cond-licencia-vencimiento-urgente {
     background: var(--estado-adv-solido);
-    color: #1A1A1A;
+    color: var(--tinta-oscura);
     border-color: var(--estado-adv-solido);
 }
 
@@ -335,7 +335,7 @@
 }
 .cond-suplencia-texto { font-size: var(--tamano-sm); line-height: 1.4; }
 .cond-suplencia-boton {
-    background: var(--suplencia-solido); color: #fff; border: none; border-radius: var(--radio-md);
+    background: var(--suplencia-solido); color: var(--texto-inverso); border: none; border-radius: var(--radio-md);
     padding: 10px 16px; font-weight: var(--peso-bold); font-size: var(--tamano-sm); cursor: pointer;
     white-space: nowrap;
 }

@@ -22,6 +22,7 @@
 }
 
 .items-volver-chip {
+    min-height: 44px; /* toque minimo del conductor (CL-08) */
     padding: 8px 14px;
     background: var(--color-gris-200);
     color: var(--color-gris-900);
@@ -68,7 +69,7 @@
 
 .items-header-vehiculo {
     font-size: var(--tamano-sm);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-weight: var(--peso-bold);
     letter-spacing: 1px;
 }
@@ -99,7 +100,7 @@
 
 .items-progreso-actual {
     background: var(--color-primario-oscuro);
-    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.25);
+    box-shadow: 0 0 0 2px var(--marca-velo-25);
 }
 
 /* Main */
@@ -141,7 +142,7 @@
 
 .items-cat-titulo {
     margin: 0;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-lg);
     font-weight: var(--peso-bold);
 }
@@ -209,7 +210,7 @@
     font-weight: var(--peso-bold);
     letter-spacing: 1px;
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.35);
+    box-shadow: 0 2px 8px var(--rojo-35);
 }
 
 .items-card-larga {
@@ -227,6 +228,7 @@
 }
 
 .items-card-boton {
+    min-height: 44px; /* toque minimo del conductor (CL-08) */
     padding: 10px 6px;
     border-radius: var(--radio-md);
     border: 2px solid var(--color-gris-200);
@@ -255,21 +257,21 @@
     background: var(--veh-operativo);
     color: var(--veh-tinta);
     border-color: var(--veh-operativo);
-    box-shadow: 0 3px 10px rgba(46, 125, 50, 0.35);
+    box-shadow: 0 3px 10px var(--halo-operativo);
 }
 
 .items-card-boton-no-cumple.items-card-boton-activo {
     background: var(--color-rojo);
     color: var(--color-blanco);
     border-color: var(--color-rojo);
-    box-shadow: 0 3px 10px rgba(211, 47, 47, 0.35);
+    box-shadow: 0 3px 10px var(--rojo-35);
 }
 
 .items-card-boton-na.items-card-boton-activo {
     background: var(--badge-gris);
     color: var(--color-blanco);
     border-color: var(--color-gris-500);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 10px var(--velo-20);
 }
 
 /* Observacion (aparece solo si No cumple) */
@@ -291,7 +293,7 @@
 }
 
 .items-card-obs-obligatoria {
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     font-weight: var(--peso-bold);
     text-transform: none;
     letter-spacing: 0;
@@ -313,7 +315,7 @@
 .items-card-obs:focus {
     outline: none;
     background: var(--superficie);
-    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
+    box-shadow: 0 0 0 3px var(--rojo-15);
 }
 
 /* Evidencia fotográfica */
@@ -447,7 +449,7 @@
 
 .items-card-foto-boton-galeria {
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-color: var(--color-primario);
     border-style: dashed;
 }
@@ -466,7 +468,7 @@
 
 .items-card-fotos-subiendo {
     text-align: center;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-sm);
     font-weight: var(--peso-bold);
     font-style: italic;
@@ -475,7 +477,7 @@
 /* Error de categoria */
 .items-error-categoria {
     background: var(--estado-error-fondo);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     padding: var(--espacio-sm) var(--espacio-md);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -493,6 +495,7 @@
 }
 
 .items-nav-boton {
+    min-height: 44px; /* toque minimo del conductor (CL-08) */
     padding: 14px var(--espacio-md);
     border-radius: var(--radio-md);
     border: none;
@@ -534,12 +537,12 @@
 
 .items-nav-boton-finalizar {
     background: var(--color-naranja);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     box-shadow: var(--sombra-md);
 }
 
 .items-nav-boton-finalizar:hover:not(:disabled) {
-    background: #E65100;
+    background: var(--naranja-fuerte);
     transform: translateY(-1px);
     box-shadow: var(--sombra-lg);
 }
@@ -553,7 +556,7 @@
 }
 
 .items-estado-error {
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     font-weight: var(--peso-semibold);
 }
 
@@ -582,7 +585,7 @@
 .items-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: var(--velo-55);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -612,13 +615,13 @@
     height: 72px;
     border-radius: 50%;
     background: var(--color-naranja);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 42px;
     font-weight: var(--peso-bold);
-    box-shadow: 0 6px 18px rgba(245, 124, 0, 0.45);
+    box-shadow: 0 6px 18px var(--halo-advertencia);
 }
 
 .items-modal-titulo {
@@ -636,7 +639,7 @@
 }
 
 .items-modal-texto strong {
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
 }
 
 .items-modal-botones {
@@ -675,11 +678,11 @@
 
 .items-modal-boton-confirmar {
     background: var(--color-naranja);
-    color: var(--color-blanco);
+    color: var(--texto-sobre-marca);
 }
 
 .items-modal-boton-confirmar:hover:not(:disabled) {
-    background: #E65100;
+    background: var(--naranja-fuerte);
     transform: translateY(-1px);
     box-shadow: var(--sombra-md);
 }

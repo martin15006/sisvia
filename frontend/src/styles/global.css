@@ -51,12 +51,12 @@ h4 {
 
 /* === ENLACES === */
 a {
-  color: var(--color-primario);
+  color: var(--texto-marca);
   transition: color var(--velocidad-rapida) var(--suavizado);
 }
 
 a:hover {
-  color: var(--color-primario-oscuro);
+  color: var(--texto-marca);
 }
 
 /* === FOCO ACCESIBLE === */

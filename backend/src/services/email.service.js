@@ -88,7 +88,7 @@ const layout = (titulo, cuerpoHtml) => `
   <div style="max-width:640px;margin:0 auto;background:#ffffff;">
     <div style="background:${COLORES.primario};padding:18px 24px;display:flex;align-items:center;">
       <img src="cid:logomarca" width="42" height="42" alt="SISVIA" style="background:#fff;border-radius:6px;padding:4px;vertical-align:middle;" />
-      <span style="color:#fff;font-size:18px;font-weight:bold;margin-left:12px;vertical-align:middle;">${titulo}</span>
+      <span style="color:${COLORES.sobreMarca};font-size:18px;font-weight:bold;margin-left:12px;vertical-align:middle;">${titulo}</span>
     </div>
     <div style="padding:22px 24px;">
       ${cuerpoHtml}
@@ -100,7 +100,7 @@ const layout = (titulo, cuerpoHtml) => `
 </div>`;
 
 const boton = (texto, url) => url
-    ? `<a href="${url}" style="display:inline-block;margin-top:16px;background:${COLORES.primario};color:#fff;text-decoration:none;padding:10px 22px;border-radius:8px;font-weight:bold;">${texto}</a>`
+    ? `<a href="${url}" style="display:inline-block;margin-top:16px;background:${COLORES.primario};color:${COLORES.sobreMarca};text-decoration:none;padding:10px 22px;border-radius:8px;font-weight:bold;">${texto}</a>`
     : '';
 
 // Correo inmediato de falla critica (vehiculo no operativo).

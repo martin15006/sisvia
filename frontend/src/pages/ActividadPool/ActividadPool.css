@@ -1,6 +1,6 @@
 .actividad-pool { max-width: 900px; margin: 0 auto; padding: var(--espacio-lg); }
 .actividad-pool-volver {
-    background: none; border: none; color: var(--color-primario); cursor: pointer;
+    background: none; border: none; color: var(--texto-marca); cursor: pointer;
     font-weight: var(--peso-semibold); font-size: var(--tamano-sm); margin-bottom: var(--espacio-md);
 }
 .actividad-pool-sub { color: var(--color-gris-700); font-size: var(--tamano-sm); margin-bottom: var(--espacio-md); }
@@ -17,9 +17,10 @@
 }
 .actividad-pool-chip-usuario { background: var(--estado-info-fondo); color: var(--estado-info-texto); }
 .actividad-pool-chip-vehiculo { background: var(--suplencia-fondo); color: var(--suplencia-color); }
-.actividad-pool-chip-chequeo { background: var(--acento-suave); color: var(--color-primario-oscuro); }
+.actividad-pool-chip-chequeo { background: var(--acento-suave); color: var(--texto-marca); }
 .actividad-pool-accion { font-size: var(--tamano-sm); color: var(--color-gris-900); }
-.actividad-pool-fecha { font-size: var(--tamano-xs); color: var(--color-gris-700); white-space: nowrap; }
+.actividad-pool-fecha {
+    font-family: var(--fuente-monospace); font-size: var(--tamano-xs); color: var(--color-gris-700); white-space: nowrap; }
 
 @media (max-width: 600px) {
     .actividad-pool-item { grid-template-columns: 1fr; gap: 4px; }

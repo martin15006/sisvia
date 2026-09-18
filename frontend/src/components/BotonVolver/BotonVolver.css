@@ -11,7 +11,7 @@
     gap: var(--espacio-sm);
     padding: var(--espacio-sm) var(--espacio-lg);
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border: 2px solid var(--color-primario);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);

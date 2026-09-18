@@ -57,7 +57,7 @@
 .notif-marcar-todas {
     padding: 8px 16px;
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border: 2px solid var(--color-primario);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -130,7 +130,7 @@
     width: 38px;
     height: 38px;
     color: var(--color-blanco);
-    border: 2px solid rgba(0, 0, 0, 0.25);
+    border: 2px solid var(--velo-25);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -143,10 +143,10 @@
 /* Colores del icono segun el tipo (semaforo del sistema) */
 .notif-icono-verde    { background: var(--color-exito); }
 .notif-icono-azul     { background: var(--estado-info-solido); }
-.notif-icono-amarillo { background: #F9A825; color: #1A1A1A; }
+.notif-icono-amarillo { background: var(--amarillo-fuerte); color: var(--tinta-oscura); }
 .notif-icono-rojo     { background: var(--color-rojo); }
 .notif-icono-gris     { background: var(--estado-neutro-fondo); }
-.notif-icono-naranja  { background: #E65100; }
+.notif-icono-naranja  { background: var(--naranja-fuerte); }
 
 .notif-item-cuerpo {
     flex: 1;

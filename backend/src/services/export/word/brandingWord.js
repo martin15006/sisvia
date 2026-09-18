@@ -2,7 +2,8 @@ import fs from 'fs';
 import { Paragraph, TextRun, ImageRun, Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType, AlignmentType, TableLayoutType, Footer, PageNumber, TabStopType } from 'docx';
 import { LOGO_PATH, lineaOrigen, fechaHora } from '../branding.js';
 
-const PRIMARIO = '1350D8';
+const PRIMARIO = 'EA580C';
+const SOBRE_MARCA = '000000'; // letra sobre el naranja: el blanco no se lee
 const LOGO_DATA = fs.readFileSync(LOGO_PATH);
 
 // Ancho del contenido = ancho de pagina (12240) - margenes laterales (720 c/u = 0.5") = 10800 twips.
@@ -17,11 +18,11 @@ export const encabezadoDocx = (titulo, origen, meta, ancho = ANCHO_CONTENIDO) =>
     const logo = new Paragraph({
         children: [new ImageRun({ type: 'png', data: LOGO_DATA, transformation: { width: 54, height: 54 } })],
     });
-    const tituloP = new Paragraph({ children: [new TextRun({ text: titulo, bold: true, size: 34, color: 'FFFFFF' })] });
-    const subP = new Paragraph({ spacing: { before: 40 }, children: [new TextRun({ text: lineaOrigen(origen), size: 22, color: 'FFFFFF' })] });
+    const tituloP = new Paragraph({ children: [new TextRun({ text: titulo, bold: true, size: 34, color: SOBRE_MARCA })] });
+    const subP = new Paragraph({ spacing: { before: 40 }, children: [new TextRun({ text: lineaOrigen(origen), size: 22, color: SOBRE_MARCA })] });
     const metaP = new Paragraph({
         alignment: AlignmentType.RIGHT,
-        children: (meta || []).map((m, i) => new TextRun({ text: m, size: 18, color: 'FFFFFF', break: i ? 1 : 0 })),
+        children: (meta || []).map((m, i) => new TextRun({ text: m, size: 18, color: SOBRE_MARCA, break: i ? 1 : 0 })),
     });
     const sinBorde = { style: BorderStyle.NONE };
     return new Table({
@@ -38,7 +39,7 @@ export const encabezadoDocx = (titulo, origen, meta, ancho = ANCHO_CONTENIDO) =>
 };
 
 export const tituloSeccion = (texto) =>
-    new Paragraph({ spacing: { before: 280, after: 120 }, children: [new TextRun({ text: texto, bold: true, size: 26, color: '0E3CA3' })] });
+    new Paragraph({ spacing: { before: 280, after: 120 }, children: [new TextRun({ text: texto, bold: true, size: 26, color: 'C2410C' })] });
 
 // Pie de pagina igual que en los PDF: izquierda "Generado el ... · Sistema de
 // SISVIA", derecha "Pagina X de Y" (con tab a la derecha del ancho).

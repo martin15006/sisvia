@@ -11,7 +11,7 @@ const LOGO_DATA_URI = 'data:image/png;base64,' + fs.readFileSync(LOGO_PATH).toSt
 
 export const estilos = StyleSheet.create({
     page: { paddingTop: 0, paddingBottom: 46, fontSize: 10, color: COLORES.grisTexto, fontFamily: 'Helvetica' },
-    header: { backgroundColor: COLORES.primario, color: '#fff', padding: 16, flexDirection: 'row', alignItems: 'center' },
+    header: { backgroundColor: COLORES.primario, color: COLORES.sobreMarca, padding: 16, flexDirection: 'row', alignItems: 'center' },
     headerLogo: { width: 38, height: 38, backgroundColor: '#fff', borderRadius: 6, padding: 4, marginRight: 12 },
     headerTitulo: { fontSize: 15, fontFamily: 'Helvetica-Bold' },
     headerSub: { fontSize: 9, opacity: 0.9, marginTop: 2 },

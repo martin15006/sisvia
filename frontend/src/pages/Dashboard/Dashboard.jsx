@@ -107,7 +107,6 @@ function Dashboard() {
     const totalAlertas = stats
         ? stats.alertas.licencias_por_vencer.length +
           stats.alertas.vehiculos_sin_runt.length +
-          stats.alertas.vehiculos_no_operativos.length +
           (stats.alertas.chequeos_abandonados?.length || 0)
         : 0;
 
@@ -422,44 +421,6 @@ function Dashboard() {
                             </div>
                         )}
 
-                        {/* === Vehiculos no operativos o bloqueados === */}
-                        {stats.alertas.vehiculos_no_operativos.length > 0 && (
-                            <div className="dashboard-grupo-alerta">
-                                <div className="dashboard-grupo-titulo">
-                                    Vehículos no operativos o bloqueados
-                                    <span className="dashboard-grupo-cantidad">
-                                        {stats.alertas.vehiculos_no_operativos.length}
-                                    </span>
-                                </div>
-                                <ul className="dashboard-lista-alerta">
-                                    {stats.alertas.vehiculos_no_operativos.slice(0, 5).map((v) => (
-                                        <li
-                                            key={v.id}
-                                            className="dashboard-item-alerta dashboard-item-critico"
-                                            onClick={() => navigate(`/admin/vehiculos/${v.id}`)}
-                                            title="Ver detalle del vehículo"
-                                        >
-                                            <span className="dashboard-item-nombre">{v.placa}</span>
-                                            <span className="dashboard-item-meta">
-                                                {!v.activo
-                                                    ? "desactivado"
-                                                    : v.estado === "no_operativo"
-                                                        ? "no operativo"
-                                                        : v.estado}
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-                                {stats.alertas.vehiculos_no_operativos.length > 5 && (
-                                    <button
-                                        className="dashboard-ver-mas"
-                                        onClick={() => navigate("/admin/vehiculos")}
-                                    >
-                                        Ver los {stats.alertas.vehiculos_no_operativos.length - 5} restantes →
-                                    </button>
-                                )}
-                            </div>
-                        )}
                     </div>
                 )}
             </section>

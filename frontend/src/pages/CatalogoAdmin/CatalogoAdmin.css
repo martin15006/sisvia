@@ -32,7 +32,7 @@
 .catadmin-titulo-app {
     font-size: var(--tamano-md);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
 .catadmin-usuario {
@@ -61,7 +61,7 @@
 .catadmin-logout {
     padding: 8px 14px;
     background: transparent;
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border: 2px solid var(--color-rojo);
     border-radius: var(--radio-md);
     font-size: var(--tamano-xs);
@@ -116,7 +116,7 @@
 
 .catadmin-barra-titulo h1 {
     margin: 0;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-xl);
     font-weight: var(--peso-bold);
 }
@@ -153,12 +153,12 @@
 }
 
 .catadmin-tab:hover {
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     background: var(--superficie-sutil);
 }
 
 .catadmin-tab-activa {
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-bottom-color: var(--color-primario);
     font-weight: var(--peso-bold);
 }
@@ -231,7 +231,7 @@
 }
 
 .catadmin-grupo-titulo {
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-md);
     font-weight: var(--peso-bold);
     padding: var(--espacio-xs) 0 var(--espacio-xs) 0;
@@ -361,7 +361,7 @@
 
 .catadmin-boton-editar {
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-color: var(--color-primario);
 }
 
@@ -372,7 +372,7 @@
 
 .catadmin-boton-eliminar {
     background: var(--superficie);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border-color: var(--color-rojo);
 }
 
@@ -418,7 +418,7 @@
 .catadmin-form-textarea:focus {
     outline: none;
     border-color: var(--color-primario);
-    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+    box-shadow: 0 0 0 3px var(--marca-velo-15);
 }
 
 .catadmin-form-input-uppercase {
@@ -539,7 +539,7 @@
 .catadmin-emoji-btn-activo {
     background: var(--color-primario);
     border-color: var(--color-primario-oscuro);
-    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.25);
+    box-shadow: 0 0 0 3px var(--marca-velo-25);
 }
 
 /* Checks */
@@ -571,7 +571,7 @@
 }
 
 .catadmin-form-check-critico strong {
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
 }
 
 .catadmin-form-check-aviso {

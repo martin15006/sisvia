@@ -56,7 +56,7 @@
 
 .dashboard-scope {
     margin: var(--espacio-sm) 0 0 0;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-sm);
     font-weight: var(--peso-semibold);
     font-style: italic;
@@ -65,7 +65,7 @@
 /* ===== Error general ===== */
 .dashboard-error {
     background: var(--estado-error-fondo);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     padding: var(--espacio-md) var(--espacio-lg);
     border: 2px solid var(--color-rojo);
     border-radius: var(--radio-md);
@@ -110,7 +110,7 @@
     margin: 0 0 var(--espacio-lg) 0;
     font-size: var(--tamano-lg);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     padding-bottom: var(--espacio-sm);
     border-bottom: 2px solid var(--color-gris-200);
     display: flex;
@@ -251,7 +251,7 @@
 .dashboard-sin-alertas {
     background: var(--acento-suave);
     border: 2px solid var(--color-primario-oscuro);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     padding: var(--espacio-lg);
     border-radius: var(--radio-md);
     text-align: center;
@@ -343,7 +343,7 @@
 
 .dashboard-item-normal .dashboard-item-meta {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
 .dashboard-item-urgente {
@@ -353,11 +353,11 @@
 
 .dashboard-item-urgente .dashboard-item-meta {
     background: var(--estado-adv-solido);
-    color: #1A1A1A;
+    color: var(--tinta-oscura);
 }
 
 [data-tema="oscuro"] .dashboard-item-urgente .dashboard-item-meta {
-    color: var(--texto-inverso);
+    color: var(--tinta-oscura);
 }
 
 .dashboard-item-critico {
@@ -381,7 +381,7 @@
 
 .dashboard-item-vencido .dashboard-item-meta {
     background: var(--superficie);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     font-weight: var(--peso-bold);
 }
 
@@ -390,7 +390,7 @@
     margin-top: var(--espacio-md);
     background: none;
     border: none;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-sm);
     font-weight: var(--peso-bold);
     cursor: pointer;
@@ -400,7 +400,7 @@
 }
 
 .dashboard-ver-mas:hover {
-    color: var(--color-primario);
+    color: var(--texto-marca);
 }
 
 /* ===== Responsive ===== */
@@ -568,7 +568,9 @@
 
 @media (max-width: 860px) {
   .dashboard-bloqueado {
-    grid-template-columns: 1fr auto;
+    /* La sede ocupa lo que deja la banda y baja de linea si es larga (CB-03):
+       con nowrap en una columna "auto" empujaba la fila fuera de la tarjeta. */
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
       "banda sede"
       "placa placa"
@@ -577,9 +579,9 @@
     row-gap: var(--espacio-sm);
   }
   .dashboard-bloqueado-banda  { grid-area: banda; justify-self: start; }
-  .dashboard-bloqueado-sede   { grid-area: sede; }
-  .dashboard-bloqueado-placa  { grid-area: placa; }
-  .dashboard-bloqueado-motivo { grid-area: motivo; }
+  .dashboard-bloqueado-sede   { grid-area: sede; white-space: normal; text-align: right; overflow-wrap: anywhere; }
+  .dashboard-bloqueado-placa  { grid-area: placa; min-width: 0; overflow-wrap: anywhere; }
+  .dashboard-bloqueado-motivo { grid-area: motivo; overflow-wrap: anywhere; }
 }
 
 @media (prefers-reduced-motion: reduce) {

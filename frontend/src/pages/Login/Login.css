@@ -82,7 +82,7 @@
 .login-logo-texto {
   display: inline-block;
   background: var(--acento-suave);
-  color: var(--color-primario-oscuro);
+  color: var(--texto-marca);
   padding: var(--espacio-xs) var(--espacio-md);
   border-radius: var(--radio-xl);
   font-size: var(--tamano-xs);
@@ -93,7 +93,7 @@
 
 .login-titulo {
   font-size: var(--tamano-xxl);
-  color: var(--color-primario-oscuro);
+  color: var(--texto-marca);
   margin-bottom: var(--espacio-xs);
 }
 
@@ -147,7 +147,7 @@
 
 .login-error {
   background: var(--estado-error-fondo);
-  color: var(--color-rojo);
+  color: var(--estado-error-texto);
   padding: var(--espacio-md);
   border-radius: var(--radio-md);
   font-size: var(--tamano-sm);
@@ -159,9 +159,9 @@
    visualmente distinguible del rojo de validacion. */
 .login-error-advertencia {
   background: var(--estado-adv-solido);
-  color: #1A1A1A;
-  border: 2px solid #e29a2d;
-  border-left: 4px solid #e29a2d;
+  color: var(--tinta-oscura);
+  border: 2px solid var(--estado-adv-borde-fuerte);
+  border-left: 4px solid var(--estado-adv-borde-fuerte);
   font-weight: var(--peso-semibold);
   line-height: 1.4;
   display: flex;
@@ -236,8 +236,8 @@
 }
 
 /* === Modo oscuro === */
-/* El borde dorado (#e29a2d) del aviso de "cuenta desactivada" se aclara de mas
+/* El borde dorado (var(--estado-adv-borde-fuerte)) del aviso de "cuenta desactivada" se aclara de mas
    sobre el solido oscuro de advertencia; lo apagamos para que case mejor. */
 [data-tema="oscuro"] .login-error-advertencia {
-  border-color: #A65A14;
+  border-color: var(--estado-adv-borde-fuerte);
 }

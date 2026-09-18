@@ -45,3 +45,11 @@
         transition: none;
     }
 }
+
+/* Area tactil invisible: el interruptor se ve de 52x28 pero se toca en 56x44 (CL-08). */
+.toggle-tema { position: relative; }
+.toggle-tema::before {
+    content: "";
+    position: absolute;
+    inset: -9px -3px; /* se mide desde adentro del borde de 1px: queda en 56x44 */
+}

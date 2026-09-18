@@ -8,6 +8,16 @@ import {
 } from "../../lib/chequeoEnCurso.js";
 import "./SeleccionVehiculo.css";
 
+// Etiqueta legible del estado ("no_operativo" -> "No operativo").
+const ETIQUETA_ESTADO = {
+    operativo: "Operativo",
+    observacion: "Observación",
+    alerta: "Alerta",
+    critico: "Crítico",
+    no_operativo: "No operativo",
+};
+const etiquetaEstado = (estado) => ETIQUETA_ESTADO[estado] || "Sin estado";
+
 function SeleccionVehiculo() {
     const navigate = useNavigate();
 
@@ -203,7 +213,7 @@ function SeleccionVehiculo() {
                                 </div>
                                 <div className="selveh-card-extra">
                                     <span className={`selveh-card-estado selveh-card-estado-${v.estado}`}>
-                                        {v.estado?.toUpperCase() || "SIN ESTADO"}
+                                        {etiquetaEstado(v.estado)}
                                     </span>
                                     {typeof v.kilometraje_actual === "number" && (
                                         <span className="selveh-card-km">
@@ -229,7 +239,7 @@ function SeleccionVehiculo() {
                                 {vehiculoSeleccionado.marca} {vehiculoSeleccionado.linea}
                             </div>
                             <span className={`selveh-card-estado selveh-card-estado-${vehiculoSeleccionado.estado}`}>
-                                {vehiculoSeleccionado.estado?.toUpperCase() || "SIN ESTADO"}
+                                {etiquetaEstado(vehiculoSeleccionado.estado)}
                             </span>
                         </div>
 

@@ -124,7 +124,7 @@
 
 @keyframes blinkRed {
   0%, 100% { background-color: var(--color-rojo); }
-  50% { background-color: #FF6B6B; }
+  50% { background-color: var(--rojo-claro); }
 }
 
 

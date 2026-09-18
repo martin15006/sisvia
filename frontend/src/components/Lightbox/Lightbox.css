@@ -1,7 +1,7 @@
 .lightbox-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.92);
+    background: var(--velo-92);
     z-index: var(--z-modal);
     display: flex;
     align-items: center;
@@ -24,7 +24,7 @@
     max-height: 80vh;
     object-fit: contain;
     border-radius: var(--radio-md);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 20px 60px var(--velo-60);
 }
 
 .lightbox-descripcion {
@@ -43,7 +43,7 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--blanco-15);
     border: none;
     color: var(--color-blanco);
     cursor: pointer;
@@ -55,7 +55,7 @@
 }
 
 .lightbox-cerrar:hover {
-    background: rgba(255, 60, 60, 0.85);
+    background: var(--rojo-85);
     transform: scale(1.1);
 }
 
@@ -66,7 +66,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--blanco-15);
     border: none;
     color: var(--color-blanco);
     cursor: pointer;
@@ -78,7 +78,7 @@
 }
 
 .lightbox-nav:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--blanco-30);
     transform: translateY(-50%) scale(1.1);
 }
 
@@ -90,7 +90,7 @@
     bottom: var(--espacio-xl);
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--velo-60);
     color: var(--color-blanco);
     padding: var(--espacio-sm) var(--espacio-lg);
     border-radius: var(--radio-xl);

@@ -32,7 +32,7 @@
 .bloq-titulo-app {
     font-size: var(--tamano-md);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
 .bloq-usuario {
@@ -61,7 +61,7 @@
 .bloq-logout {
     padding: 8px 14px;
     background: transparent;
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border: 2px solid var(--color-rojo);
     border-radius: var(--radio-md);
     font-size: var(--tamano-xs);
@@ -111,7 +111,7 @@
 
 .bloq-barra-titulo h1 {
     margin: 0;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-xl);
     font-weight: var(--peso-bold);
 }
@@ -198,7 +198,7 @@
 .bloq-filtro select:focus {
     outline: none;
     border-color: var(--color-primario);
-    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+    box-shadow: 0 0 0 3px var(--marca-velo-15);
 }
 
 .bloq-filtro-checks {
@@ -323,8 +323,8 @@
 }
 
 .bloq-card-rojo { border-left-color: var(--color-rojo); }
-.bloq-card-naranja { border-left-color: var(--color-naranja, #F57C00); }
-.bloq-card-morado { border-left-color: #6A1B9A; }
+.bloq-card-naranja { border-left-color: var(--color-naranja); }
+.bloq-card-morado { border-left-color: var(--morado-fuerte); }
 .bloq-card-gris { border-left-color: var(--color-gris-500); }
 
 .bloq-card-cabecera {
@@ -347,7 +347,7 @@
 
 .bloq-card-razon-badge-rojo { background: var(--color-rojo); }
 .bloq-card-razon-badge-naranja { background: var(--color-naranja); }
-.bloq-card-razon-badge-morado { background: #6A1B9A; }
+.bloq-card-razon-badge-morado { background: var(--morado-solido); }
 .bloq-card-razon-badge-gris { background: var(--badge-gris); }
 
 .bloq-badge-notificado,
@@ -361,9 +361,9 @@
 }
 
 .bloq-badge-notificado {
-    background: #E0F2F1;
-    color: #00695C;
-    border: 1px solid #80CBC4;
+    background: var(--verde-agua-fondo);
+    color: var(--verde-agua-texto);
+    border: 1px solid var(--verde-agua-borde);
 }
 
 .bloq-badge-pendiente {
@@ -495,17 +495,17 @@
 /* === Modo oscuro === */
 /* Card morado (segundo morado): borde se aclara en oscuro */
 [data-tema="oscuro"] .bloq-card-morado {
-    border-left-color: #CE93D8;
+    border-left-color: var(--morado-fuerte);
 }
 
 /* Badge razon morado: solido con texto blanco -> morado mas claro en oscuro */
 [data-tema="oscuro"] .bloq-card-razon-badge-morado {
-    background: #8E5BB5;
+    background: var(--morado-solido);
 }
 
 /* Badge NOTIFICADO (teal): categoria propia, se aclara en oscuro */
 [data-tema="oscuro"] .bloq-badge-notificado {
-    background: rgba(29, 158, 117, 0.16);
-    color: #5DCAA5;
-    border-color: rgba(29, 158, 117, 0.45);
+    background: var(--verde-agua-fondo);
+    color: var(--verde-agua-texto);
+    border-color: var(--verde-agua-borde);
 }

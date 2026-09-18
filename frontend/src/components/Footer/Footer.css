@@ -7,7 +7,7 @@
   border-top: var(--borde-fino);
   padding: var(--espacio-lg) var(--espacio-xl);
   margin-top: auto;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 -2px 8px var(--velo-04);
   display: flex;
   align-items: center;
   justify-content: center;

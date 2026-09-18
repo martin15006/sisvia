@@ -29,6 +29,69 @@
   --marca-velo-22: color-mix(in srgb, var(--color-primario) 22%, transparent);
   --marca-velo-0: color-mix(in srgb, var(--color-primario) 0%, transparent);
   --marca-anillo: color-mix(in srgb, var(--color-primario-oscuro) 30%, transparent);
+  --marca-velo-15: color-mix(in srgb, var(--color-primario) 15%, transparent);
+  --marca-velo-25: color-mix(in srgb, var(--color-primario) 25%, transparent);
+
+  /* === VELOS NEUTROS (overlays de modales, sombras, controles sobre fotos) ===
+     Iguales en claro y oscuro: oscurecen o aclaran lo que tienen debajo. */
+  --velo-04: rgba(0, 0, 0, 0.04);
+  --velo-20: rgba(0, 0, 0, 0.2);
+  --velo-25: rgba(0, 0, 0, 0.25);
+  --velo-30: rgba(0, 0, 0, 0.3);
+  --velo-40: rgba(0, 0, 0, 0.4);
+  --velo-45: rgba(0, 0, 0, 0.45);
+  --velo-55: rgba(0, 0, 0, 0.55);
+  --velo-60: rgba(0, 0, 0, 0.6);
+  --velo-75: rgba(0, 0, 0, 0.75);
+  --velo-92: rgba(0, 0, 0, 0.92);
+  --blanco-15: rgba(255, 255, 255, 0.15);
+  --blanco-18: rgba(255, 255, 255, 0.18);
+  --blanco-25: rgba(255, 255, 255, 0.25);
+  --blanco-30: rgba(255, 255, 255, 0.3);
+  --blanco-95: rgba(255, 255, 255, 0.95);
+
+  /* === HALOS DE ESTADO (sombras de color) ===
+     Salen de los --veh-* y del rojo: en oscuro se aclaran solos. */
+  --halo-operativo: color-mix(in srgb, var(--veh-operativo) 40%, transparent);
+  --halo-observacion: color-mix(in srgb, var(--veh-observacion) 40%, transparent);
+  --halo-alerta: color-mix(in srgb, var(--veh-alerta) 45%, transparent);
+  --halo-critico: color-mix(in srgb, var(--veh-critico) 40%, transparent);
+  --halo-advertencia: color-mix(in srgb, var(--estado-adv-solido) 45%, transparent);
+  --rojo-15: color-mix(in srgb, var(--color-rojo) 15%, transparent);
+  --rojo-18: color-mix(in srgb, var(--color-rojo) 18%, transparent);
+  --rojo-35: color-mix(in srgb, var(--color-rojo) 35%, transparent);
+  --rojo-85: color-mix(in srgb, var(--color-rojo) 85%, transparent);
+  --rojo-claro: #FF6B6B;
+  --rojo-oscuro: #7F0000;
+
+  /* Letra sobre fondos amarillos/ambar SOLIDOS (--estado-adv-solido, iconos
+     amarillos): esos fondos no se oscurecen en el tema oscuro, asi que la
+     letra queda oscura en los dos (el blanco sobre ambar no se lee). */
+  --tinta-oscura: #1A1A1A;
+  --amarillo-fuerte: #F9A825;
+  --naranja-fuerte: #E65100;
+  --naranja-mas-fuerte: #BF360C;
+  --estado-adv-borde-fuerte: #E29A2D;
+
+  /* Fondo de un resultado del conductor: tinte del color del estado. */
+  --resultado-fondo-operativo: linear-gradient(135deg, color-mix(in srgb, var(--veh-operativo) 8%, var(--superficie)) 0%, color-mix(in srgb, var(--veh-operativo) 24%, var(--superficie)) 100%);
+  --resultado-fondo-observacion: linear-gradient(135deg, color-mix(in srgb, var(--veh-observacion) 8%, var(--superficie)) 0%, color-mix(in srgb, var(--veh-observacion) 24%, var(--superficie)) 100%);
+  --resultado-fondo-alerta: linear-gradient(135deg, color-mix(in srgb, var(--veh-alerta) 8%, var(--superficie)) 0%, color-mix(in srgb, var(--veh-alerta) 24%, var(--superficie)) 100%);
+  --resultado-fondo-critico: linear-gradient(135deg, color-mix(in srgb, var(--veh-critico) 8%, var(--superficie)) 0%, color-mix(in srgb, var(--veh-critico) 24%, var(--superficie)) 100%);
+  --resultado-fondo-no-operativo: linear-gradient(135deg, color-mix(in srgb, var(--veh-no-operativo) 8%, var(--superficie)) 0%, color-mix(in srgb, var(--veh-no-operativo) 30%, var(--superficie)) 100%);
+  --aptitud-bloqueada-fondo: linear-gradient(135deg, color-mix(in srgb, var(--color-rojo) 8%, var(--superficie)) 0%, color-mix(in srgb, var(--color-rojo) 18%, var(--superficie)) 100%);
+
+  /* Violeta de "foto preservada" y razones moradas; verde agua de "cerrado" y
+     "notificado". Tienen su valor de oscuro abajo. */
+  --morado: #8E24AA;
+  --morado-fuerte: #6A1B9A;
+  --morado-fondo: #F3E5F5;
+  --morado-solido: #6A1B9A;
+  --suplencia-fondo-claro: #EDE7F6;
+  --suplencia-borde-suave: #D1C4E9;
+  --verde-agua-fondo: #E0F2F1;
+  --verde-agua-texto: #00695C;
+  --verde-agua-borde: #80CBC4;
 
   /* Verde reservado para el SIGNIFICADO "exito", no para la marca. */
   --color-verde-exito: #1E8E3E;
@@ -45,7 +108,7 @@
   --color-gris-100: #BFC5CD;
   --color-gris-200: #C9C9C9;   /* ajustado: era #E0E0E0 (muy claro) */
   --color-gris-300: #A0A0A0;   /* ajustado: era #BDBDBD */
-  --color-gris-500: #757575;
+  --color-gris-500: #5A646E;   /* paleta A: 5.6:1 sobre el fondo gris claro */
   --color-gris-700: #424242;
   --color-gris-900: #212121;
   --color-negro: #000000;
@@ -68,7 +131,7 @@
      en claro es blanco, en oscuro es tinta oscura, porque al aclarar
      los estados para fondo negro el texto blanco baja a 2:1. */
   --veh-operativo:     #157F3D;
-  --veh-observacion:   #A66A00;
+  --veh-observacion:   #9C6400;   /* blanco encima: 5.0:1 (con #A66A00 daba 4.48) */
   --veh-alerta:        #C2410C;
   --veh-critico:       #B3261E;
   --veh-no-operativo:  #6B7280;
@@ -149,10 +212,11 @@
   --titulo: var(--color-primario-oscuro);     /* h1/h2/h3 */
   --texto-inverso: #FFFFFF;                /* texto que SIEMPRE es blanco (sobre el primario) */
   --acento-luz: var(--color-primario);    /* acento luminoso (en claro = primario normal) */
+  --texto-marca: var(--color-primario-oscuro); /* LETRA en color de marca: el naranja vivo como letra no llega a 4.5:1 */
 
   /* Estados (claro = pasteles actuales) */
   --estado-error-fondo: #FFEBEE;  --estado-error-texto: #B71C1C;  --estado-error-borde: #FFCDD2;
-  --estado-adv-fondo:   #FFF3E0;  --estado-adv-texto:   #E65100;  --estado-adv-borde:   #FFE082;
+  --estado-adv-fondo:   #FFF3E0;  --estado-adv-texto:   #A84C08;  --estado-adv-borde:   #FFE082;
   --estado-info-fondo:  #E3F2FD;  --estado-info-texto:  #1565C0;  --estado-info-borde:  #BBDEFB;
   --estado-exito-fondo: #E8F5E9;  --estado-exito-texto: #2E7D32;  --estado-exito-borde: #C8E6C9;
   --estado-neutro-fondo:#374151;  --estado-neutro-texto:#FFFFFF;
@@ -182,6 +246,7 @@
   --texto-suave: #9AAAA0;
   --borde: #1E262E;
   --titulo: var(--acento-luz);
+  --texto-marca: var(--acento-luz);   /* en oscuro, la letra de marca es el azul (enmienda 2) */
   --texto-inverso: #FFFFFF;
   --acento-luz: #4C8DFF;
 
@@ -200,6 +265,11 @@
   --veh-critico:       #FF5A52;
   --veh-no-operativo:  #7A8398;
   --veh-tinta:         #0A1014;
+
+  --morado: #CE93D8;  --morado-fuerte: #CE93D8;  --morado-fondo: rgba(142, 36, 170, 0.18);  --morado-solido: #8E5BB5;
+  --suplencia-borde-suave: rgba(126, 87, 194, 0.35);
+  --verde-agua-fondo: rgba(29, 158, 117, 0.16);  --verde-agua-texto: #5DCAA5;  --verde-agua-borde: rgba(29, 158, 117, 0.45);
+  --estado-adv-borde-fuerte: #A65A14;
 
   --suplencia-fondo: rgba(126,87,194,.18);  --suplencia-color: #B7A6EC;  --suplencia-fuerte: #9579D6;  --suplencia-solido: #7E57C2;
 

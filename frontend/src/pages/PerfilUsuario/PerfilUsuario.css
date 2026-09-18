@@ -36,7 +36,7 @@
 .perfil-logo {
     font-size: var(--tamano-lg);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
 .perfil-usuario-header {
@@ -60,7 +60,7 @@
 .perfil-logout {
     padding: var(--espacio-sm) var(--espacio-md);
     background: var(--superficie);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border: 2px solid var(--color-rojo);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -103,7 +103,7 @@
 
 .perfil-error {
     background: var(--estado-error-fondo);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border: 2px solid var(--color-rojo);
 }
 
@@ -126,7 +126,7 @@
 .perfil-volver {
     padding: var(--espacio-sm) var(--espacio-md);
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border: 2px solid var(--color-primario);
     border-radius: var(--radio-md);
     font-size: var(--tamano-sm);
@@ -247,20 +247,20 @@
 
 .perfil-rol-admin {
     background: var(--estado-info-fondo);
-    color: #0D47A1;
-    border-color: #0D47A1;
+    color: var(--estado-info-texto);
+    border-color: var(--estado-info-texto);
 }
 
 .perfil-rol-conductor {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-color: var(--color-primario-oscuro);
 }
 
 .perfil-rol-admin_sede {
     background: var(--estado-adv-fondo);
-    color: #E65100;
-    border-color: #E65100;
+    color: var(--naranja-fuerte);
+    border-color: var(--naranja-fuerte);
 }
 
 .perfil-estado-badge {
@@ -276,20 +276,20 @@
 
 .perfil-estado-badge.activo {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-color: var(--color-primario-oscuro);
 }
 
 .perfil-estado-badge.inactivo {
     background: var(--estado-error-fondo);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border-color: var(--color-rojo);
 }
 
 .perfil-estado-badge.advertencia {
     background: var(--estado-adv-solido);
-    color: #1A1A1A;
-    border-color: #e29a2d;
+    color: var(--tinta-oscura);
+    border-color: var(--estado-adv-borde-fuerte);
 }
 
 /* ===== Secciones (datos personales, licencia, etc.) ===== */
@@ -305,7 +305,7 @@
     margin: 0 0 var(--espacio-lg) 0;
     font-size: var(--tamano-lg);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     padding-bottom: var(--espacio-sm);
     border-bottom: 2px solid var(--color-gris-200);
 }
@@ -353,21 +353,21 @@
     padding: 2px 8px;
     border-radius: var(--radio-md);
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-weight: var(--peso-bold);
     border: 1px solid var(--color-primario-oscuro);
 }
 
 .perfil-vencimiento.urgente {
     background: var(--estado-adv-solido);
-    color: #1A1A1A;
-    border-color: #e29a2d;
+    color: var(--tinta-oscura);
+    border-color: var(--estado-adv-borde-fuerte);
 }
 
 /* Crítico: rojo claro con texto oscuro (vence en 15 días o menos) */
 .perfil-vencimiento.critico {
     background: var(--estado-error-fondo);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border-color: var(--color-rojo);
     font-weight: var(--peso-bold);
 }
@@ -398,7 +398,7 @@
 .perfil-stat-numero {
     font-size: 36px;
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     line-height: 1;
 }
 
@@ -427,7 +427,7 @@
 .perfil-ultimo-chequeo-header {
     font-size: var(--tamano-sm);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -455,7 +455,7 @@
     align-self: flex-start;
     background: none;
     border: none;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-sm);
     font-weight: var(--peso-bold);
     cursor: pointer;
@@ -465,7 +465,7 @@
 }
 
 .perfil-link-ver-chequeo:hover {
-    color: var(--color-primario);
+    color: var(--texto-marca);
 }
 
 /* Badges de resultado del último chequeo */
@@ -482,20 +482,20 @@
 
 .perfil-resultado-verde {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border-color: var(--color-primario-oscuro);
 }
 
 .perfil-resultado-amarillo {
-    background: #FFC107;
-    color: #1A1A1A;
-    border-color: #1A1A1A;
+    background: var(--color-amarillo);
+    color: var(--tinta-oscura);
+    border-color: var(--tinta-oscura);
 }
 
 .perfil-resultado-naranja {
     background: var(--estado-adv-solido);
-    color: #1A1A1A;
-    border-color: #e29a2d;
+    color: var(--tinta-oscura);
+    border-color: var(--estado-adv-borde-fuerte);
 }
 
 .perfil-resultado-rojo {
@@ -618,5 +618,5 @@
 [data-tema="oscuro"] .perfil-estado-badge.advertencia,
 [data-tema="oscuro"] .perfil-vencimiento.urgente,
 [data-tema="oscuro"] .perfil-resultado-naranja {
-    color: var(--texto-inverso);
+    color: var(--tinta-oscura);
 }

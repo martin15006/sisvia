@@ -3,10 +3,12 @@ import { ORGANIZACION, LOGO_PATH } from '../../config/marca.js';
 
 export { LOGO_PATH };
 
-// Paleta del producto para los documentos
+// Paleta del producto para los documentos (misma marca que la app:
+// naranja vivo con letra negra encima; el blanco sobre naranja no se lee).
 export const COLORES = {
-    primario: '#1350D8',
-    primarioOscuro: '#0E3CA3',
+    primario: '#EA580C',
+    primarioOscuro: '#C2410C',
+    sobreMarca: '#000000',
     grisTexto: '#1A1A1A',
     grisSuave: '#5F5E5A',
     grisLinea: '#E5E5E5',

@@ -32,7 +32,7 @@
 .cheqdet-titulo-app {
     font-size: var(--tamano-md);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
 .cheqdet-usuario {
@@ -61,7 +61,7 @@
 .cheqdet-logout {
     padding: 8px 14px;
     background: transparent;
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border: 2px solid var(--color-rojo);
     border-radius: var(--radio-md);
     font-size: var(--tamano-xs);
@@ -111,7 +111,7 @@
 
 .cheqdet-barra-titulo h1 {
     margin: 0;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-xl);
     font-weight: var(--peso-bold);
 }
@@ -139,7 +139,7 @@
 }
 
 .cheqdet-error {
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border-color: var(--color-rojo);
     background: var(--estado-error-fondo);
 }
@@ -185,7 +185,7 @@
 }
 
 .cheqdet-resultado-titulo {
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-lg);
     font-weight: var(--peso-bold);
     text-transform: uppercase;
@@ -210,7 +210,7 @@
 
 .cheqdet-badge-tipo-preoperacional {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
 .cheqdet-badge-tipo-postoperacional {
@@ -300,11 +300,11 @@
     letter-spacing: 0.5px;
 }
 
-.cheqdet-conteo-cumple { border-color: var(--color-primario); }
-.cheqdet-conteo-cumple .cheqdet-conteo-numero { color: var(--color-primario); }
+.cheqdet-conteo-cumple { border-color: var(--veh-operativo); }
+.cheqdet-conteo-cumple .cheqdet-conteo-numero { color: var(--veh-operativo); }
 
 .cheqdet-conteo-no-cumple { border-color: var(--color-rojo); }
-.cheqdet-conteo-no-cumple .cheqdet-conteo-numero { color: var(--color-rojo); }
+.cheqdet-conteo-no-cumple .cheqdet-conteo-numero { color: var(--estado-error-texto); }
 
 .cheqdet-conteo-na { border-color: var(--color-gris-500); }
 
@@ -314,7 +314,7 @@
 }
 
 .cheqdet-conteo-critico .cheqdet-conteo-numero {
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
 }
 
 /* Meta info grid (definition list) */
@@ -364,7 +364,7 @@
 
 .cheqdet-tarjeta-titulo {
     margin: 0 0 var(--espacio-md) 0;
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-size: var(--tamano-md);
     font-weight: var(--peso-bold);
     text-transform: uppercase;
@@ -422,6 +422,7 @@
 }
 
 .cheqdet-vehiculo-placa {
+    font-family: var(--fuente-monospace);
     font-size: var(--tamano-xxl);
     font-weight: var(--peso-bold);
     color: var(--color-gris-900);
@@ -439,7 +440,7 @@
     align-self: flex-start;
     padding: 8px 14px;
     background: var(--superficie);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     border: 2px solid var(--color-primario);
     border-radius: var(--radio-md);
     font-size: var(--tamano-xs);
@@ -471,7 +472,7 @@
 
 .cheqdet-conductor-foto-placeholder {
     background: var(--acento-suave);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -587,7 +588,7 @@
 .cheqdet-categoria-cantidad {
     font-size: var(--tamano-xs);
     font-weight: var(--peso-bold);
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--blanco-25);
     padding: 3px 10px;
     border-radius: var(--radio-xl);
 }
@@ -610,7 +611,7 @@
     gap: var(--espacio-xs);
 }
 
-.cheqdet-item-cumple { border-left-color: var(--color-primario); }
+.cheqdet-item-cumple { border-left-color: var(--veh-operativo); }
 .cheqdet-item-no_cumple { border-left-color: var(--color-rojo); }
 .cheqdet-item-no_aplica { border-left-color: var(--color-gris-500); }
 
@@ -666,7 +667,7 @@
 
 .cheqdet-item-observacion-label {
     font-size: var(--tamano-xs);
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     font-weight: var(--peso-bold);
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -714,8 +715,8 @@
 }
 
 .cheqdet-foto-preservada {
-    border-color: #8E24AA;
-    background: #F3E5F5;
+    border-color: var(--morado);
+    background: var(--morado-fondo);
 }
 
 .cheqdet-foto-link {
@@ -744,7 +745,7 @@
     position: absolute;
     top: 6px;
     left: 6px;
-    background: #8E24AA;
+    background: var(--morado-solido);
     color: var(--color-blanco);
     padding: 3px 8px;
     border-radius: var(--radio-xl);
@@ -757,8 +758,8 @@
 .cheqdet-foto-boton-preservar {
     padding: 6px 8px;
     background: var(--superficie);
-    color: #6A1B9A;
-    border: 2px solid #8E24AA;
+    color: var(--morado-fuerte);
+    border: 2px solid var(--morado);
     border-radius: var(--radio-md);
     font-size: 11px;
     font-weight: var(--peso-bold);
@@ -770,7 +771,7 @@
 }
 
 .cheqdet-foto-boton-preservar:hover:not(:disabled) {
-    background: #8E24AA;
+    background: var(--morado-solido);
     color: var(--color-blanco);
     box-shadow: var(--sombra-sm);
 }
@@ -823,11 +824,11 @@
 /* Fotos preservadas: segundo morado (#8E24AA / #F3E5F5 / #6A1B9A) no se tokeniza
    porque su tint claro rompe en oscuro. Aplanado a morado oscuro adecuado. */
 [data-tema="oscuro"] .cheqdet-foto-preservada {
-    border-color: #CE93D8;
-    background: rgba(142, 36, 170, 0.18);
+    border-color: var(--morado);
+    background: var(--morado-fondo);
 }
 
 [data-tema="oscuro"] .cheqdet-foto-boton-preservar {
-    color: #CE93D8;
-    border-color: #CE93D8;
+    color: var(--morado-fuerte);
+    border-color: var(--morado);
 }

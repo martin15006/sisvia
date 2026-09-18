@@ -1,7 +1,7 @@
 .informe-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--velo-45);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -15,7 +15,7 @@
     max-width: 520px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: var(--sombra-lg, 0 10px 40px rgba(0, 0, 0, 0.3));
+    box-shadow: var(--sombra-lg);
 }
 .informe-header {
     display: flex;
@@ -55,7 +55,7 @@
 .informe-label {
     font-size: var(--tamano-sm);
     font-weight: var(--peso-semibold);
-    color: var(--color-gris-900, #1a1a1a);
+    color: var(--color-gris-900);
     margin-top: 8px;
 }
 .informe-input,
@@ -91,7 +91,7 @@
 }
 .informe-error {
     margin-top: 10px;
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     font-size: var(--tamano-sm);
     font-weight: var(--peso-semibold);
 }

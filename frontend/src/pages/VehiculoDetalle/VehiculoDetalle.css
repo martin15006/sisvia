@@ -30,7 +30,7 @@
 .vehiculo-detalle-titulo-pagina {
     font-size: var(--tamano-lg);
     font-weight: var(--peso-bold);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
 .vehiculo-detalle-usuario {
@@ -59,7 +59,7 @@
 .vehiculo-detalle-logout {
     padding: var(--espacio-sm) var(--espacio-md);
     background: transparent;
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border: 2px solid var(--color-rojo);
     border-radius: var(--radio-md);
     font-weight: var(--peso-semibold);
@@ -88,7 +88,7 @@
     align-self: flex-start;
     background: transparent;
     border: none;
-    color: var(--color-primario);
+    color: var(--texto-marca);
     font-weight: var(--peso-semibold);
     cursor: pointer;
     padding: var(--espacio-sm) 0;
@@ -97,7 +97,7 @@
 }
 
 .vehiculo-detalle-volver:hover {
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
 }
 
 .vehiculo-detalle-estado-cargando,
@@ -111,7 +111,7 @@
 }
 
 .vehiculo-detalle-estado-error {
-    color: var(--color-rojo);
+    color: var(--estado-error-texto);
     border-left: 4px solid var(--color-rojo);
 }
 
@@ -126,7 +126,7 @@
     border-top: 6px solid var(--color-gris-300);
 }
 
-.vehiculo-detalle-hero-verde { border-top-color: var(--color-primario); }
+.vehiculo-detalle-hero-verde { border-top-color: var(--veh-operativo); }
 .vehiculo-detalle-hero-azul { border-top-color: var(--color-azul); }
 .vehiculo-detalle-hero-amarillo { border-top-color: var(--color-amarillo); }
 .vehiculo-detalle-hero-rojo { border-top-color: var(--color-rojo); }
@@ -171,6 +171,7 @@
 }
 
 .vehiculo-detalle-placa {
+    font-family: var(--fuente-monospace);
     font-size: var(--tamano-xxl);
     font-weight: var(--peso-bold);
     color: var(--color-gris-900);
@@ -179,7 +180,7 @@
 
 .vehiculo-detalle-marca {
     font-size: var(--tamano-xl);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     font-weight: var(--peso-semibold);
 }
 
@@ -255,7 +256,7 @@
 
 .vehiculo-detalle-boton-secundario {
     background: var(--superficie);
-    color: var(--color-primario);
+    color: var(--texto-marca);
     border-color: var(--color-primario);
 }
 
@@ -281,7 +282,7 @@
 
 .vehiculo-detalle-tarjeta-titulo {
     font-size: var(--tamano-md);
-    color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
     margin: 0 0 var(--espacio-md) 0;
     padding-bottom: var(--espacio-sm);
     border-bottom: 1px dashed var(--color-separador);
@@ -304,7 +305,7 @@
 
 .vehiculo-detalle-tarjeta-accion {
     font-size: var(--tamano-xs);
-    color: var(--color-primario);
+    color: var(--texto-marca);
     text-decoration: none;
     font-weight: var(--peso-semibold);
     text-transform: none;

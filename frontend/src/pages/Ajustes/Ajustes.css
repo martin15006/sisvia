@@ -109,5 +109,5 @@
     position: absolute;
     inset: 4px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--texto-inverso);
 }

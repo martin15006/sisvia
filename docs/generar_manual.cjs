@@ -14,9 +14,9 @@ const mdPath = ROOT + '/docs/MANUAL_DE_USO.md';
 const logoPath = ROOT + '/frontend/public/logo.png';
 const outPath = ROOT + '/docs/MANUAL_DE_USO.docx';
 
-const PRIMARIO = '1350D8';
-const PRIMARIO_OSC = '0E3CA3';
-const PRIMARIO_SUAVE = 'E6EEFE';
+const PRIMARIO = 'EA580C';
+const PRIMARIO_OSC = 'C2410C';
+const PRIMARIO_SUAVE = 'FFEDD5';
 const PRIMARIO_BORDE = 'BFD4F7';
 const CONTENT_W = 9360;
 
@@ -66,7 +66,7 @@ function renderTable(rows) {
       borders: cellBorders,
       shading: r === 0 ? { type: ShadingType.CLEAR, fill: PRIMARIO } : undefined,
       margins: { top: 60, bottom: 60, left: 110, right: 110 },
-      children: [new Paragraph({ children: inline(c, r === 0 ? { bold: true, color: 'FFFFFF' } : {}) })],
+      children: [new Paragraph({ children: inline(c, r === 0 ? { bold: true, color: '000000' } : {}) })],
     })),
   }));
   return new Table({ width: { size: CONTENT_W, type: WidthType.DXA }, columnWidths: widths, rows: trs });
@@ -145,7 +145,7 @@ const doc = new Document({
         run: { size: 30, bold: true, color: PRIMARIO_OSC, font: 'Arial' },
         paragraph: { spacing: { before: 320, after: 140 }, outlineLevel: 0, keepNext: true, border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: PRIMARIO_BORDE, space: 4 } } } },
       { id: 'Heading2', name: 'Heading 2', basedOn: 'Normal', next: 'Normal', quickFormat: true,
-        run: { size: 26, bold: true, color: PRIMARIO, font: 'Arial' },
+        run: { size: 26, bold: true, color: PRIMARIO_OSC, font: 'Arial' },
         paragraph: { spacing: { before: 240, after: 90 }, outlineLevel: 1, keepNext: true } },
       { id: 'Heading3', name: 'Heading 3', basedOn: 'Normal', next: 'Normal', quickFormat: true,
         run: { size: 23, bold: true, color: PRIMARIO_OSC, font: 'Arial' },
