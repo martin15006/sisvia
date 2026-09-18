@@ -1,4 +1,6 @@
 import { supabase, crearClienteAuth } from '../config/supabase.js'
+import { normalizarTelefono, validarTelefono } from '../utils/telefono.js';
+import { normalizarDocumento, validarDocumento } from '../utils/documento.js';
 import { generarPasswordTemporal, contarAdminsActivos, registrarAuditoria, } from '../services/usuarios.service.js';
 import { obtenerScope, usuarioEnScope } from '../services/scope.service.js';
 import { puedeCrearRol, puedeGestionarRol, ETIQUETA_ROL, rolEfectivo as rolEfectivoActor } from '../services/jerarquia.service.js';
@@ -230,6 +232,13 @@ export const crearUsuario = async (req, res) => {
                 .json({ error: 'cedula, nombre_completo y email son obligatorios' });
         }
 
+        const errorDocumento = validarDocumento(cedula);
+        if (errorDocumento) return res.status(400).json({ error: errorDocumento });
+        const cedulaLimpia = normalizarDocumento(cedula);
+
+        const errorTelefono = validarTelefono(telefono);
+        if (errorTelefono) return res.status(400).json({ error: errorTelefono });
+
         // Jerarquia (#111): solo se pueden crear usuarios de rango ESTRICTAMENTE
         // inferior al propio. Un admin_sede crea conductores; un superadmin
         // crea cualquier admin pero no otro superadmin.
@@ -280,7 +289,7 @@ export const crearUsuario = async (req, res) => {
         const { data: existente } = await supabase
             .from('usuarios')
             .select('id')
-            .eq('cedula', cedula)
+            .eq('cedula', cedulaLimpia)
             .maybeSingle();
 
         if (existente) {
@@ -307,9 +316,9 @@ export const crearUsuario = async (req, res) => {
             .from('usuarios')
             .insert({
                 id: authData.user.id,
-                cedula,
+                cedula: cedulaLimpia,
                 nombre_completo,
-                telefono,
+                telefono: normalizarTelefono(telefono),
                 rol,
                 sede_id: sede_id || null,
                 ciudad_id: ciudad_id || null,
@@ -375,6 +384,11 @@ export const actualizarUsuario = async (req, res) => {
         } = req.body;
 
         // Traemos los datos actuales del usuario para validar contra el rol real
+        if (telefono !== undefined) {
+            const errorTelefono = validarTelefono(telefono);
+            if (errorTelefono) return res.status(400).json({ error: errorTelefono });
+        }
+
         const { data: usuarioActual } = await supabase
             .from('usuarios')
             .select('rol, licencia_numero, licencia_categoria, licencia_vencimiento, eps, arl, sede_id, ciudad_id, departamento_id, region_id')
@@ -467,7 +481,7 @@ export const actualizarUsuario = async (req, res) => {
         // si explicitamente se quiere quitar, p.ej. al cambiar de nivel).
         const cambios = {
             nombre_completo,
-            telefono,
+            telefono: telefono === undefined ? undefined : normalizarTelefono(telefono),
             foto_url,
             licencia_numero,
             licencia_categoria,
@@ -851,10 +865,9 @@ export const cambiarCedula = async (req, res) => {
         if (!nueva_cedula || !String(nueva_cedula).trim()) {
             return res.status(400).json({ error: 'La nueva cedula es obligatoria' });
         }
-        const cedulaLimpia = String(nueva_cedula).replace(/\D/g, '');
-        if (cedulaLimpia.length < 5) {
-            return res.status(400).json({ error: 'La cedula debe tener al menos 5 digitos' });
-        }
+        const errorDocumento = validarDocumento(nueva_cedula);
+        if (errorDocumento) return res.status(400).json({ error: errorDocumento });
+        const cedulaLimpia = normalizarDocumento(nueva_cedula);
 
         // Multinivel (#102 / #112): solo sobre usuarios de tu area y rango inferior.
         const acceso = await verificarAccesoUsuarioObjetivo(req, id);

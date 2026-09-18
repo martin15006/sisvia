@@ -6,10 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import Modal from "../../../components/Modal/Modal.jsx";
 import InputPassword from "../../../components/InputPassword/InputPassword.jsx";
 import { api } from "../../../lib/api.js";
+import { filtrarDocumento, documentoValido, AVISO_DOCUMENTO, EJEMPLO_DOCUMENTO } from "../../../lib/documento.js";
 import "./ModalVerificacionAdmin.css";
 
 // Mantener los filtros del lado del cliente para que solo se pueda escribir lo valido.
-const soloDigitos = (texto) => (texto || "").replace(/\D/g, "");
 
 function ModalVerificacionAdmin({
     abierto,
@@ -74,10 +74,10 @@ function ModalVerificacionAdmin({
             labelNuevo: "Nueva cédula",
             inputType: "text",
             inputMode: "numeric",
-            placeholder: "Solo números",
+            placeholder: EJEMPLO_DOCUMENTO,
             endpoint: `/usuarios/${usuario.id}/cambiar-cedula`,
             bodyKey: "nueva_cedula",
-            filtrar: soloDigitos,
+            filtrar: filtrarDocumento,
             esCritico: true,
         };
 
@@ -87,6 +87,10 @@ function ModalVerificacionAdmin({
 
         if (!nuevoValor.trim()) {
             setError(`Ingresa el ${tipo === "correo" ? "nuevo correo" : "nueva cédula"}`);
+            return;
+        }
+        if (tipo === "cedula" && !documentoValido(nuevoValor)) {
+            setError("Cédula: " + AVISO_DOCUMENTO.toLowerCase() + ".");
             return;
         }
         if (!passwordAdmin.trim()) {
@@ -160,7 +164,7 @@ function ModalVerificacionAdmin({
                             // Si el filtro eliminó caracteres, mostramos un aviso temporal
                             // para que el usuario entienda por qué no se escribió lo que tipeó.
                             if (valorFiltrado.length < valorRaw.length && tipo === "cedula") {
-                                mostrarAviso("Solo se permiten números");
+                                mostrarAviso(AVISO_DOCUMENTO);
                             }
                             setNuevoValor(valorFiltrado);
                         }}

@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase.js';
+import { normalizarDocumento } from '../utils/documento.js';
 
 // IMPORTANTE: este helper NO debe filtrar por activo=true.
 // Antes filtrabamos por activo=true aqui, pero eso provocaba que los conductores
@@ -32,7 +33,8 @@ export const resolverIdentificador = async (identificador) => {
         return identificador;
     }
 
-    return await buscarEmailPorCedula(identificador);
+    // Sin puntos ni espacios: "1.012.345.678" encuentra la cedula 1012345678.
+    return await buscarEmailPorCedula(normalizarDocumento(identificador) || identificador);
 };
 
 

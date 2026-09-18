@@ -18,6 +18,7 @@ import { api, API_URL } from "../../lib/api.js";
 import AdminLayout from "../../components/AdminLayout/AdminLayout.jsx";
 import Toast from "../../components/Toast/Toast.jsx";
 import { ETIQUETA_ROL } from "../../lib/roles.js";
+import { filtrarTelefono, telefonoValido, AVISO_TELEFONO, EJEMPLO_TELEFONO } from "../../lib/telefono.js";
 import "./MiPerfil.css";
 
 function MiPerfil() {
@@ -87,8 +88,6 @@ function MiPerfil() {
     // Filtros de input (mismo patron que en otros formularios)
     const soloLetrasYEspacios = (texto) =>
         (texto || "").replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, "");
-    const telefonoColombia = (texto) =>
-        (texto || "").replace(/[^\d+\-\s]/g, "");
 
     const cambiarFoto = (e) => {
         const archivo = e.target.files?.[0];
@@ -111,6 +110,11 @@ function MiPerfil() {
     const guardar = async (e) => {
         e.preventDefault();
         setError(null);
+
+        if (!telefonoValido(form.telefono)) {
+            setError(AVISO_TELEFONO + ".");
+            return;
+        }
         setCargando(true);
 
         try {
@@ -290,13 +294,13 @@ function MiPerfil() {
                                     ...form,
                                     telefono: filtrarConAviso(
                                         e.target.value,
-                                        telefonoColombia,
+                                        filtrarTelefono,
                                         "telefono",
-                                        "Solo se permiten números, espacios y signos + -"
+                                        AVISO_TELEFONO
                                     ),
                                 })
                             }
-                            placeholder="Ej: 3001234567"
+                            placeholder={EJEMPLO_TELEFONO}
                             disabled={cargando}
                         />
                         {avisos.telefono && (

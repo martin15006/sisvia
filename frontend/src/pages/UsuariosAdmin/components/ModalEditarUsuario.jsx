@@ -10,12 +10,12 @@ import {
     esDirector,
 } from "../../../lib/roles.js";
 import './ModalCrearUsuario.css';
+import { filtrarTelefono, telefonoValido, AVISO_TELEFONO, EJEMPLO_TELEFONO } from "../../../lib/telefono.js";
 
 // Filtros de input (los mismos que ModalCrearUsuario)
 const soloLetrasYEspacios = (texto) =>
     (texto || "").replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, "");
 const soloDigitos = (texto) => (texto || "").replace(/\D/g, "");
-const telefonoColombia = (texto) => (texto || "").replace(/[^\d+\-\s]/g, "");
 const categoriaLicencia = (texto) =>
     (texto || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 2);
 
@@ -179,6 +179,11 @@ function ModalEditarUsuario({ abierto, onCerrar, usuario, onEditado }) {
     const enviar = async (e) => {
         e.preventDefault();
         setError(null);
+
+        if (!telefonoValido(form.telefono)) {
+            setError(AVISO_TELEFONO + ".");
+            return;
+        }
 
         // Validacion frontend: el territorio del nivel del rol es obligatorio
         // (sede para conductor/Coordinador de sede, departamento para Director Regional).
@@ -362,10 +367,9 @@ function ModalEditarUsuario({ abierto, onCerrar, usuario, onEditado }) {
                                 className="form-usuario-input"
                                 value={form.telefono || ""}
                                 onChange={(e) => cambiarCampo("telefono", filtrarConAviso(
-                                    e.target.value, telefonoColombia, "telefono",
-                                    "Solo se permiten números, espacios y signos + -"
+                                    e.target.value, filtrarTelefono, "telefono", AVISO_TELEFONO
                                 ))}
-                                placeholder="Ej: 3001234567"
+                                placeholder={EJEMPLO_TELEFONO}
                                 disabled={cargando}
                             />
                             {avisos.telefono && (

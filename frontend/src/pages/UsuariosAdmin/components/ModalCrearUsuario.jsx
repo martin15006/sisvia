@@ -9,6 +9,8 @@ import {
   esDirector,
 } from "../../../lib/roles.js";
 import "./ModalCrearUsuario.css";
+import { filtrarTelefono, telefonoValido, AVISO_TELEFONO, EJEMPLO_TELEFONO } from "../../../lib/telefono.js";
+import { filtrarDocumento, documentoValido, AVISO_DOCUMENTO, EJEMPLO_DOCUMENTO } from "../../../lib/documento.js";
 
 const ESTADO_INICIAL = {
   cedula: "",
@@ -31,7 +33,6 @@ const ESTADO_INICIAL = {
 const soloDigitos = (texto) => (texto || "").replace(/\D/g, "");
 const soloLetrasYEspacios = (texto) =>
     (texto || "").replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, "");
-const telefonoColombia = (texto) => (texto || "").replace(/[^\d+\-\s]/g, "");
 // Categoria de licencia colombiana: una letra + un digito (A1, A2, B1, B2, C1, C2, C3, etc.)
 const categoriaLicencia = (texto) =>
     (texto || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 2);
@@ -210,6 +211,15 @@ function ModalCrearUsuario({ abierto, onCerrar, onCreado }) {
     e.preventDefault();
     setError(null);
 
+    if (!documentoValido(form.cedula)) {
+        setError("Cédula: " + AVISO_DOCUMENTO.toLowerCase() + ".");
+        return;
+    }
+    if (!telefonoValido(form.telefono)) {
+        setError(AVISO_TELEFONO + ".");
+        return;
+    }
+
     // Validacion frontend del territorio segun el nivel del nuevo usuario.
     if (nivelTerritorio === "departamento" && !form.departamento_id) {
       setError("Debes elegir el departamento (la Regional) del Director Regional.");
@@ -355,10 +365,9 @@ function ModalCrearUsuario({ abierto, onCerrar, onCreado }) {
                 className="form-usuario-input"
                 value={form.cedula}
                 onChange={(e) => cambiarCampo("cedula", filtrarConAviso(
-                  e.target.value, soloDigitos, "cedula",
-                  "Solo se permiten números"
+                  e.target.value, filtrarDocumento, "cedula", AVISO_DOCUMENTO
                 ))}
-                placeholder="Solo números"
+                placeholder={EJEMPLO_DOCUMENTO}
                 required
                 disabled={cargando}
               />
@@ -385,10 +394,9 @@ function ModalCrearUsuario({ abierto, onCerrar, onCreado }) {
                 className="form-usuario-input"
                 value={form.telefono}
                 onChange={(e) => cambiarCampo("telefono", filtrarConAviso(
-                  e.target.value, telefonoColombia, "telefono",
-                  "Solo se permiten números, espacios y signos + -"
+                  e.target.value, filtrarTelefono, "telefono", AVISO_TELEFONO
                 ))}
-                placeholder="Ej: 3001234567"
+                placeholder={EJEMPLO_TELEFONO}
                 disabled={cargando}
               />
               {avisos.telefono && (

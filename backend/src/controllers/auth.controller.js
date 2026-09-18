@@ -3,6 +3,7 @@ import { resolverIdentificador, obtenerPerfil } from "../services/auth.service.j
 import { crearNotificacion } from "../services/notificaciones.service.js";
 import { suplenciaVigenteDePool, sedesCubiertosDeSuplencia } from "../services/suplencias.service.js";
 import { estadoBloqueo, registrarFallo, limpiarIntentos } from "../services/loginIntentos.service.js";
+import { normalizarTelefono, validarTelefono } from '../utils/telefono.js';
 
 // Helper: ¿la fecha de vencimiento (YYYY-MM-DD) ya paso? Compara solo fechas.
 const licenciaEstaVencida = (fechaVencimiento) => {
@@ -192,7 +193,9 @@ export const actualizarMiPerfil = async (req, res) => {
             cambios.nombre_completo = limpio;
         }
         if (telefono !== undefined) {
-            cambios.telefono = telefono ? String(telefono).trim() : null;
+            const errorTelefono = validarTelefono(telefono);
+            if (errorTelefono) return res.status(400).json({ error: errorTelefono });
+            cambios.telefono = normalizarTelefono(telefono);
         }
         if (foto_url !== undefined) {
             cambios.foto_url = foto_url || null;
