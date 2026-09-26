@@ -17,6 +17,7 @@ import AdminLayout from "../../components/AdminLayout/AdminLayout.jsx";
 import Modal from "../../components/Modal/Modal.jsx";
 import Toast from "../../components/Toast/Toast.jsx";
 import "./GeografiaAdmin.css";
+import AtajoSisvia from "../../components/AtajoSisvia/AtajoSisvia.jsx";
 
 const FORM_SEDE_VACIO = { id: null, nombre: "", departamento_id: "", ciudad_id: "", direccion: "" };
 const FORM_CIUDAD_VACIO = { nombre: "", departamento_id: "" };
@@ -129,6 +130,8 @@ function GeografiaAdmin() {
             cargarTodo();
         } catch (err) {
             if (!err.sesionExpirada) mostrarToast(err.message, "error");
+            // HU-18.9: el aviso de limite queda en el formulario, con "Escribir a SISVIA".
+            if (err.codigo) setFormSede((f) => (f ? { ...f, aviso: { texto: err.message, codigo: err.codigo } } : f));
         } finally {
             setGuardando(false);
         }
@@ -183,7 +186,10 @@ function GeografiaAdmin() {
     // Gestionan geografía el Administrador general (todo el país) y el Director
     // Regional (solo su departamento). El backend además valida el scope por
     // endpoint. Los demás cargos no entran.
-    if (usuario && usuario.rol !== "superadmin" && usuario.rol !== "admin_departamental") {
+    // Las sedes las maneja el Administrador de empresa; las ciudades, solo el
+    // superadmin (la geografia es la misma para todas las empresas).
+    const esSuperadmin = usuario?.rol === "superadmin";
+    if (usuario && !esSuperadmin && usuario.rol !== "admin_empresa") {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -198,8 +204,8 @@ function GeografiaAdmin() {
                     <div>
                         <h2 className="geografia-titulo">Gestión de geografía</h2>
                         <p className="geografia-subtitulo">
-                            {usuario?.rol === "admin_departamental"
-                                ? "Administras las ciudades y las sedes de tu regional."
+                            {!esSuperadmin
+                                ? "Administras las sedes de tu empresa. Las ciudades son las mismas para todas las empresas: si falta una, pídesela a SISVIA."
                                 : "Las regiones y departamentos son la división fija de Colombia. Aquí administras las ciudades y las sedes de tu organización."}
                         </p>
                     </div>
@@ -214,13 +220,15 @@ function GeografiaAdmin() {
                     >
                         Sedes ({sedes.length})
                     </button>
-                    <button
-                        type="button"
-                        className={`geografia-tab ${vista === "ciudades" ? "geografia-tab--activa" : ""}`}
-                        onClick={() => setVista("ciudades")}
-                    >
-                        Ciudades ({ciudades.length})
-                    </button>
+                    {esSuperadmin && (
+                        <button
+                            type="button"
+                            className={`geografia-tab ${vista === "ciudades" ? "geografia-tab--activa" : ""}`}
+                            onClick={() => setVista("ciudades")}
+                        >
+                            Ciudades ({ciudades.length})
+                        </button>
+                    )}
                 </div>
 
                 {/* ===== Filtros + botón crear ===== */}
@@ -371,6 +379,12 @@ function GeografiaAdmin() {
                                 />
                             </div>
                         </div>
+                        {formSede.aviso && (
+                            <p className="geografia-aviso-limite" role="alert">
+                                {formSede.aviso.texto}
+                                <AtajoSisvia codigo={formSede.aviso.codigo} />
+                            </p>
+                        )}
                         <div className="geografia-form-acciones">
                             <button
                                 type="button"

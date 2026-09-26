@@ -274,7 +274,7 @@
   --suplencia-fondo: rgba(126,87,194,.18);  --suplencia-color: #B7A6EC;  --suplencia-fuerte: #9579D6;  --suplencia-solido: #7E57C2;
 
   --superficie-sutil: #141A21;
-  --acento-suave: rgba(19,80,216,.20);
+  --acento-suave: color-mix(in srgb, var(--acento-luz) 20%, transparent); /* tinte del azul del oscuro (antes salia del azul viejo #1350D8) */
   --estado-error-solido: #C62828;  --estado-adv-solido: #C9701C;  --estado-info-solido: #2E7DD0;
 
   /* Inputs en oscuro (los tokens ya eran semanticos: se sobre-escriben directo) */

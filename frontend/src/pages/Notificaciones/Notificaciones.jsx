@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api.js";
+import { useAuth } from "../../hooks/useAuth.js";
 import AdminLayout from "../../components/AdminLayout/AdminLayout.jsx";
 import Toast from "../../components/Toast/Toast.jsx";
 import { iconoDe, colorDe, tiempoRelativo } from "../../lib/notificacionesUtils.js";
@@ -14,6 +15,10 @@ const LIMITE = 20;
 
 function Notificaciones() {
     const navigate = useNavigate();
+    // HU-16.1: el superadmin dentro de una empresa ve los avisos de esa empresa,
+    // con a quien le llego cada uno. Solo lectura: no se marcan como leidos.
+    const { usuario, empresaActiva } = useAuth();
+    const deEmpresa = usuario?.rol === "superadmin" && !!empresaActiva;
 
     const [lista, setLista] = useState([]);
     const [total, setTotal] = useState(0);
@@ -31,6 +36,7 @@ function Notificaciones() {
             params.append("pagina", String(pagina));
             params.append("limite", String(LIMITE));
             if (soloNoLeidas) params.append("solo_no_leidas", "true");
+            if (deEmpresa) params.append("de", "empresa");
 
             const data = await api(`/notificaciones?${params.toString()}`);
             setLista(data.notificaciones || []);
@@ -42,14 +48,14 @@ function Notificaciones() {
         } finally {
             setCargando(false);
         }
-    }, [pagina, soloNoLeidas]);
+    }, [pagina, soloNoLeidas, deEmpresa]);
 
     useEffect(() => {
         cargar();
     }, [cargar]);
 
     const onClickNotif = async (n) => {
-        if (!n.leida) {
+        if (!n.leida && !deEmpresa) {
             try {
                 await api(`/notificaciones/${n.id}/leer`, { method: "PATCH" });
             } catch {
@@ -93,9 +99,13 @@ function Notificaciones() {
                             Solo no leídas
                         </button>
                     </div>
-                    <button className="notif-marcar-todas" onClick={marcarTodas}>
-                        Marcar todas como leídas
-                    </button>
+                    {deEmpresa ? (
+                        <span className="notif-de-empresa">Avisos de {empresaActiva.nombre}</span>
+                    ) : (
+                        <button className="notif-marcar-todas" onClick={marcarTodas}>
+                            Marcar todas como leídas
+                        </button>
+                    )}
                 </div>
 
                 {cargando && (
@@ -104,7 +114,9 @@ function Notificaciones() {
 
                 {!cargando && lista.length === 0 && (
                     <div className="notif-vacio">
-                        {soloNoLeidas
+                        {deEmpresa
+                            ? `${empresaActiva.nombre} no tiene notificaciones${soloNoLeidas ? " sin leer" : " todavía"}.`
+                            : soloNoLeidas
                             ? "No tienes notificaciones sin leer."
                             : "No tienes notificaciones todavía."}
                     </div>
@@ -125,6 +137,7 @@ function Notificaciones() {
                                         <div className="notif-item-titulo">{n.titulo}</div>
                                         <div className="notif-item-mensaje">{n.mensaje}</div>
                                         <div className="notif-item-tiempo">
+                                            {n.destinatario && `Para ${n.destinatario.nombre_completo} · `}
                                             {tiempoRelativo(n.created_at)}
                                             {n.leida ? " · leída" : ""}
                                         </div>

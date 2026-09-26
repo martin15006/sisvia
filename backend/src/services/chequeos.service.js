@@ -1,25 +1,36 @@
 import { supabase } from "../config/supabase.js";
 import { obtenerScope } from "./scope.service.js";
 import { motivoBloqueo } from "./bloqueoVehiculo.js";
+import { filtroEmpresa, deLaEmpresa, baseODeLaEmpresa } from './scopeReglas.js';
+import { catalogoEfectivo, faltanPreguntas } from './catalogoReglas.js';
+import { empresaDelUsuario } from './scope.service.js';
 
-// Trae todas las preguntas de aptitud activas indexadas por id para evaluacion rapida
-// Incluye el texto de la pregunta para devolver mensajes claros al frontend
-const obtenerMapaPreguntas = async () => {
-    const { data, error } = await supabase
-        .from("preguntas_aptitud")
-        .select("id, pregunta, respuesta_apta")
-        .eq("activo", true);
-    if (error) throw error;
-    return data.reduce((acc, p) => {
-        acc[p.id] = { texto: p.pregunta, respuesta_apta: p.respuesta_apta };
-        return acc;
-    }, {});
+// Catalogo de UNA empresa (pacto para-empresas, RN-07): lo base, lo propio de
+// esa empresa y sus bloqueos. Con tipo de vehiculo y excepciones, el de un chequeo.
+export const catalogoDeEmpresa = async (empresaId, { tipoVehiculo = null, excluidos = [] } = {}) => {
+    const [cats, items, preguntas, bloqueos] = await Promise.all([
+        baseODeLaEmpresa(supabase.from('categorias_chequeo').select('id, nombre, descripcion, icono, orden, activo, empresa_id'), empresaId),
+        baseODeLaEmpresa(supabase.from('items_chequeo').select('id, categoria_id, descripcion, descripcion_larga, orden, es_critico, aplica_a_tipos, activo, empresa_id'), empresaId),
+        baseODeLaEmpresa(supabase.from('preguntas_aptitud').select('id, pregunta, respuesta_apta, orden, activo, empresa_id'), empresaId),
+        empresaId
+            ? deLaEmpresa(supabase.from('bloqueos_catalogo').select('tipo, elemento_id'), empresaId)
+            : Promise.resolve({ data: [] }),
+    ]);
+    for (const r of [cats, items, preguntas, bloqueos]) if (r.error) throw r.error;
+    return catalogoEfectivo({
+        categorias: cats.data, items: items.data, preguntas: preguntas.data, bloqueos: bloqueos.data,
+        empresaId, tipoVehiculo, excluidos,
+    });
 };
 
-// Evalua si las 5 respuestas del conductor lo califican como apto
+// Evalua si las respuestas del conductor lo califican como apto, contra las
+// preguntas de SU empresa (HU-15.1): tiene que responderlas todas.
 // Devuelve fallas con info completa: id, texto, respuesta dada y esperada
-const evaluarAptitud = async (respuestas) => {
-    const mapa = await obtenerMapaPreguntas();
+const evaluarAptitud = async (respuestas, empresaId) => {
+    const { preguntas } = await catalogoDeEmpresa(empresaId);
+    const incompletas = faltanPreguntas(preguntas, respuestas);
+    if (incompletas) return { apto: false, fallas: [], mapa: {}, incompletas };
+    const mapa = Object.fromEntries(preguntas.map((p) => [p.id, { texto: p.pregunta, respuesta_apta: p.respuesta_apta }]));
     const fallas = [];
     for (const r of respuestas) {
         const pregunta = mapa[r.pregunta_id];
@@ -54,7 +65,11 @@ export const registrarIntentoBloqueado = async ({
     razon,
     detalle,
 }) => {
+    // La empresa del intento es la del conductor.
+    const { data: conductorIntento } = await supabase
+        .from("usuarios").select("empresa_id").eq("id", conductorId).maybeSingle();
     const payload = {
+        empresa_id: conductorIntento?.empresa_id,
         conductor_id: conductorId,
         vehiculo_id: vehiculoId || null,
         sede_id: sedeId || null,
@@ -86,7 +101,7 @@ export const registrarIntentoBloqueado = async ({
 const verificarVehiculoParaChequeo = async (vehiculoId, sedeDelConductor, esPool = false) => {
     const { data: vehiculo, error } = await supabase
         .from("vehiculos")
-        .select("id, placa, activo, sede_id, estado, nivel_criticidad, es_vip, soat_vencimiento, rtm_vencimiento, extintor_vencimiento")
+        .select("id, placa, tipo, activo, sede_id, estado, nivel_criticidad, es_vip, soat_vencimiento, rtm_vencimiento, extintor_vencimiento")
         .eq("id", vehiculoId)
         .maybeSingle();
 
@@ -181,8 +196,11 @@ export const iniciarChequeo = async ({
         }
     }
 
-    // 1. Evaluar aptitud
-    const evaluacion = await evaluarAptitud(respuestasAptitud);
+    // 1. Evaluar aptitud (contra las preguntas de su empresa: HU-15.1)
+    const evaluacion = await evaluarAptitud(respuestasAptitud, conductor.empresa_id);
+    if (evaluacion.incompletas) {
+        return { exito: false, status: 400, error: evaluacion.incompletas, razon: "aptitud_incompleta" };
+    }
     if (!evaluacion.apto) {
         const idsFallidos = evaluacion.fallas.map((f) => f.pregunta_id);
         await registrarIntentoBloqueado({
@@ -246,6 +264,18 @@ export const iniciarChequeo = async ({
         };
     }
 
+    // 2.9 Items que le tocan a este chequeo (RN-07): el catalogo de su empresa,
+    // filtrado por el tipo de vehiculo y sus excepciones. Se guardan en el
+    // chequeo: un cambio del catalogo mientras responde no lo afecta (CB-04).
+    const { data: excepciones } = await supabase
+        .from("excepciones_items_vehiculo")
+        .select("item_id")
+        .eq("vehiculo_id", vehiculoId);
+    const { itemIds } = await catalogoDeEmpresa(conductor.empresa_id, {
+        tipoVehiculo: verif.vehiculo.tipo,
+        excluidos: (excepciones || []).map((e) => e.item_id),
+    });
+
     // 3. Calcular es_oficial
     const esOficial = await esPrimerChequeoDelDia(vehiculoId, tipo);
 
@@ -256,9 +286,11 @@ export const iniciarChequeo = async ({
             vehiculo_id: vehiculoId,
             conductor_id: conductor.id,
             sede_id: conductor.sede_id,
+            empresa_id: conductor.empresa_id,
             tipo,
             es_oficial: esOficial,
             kilometraje,
+            catalogo_items: itemIds,
         })
         .select()
         .single();
@@ -300,7 +332,7 @@ export const iniciarChequeo = async ({
 const obtenerChequeoEditable = async (chequeoId, conductorId) => {
     const { data: chequeo, error } = await supabase
         .from("chequeos_preoperacionales")
-        .select("id, vehiculo_id, conductor_id, sede_id, tipo, cerrado")
+        .select("id, vehiculo_id, conductor_id, sede_id, tipo, cerrado, catalogo_items")
         .eq("id", chequeoId)
         .maybeSingle();
 
@@ -316,11 +348,22 @@ const obtenerChequeoEditable = async (chequeoId, conductorId) => {
     return { chequeo };
 };
 
-// Guarda respuestas del chequeo. Permite envios parciales (1 a 39 respuestas)
+// Items esperados de un chequeo: los que le tocaron al iniciar (RN-07). Los
+// chequeos anteriores a esa foto (sin catalogo_items) siguen con la regla vieja.
+const itemsDelChequeo = (chequeo) =>
+    Array.isArray(chequeo.catalogo_items) ? new Set(chequeo.catalogo_items) : null;
+
+// Guarda respuestas del chequeo. Permite envios parciales (de a una o varias)
 // Hace upsert por (chequeo_id, item_id) para que se puedan ir guardando progresivamente
 export const guardarRespuestasChequeo = async ({ chequeoId, conductorId, respuestas }) => {
     const verificacion = await obtenerChequeoEditable(chequeoId, conductorId);
     if (verificacion.error) return verificacion;
+
+    // Solo los items de ESTE chequeo (ni de otra empresa ni bloqueados despues).
+    const esperados = itemsDelChequeo(verificacion.chequeo);
+    if (esperados && respuestas.some((r) => !esperados.has(Number(r.item_id)))) {
+        return { error: { status: 400, mensaje: "Hay respuestas de ítems que no son parte de este chequeo" } };
+    }
 
     // Construir filas para upsert
     const filas = respuestas.map((r) => ({
@@ -348,7 +391,7 @@ export const guardarRespuestasChequeo = async ({ chequeoId, conductorId, respues
     return {
         respuestas_guardadas: data,
         total_acumulado: count,
-        total_esperado: 39,
+        total_esperado: esperados ? esperados.size : 39,
     };
 };
 
@@ -408,7 +451,7 @@ const calcularResultado = (respuestas, itemsCriticosSet) => {
     };
 };
 
-// Cierra un chequeo: valida que tenga las 39 respuestas, calcula el resultado,
+// Cierra un chequeo: valida que tenga todas sus respuestas, calcula el resultado,
 // guarda los counts, y actualiza el estado del vehiculo si el resultado es peor.
 // Si el resultado es mejor que el estado actual, devuelve una sugerencia para el admin.
 export const cerrarChequeo = async ({ chequeoId, conductorId, notasGenerales }) => {
@@ -426,20 +469,28 @@ export const cerrarChequeo = async ({ chequeoId, conductorId, notasGenerales }) 
         return { error: { status: 500, mensaje: `Error obteniendo respuestas: ${errRes.message}` } };
     }
 
-    // Verificar que esten las 39 respuestas (o el numero aplicable segun excepciones del vehiculo)
-    const { data: excepciones } = await supabase
-        .from("excepciones_items_vehiculo")
-        .select("item_id")
-        .eq("vehiculo_id", chequeo.vehiculo_id);
+    // Verificar que esten todas las respuestas: las de los items que le tocaron al
+    // iniciar (RN-07). Un chequeo anterior a esa foto sigue con la regla vieja:
+    // 39 menos las excepciones del vehiculo.
+    const esperados = itemsDelChequeo(chequeo);
+    let totalEsperado;
+    let respondidos = respuestas.length;
+    if (esperados) {
+        totalEsperado = esperados.size;
+        respondidos = new Set(respuestas.filter((r) => esperados.has(r.item_id)).map((r) => r.item_id)).size;
+    } else {
+        const { data: excepciones } = await supabase
+            .from("excepciones_items_vehiculo")
+            .select("item_id")
+            .eq("vehiculo_id", chequeo.vehiculo_id);
+        totalEsperado = 39 - (excepciones || []).length;
+    }
 
-    const itemsExcluidos = new Set((excepciones || []).map((e) => e.item_id));
-    const totalEsperado = 39 - itemsExcluidos.size;
-
-    if (respuestas.length < totalEsperado) {
+    if (respondidos < totalEsperado) {
         return {
             error: {
                 status: 400,
-                mensaje: `Faltan respuestas. Se esperaban ${totalEsperado} y solo se han registrado ${respuestas.length}`,
+                mensaje: `Faltan respuestas. Se esperaban ${totalEsperado} y solo se han registrado ${respondidos}`,
             },
         };
     }
@@ -619,7 +670,7 @@ export const obtenerChequeoCompleto = async (chequeoId, usuario) => {
                 licencia_numero, licencia_categoria, licencia_vencimiento
             )
         `)
-        .eq("id", chequeoId);
+        .eq("id", chequeoId).match(filtroEmpresa(usuario));
 
     // Scope: si no es superadmin, solo puede ver chequeos de sus sedes
     if (sedesVisibles !== null) {
@@ -719,7 +770,8 @@ export const listarIntentosBloqueados = async ({
 // Registra un intento bloqueado cuando el conductor responde no apto en la pantalla de aptitud
 // (todavia no ha seleccionado vehiculo, asi que vehiculo_id queda null)
 export const registrarIntentoNoApto = async ({ conductor, respuestasAptitud }) => {
-    const evaluacion = await evaluarAptitud(respuestasAptitud);
+    const evaluacion = await evaluarAptitud(respuestasAptitud, conductor.empresa_id);
+    if (evaluacion.incompletas) return { apto: false, fallas: [], error: evaluacion.incompletas };
 
     if (evaluacion.apto) {
         return { apto: true, fallas: [] };
@@ -793,58 +845,51 @@ const normalizarPlaca = (texto = "") => {
     return String(texto).toUpperCase().replace(/[^A-Z0-9]/g, "");
 };
 
-// Devuelve el catalogo completo: categorias con sus items + preguntas de aptitud
-// En una sola llamada para que el frontend lo cargue de una vez
-export const obtenerCatalogoCompleto = async () => {
-    const [resCategorias, resItems, resPreguntas] = await Promise.all([
-        supabase
-            .from("categorias_chequeo")
-            .select("id, nombre, descripcion, icono, orden")
-            .eq("activo", true)
-            .order("orden", { ascending: true }),
-        supabase
-            .from("items_chequeo")
-            .select("id, categoria_id, descripcion, descripcion_larga, orden, es_critico, aplica_a_tipos")
-            .eq("activo", true)
-            .order("orden", { ascending: true }),
-        supabase
-            .from("preguntas_aptitud")
-            .select("id, pregunta, respuesta_apta, orden")
-            .eq("activo", true)
-            .order("orden", { ascending: true }),
-    ]);
+// Catalogo para el conductor (pacto para-empresas, HU-15 · CB-04):
+//   - sin chequeo: el de su empresa (lo usa la aptitud, antes de elegir vehiculo);
+//   - con un chequeo suyo: exactamente los items que le tocaron al iniciar,
+//     aunque despues se hayan apagado o bloqueado (el chequeo en curso no cambia).
+// Misma forma que antes: { categorias: [{ ..., items }], preguntas_aptitud, meta }.
+export const obtenerCatalogoCompleto = async (usuario, chequeoId = null) => {
+    const empresaId = empresaDelUsuario(usuario);
+    const efectivo = await catalogoDeEmpresa(empresaId);
+    let categorias = efectivo.categorias;
 
-    if (resCategorias.error) throw resCategorias.error;
-    if (resItems.error) throw resItems.error;
-    if (resPreguntas.error) throw resPreguntas.error;
+    if (chequeoId) {
+        const { data: chequeo } = await supabase
+            .from("chequeos_preoperacionales")
+            .select("conductor_id, catalogo_items")
+            .eq("id", chequeoId)
+            .maybeSingle();
+        if (chequeo && chequeo.conductor_id === usuario.id && Array.isArray(chequeo.catalogo_items)) {
+            const ids = chequeo.catalogo_items.length ? chequeo.catalogo_items : [0];
+            const { data: items, error } = await supabase
+                .from("items_chequeo")
+                .select("id, categoria_id, descripcion, descripcion_larga, orden, es_critico, aplica_a_tipos, categoria:categorias_chequeo(id, nombre, descripcion, icono, orden)")
+                .in("id", ids);
+            if (error) throw error;
+            const porCategoria = new Map();
+            for (const { categoria, ...item } of items || []) {
+                if (!porCategoria.has(categoria.id)) porCategoria.set(categoria.id, { ...categoria, items: [] });
+                porCategoria.get(categoria.id).items.push(item);
+            }
+            const porOrden = (a, b) => (a.orden ?? 999) - (b.orden ?? 999) || a.id - b.id;
+            categorias = [...porCategoria.values()]
+                .map((c) => ({ ...c, items: c.items.sort(porOrden) }))
+                .sort(porOrden);
+        }
+    }
 
-    // Agrupar items por categoria_id
-    const itemsPorCategoria = resItems.data.reduce((acc, item) => {
-        if (!acc[item.categoria_id]) acc[item.categoria_id] = [];
-        acc[item.categoria_id].push({
-            id: item.id,
-            descripcion: item.descripcion,
-            descripcion_larga: item.descripcion_larga,
-            orden: item.orden,
-            es_critico: item.es_critico,
-            aplica_a_tipos: item.aplica_a_tipos,
-        });
-        return acc;
-    }, {});
-
-    const categorias = resCategorias.data.map((cat) => ({
-        ...cat,
-        items: itemsPorCategoria[cat.id] || [],
-    }));
-
+    const limpiar = ({ activo: _a, empresa_id: _e, ...resto }) => resto;
+    const todos = categorias.flatMap((c) => c.items);
     return {
-        categorias,
-        preguntas_aptitud: resPreguntas.data,
+        categorias: categorias.map((c) => ({ ...limpiar(c), items: c.items.map(limpiar) })),
+        preguntas_aptitud: efectivo.preguntas.map(limpiar),
         meta: {
             total_categorias: categorias.length,
-            total_items: resItems.data.length,
-            total_items_criticos: resItems.data.filter((i) => i.es_critico).length,
-            total_preguntas: resPreguntas.data.length,
+            total_items: todos.length,
+            total_items_criticos: todos.filter((i) => i.es_critico).length,
+            total_preguntas: efectivo.preguntas.length,
         },
     };
 };

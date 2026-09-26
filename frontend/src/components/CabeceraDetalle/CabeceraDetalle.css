@@ -1,0 +1,94 @@
+/* Cabecera compartida de las pantallas de detalle (misma apariencia que tenian). */
+
+.cabecera-detalle {
+    background: var(--superficie);
+    border-bottom: 2px solid var(--color-gris-300);
+    padding: var(--espacio-sm) var(--espacio-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+    box-shadow: var(--sombra-md);
+}
+
+.cabecera-detalle-marca {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+    min-width: 0;
+}
+
+.cabecera-detalle-logo {
+    height: 38px;
+    width: auto;
+}
+
+.cabecera-detalle-textos {
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.cabecera-detalle-producto {
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    color: var(--texto-marca);
+}
+
+/* CB-16: un nombre de empresa largo se corta con "…" (completo en el title) */
+.cabecera-detalle-org {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cabecera-detalle-usuario {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+    flex-shrink: 0;
+}
+
+.cabecera-detalle-usuario-info {
+    text-align: right;
+}
+
+.cabecera-detalle-usuario-nombre {
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+    font-weight: var(--peso-bold);
+}
+
+.cabecera-detalle-usuario-rol {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+    letter-spacing: 0.5px;
+}
+
+.cabecera-detalle-salir {
+    min-height: 44px;
+    padding: 0 14px;
+    background: transparent;
+    color: var(--estado-error-texto);
+    border: 2px solid var(--color-rojo);
+    border-radius: var(--radio-md);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cabecera-detalle-salir:hover {
+    background: var(--color-rojo);
+    color: var(--color-blanco);
+}
+
+@media (max-width: 600px) {
+    .cabecera-detalle-usuario-info {
+        display: none; /* en el celular: logo, empresa y salir */
+    }
+}

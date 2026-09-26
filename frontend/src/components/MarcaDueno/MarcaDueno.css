@@ -1,0 +1,23 @@
+/* HU-20.3: la marca del dueño de SISVIA. Lleva el color de la marca (no el de
+   un estado): es una identidad de la cuenta, no un aviso. */
+.marca-dueno {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px var(--espacio-sm);
+    border: 1.5px solid var(--color-primario-oscuro);
+    border-radius: var(--radio-xl);
+    background: var(--acento-suave);
+    color: var(--texto-marca);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    line-height: 1.5;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.marca-dueno svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+}

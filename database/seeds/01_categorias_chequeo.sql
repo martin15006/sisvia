@@ -10,4 +10,4 @@ INSERT INTO categorias_chequeo (nombre, descripcion, icono, orden) VALUES
     ('LUCES',          'Sistema de iluminación completo',           '💡', 3),
     ('SEGURIDAD VIAL', 'Kit de carretera obligatorio',              '🛟', 4),
     ('VARIOS',         'Estado mecánico y accesorios del vehículo', '🚛', 5)
-ON CONFLICT (nombre) DO NOTHING;
+ON CONFLICT DO NOTHING;  -- el nombre es unico por catalogo (base o de cada empresa)

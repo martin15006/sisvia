@@ -1,0 +1,68 @@
+/* Uso del plan de una empresa (sedes / vehiculos contra su limite). */
+
+.uso-limite {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.uso-limite-texto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--espacio-xs);
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+    font-variant-numeric: tabular-nums;
+}
+
+.uso-limite-etiqueta {
+    color: var(--color-gris-700);
+    font-weight: var(--peso-semibold);
+}
+
+.uso-limite-aviso {
+    padding: 1px var(--espacio-sm);
+    border-radius: var(--radio-xl);
+    background: var(--estado-adv-fondo);
+    color: var(--estado-adv-texto);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+}
+
+.uso-limite-barra {
+    height: 8px;
+    border-radius: var(--radio-xl);
+    background: var(--color-gris-200);
+    overflow: hidden;
+}
+
+.uso-limite-relleno {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primario);
+    transition: width var(--velocidad-media) var(--suavizado);
+}
+
+.uso-limite--cerca .uso-limite-relleno {
+    background: var(--color-advertencia);
+}
+
+.uso-limite--lleno .uso-limite-relleno {
+    background: var(--estado-adv-texto);
+}
+
+.uso-limite--compacto .uso-limite-texto {
+    font-size: var(--tamano-xs);
+}
+
+.uso-limite--compacto .uso-limite-barra {
+    height: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .uso-limite-relleno {
+        transition: none;
+    }
+}

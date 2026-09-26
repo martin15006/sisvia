@@ -2,18 +2,22 @@
 //
 // enviarCorreo() nunca tumba el flujo principal: si no hay credenciales (correo
 // deshabilitado) o el envio falla, loguea y devuelve { enviado:false } sin lanzar.
-import { transporter, correoHabilitado, REMITENTE } from '../config/email.js';
+import { transporter, correoHabilitado, motivoCorreoApagado, REMITENTE } from '../config/email.js';
 import { supabase } from '../config/supabase.js';
 import { LOGO_PATH, COLORES, fechaLarga, lineaOrigen, cabeceraDeSede } from './export/branding.js';
+import { MARCA } from '../config/marca.js';
+import { pieDeCorreo } from './organizacionReglas.js';
 import { resolverDestinatariosSede } from './notificaciones.service.js';
+import { destinosReales } from './correoReglas.js';
 
 const APP_URL = process.env.CORS_ORIGIN || '';
 
 // Envia un correo. `para` puede ser un email o un array de emails.
 export const enviarCorreo = async ({ para, asunto, html }) => {
-    const destinos = (Array.isArray(para) ? para : [para]).filter(Boolean);
+    // Sin los dominios reservados para pruebas (@sisvia.test): no existen y solo rebotan.
+    const destinos = destinosReales(para);
     if (!correoHabilitado) {
-        console.log(`[correo] deshabilitado (sin credenciales) — se omite: "${asunto}"`);
+        console.log(`[correo] apagado (${motivoCorreoApagado}) — se omite: "${asunto}"`);
         return { enviado: false, omitido: true };
     }
     if (destinos.length === 0) {
@@ -68,7 +72,7 @@ export const emailsDeUsuarios = async (ids) => {
 // (fail loud): asi no pasa desapercibido que el correo quedo mal configurado.
 export const verificarCorreo = async () => {
     if (!correoHabilitado) {
-        console.log('[correo] deshabilitado (sin GMAIL_USER / GMAIL_APP_PASSWORD) — la app funciona, pero no envia correos.');
+        console.log(`[correo] apagado (${motivoCorreoApagado}) — la app funciona igual, pero no envia correos.`);
         return false;
     }
     try {
@@ -83,18 +87,19 @@ export const verificarCorreo = async () => {
 
 // ---- Plantillas HTML (estilos inline: los clientes de correo no leen <style>) ----
 
-const layout = (titulo, cuerpoHtml) => `
+// organizacion: la empresa de la que habla el correo (HU-08.3); va en el pie.
+const layout = (titulo, cuerpoHtml, organizacion = '') => `
 <div style="margin:0;padding:0;background:#f1efe8;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;">
   <div style="max-width:640px;margin:0 auto;background:#ffffff;">
     <div style="background:${COLORES.primario};padding:18px 24px;display:flex;align-items:center;">
-      <img src="cid:logomarca" width="42" height="42" alt="SISVIA" style="background:#fff;border-radius:6px;padding:4px;vertical-align:middle;" />
+      <img src="cid:logomarca" width="42" height="42" alt="${MARCA.nombre}" style="background:#fff;border-radius:6px;padding:4px;vertical-align:middle;" />
       <span style="color:${COLORES.sobreMarca};font-size:18px;font-weight:bold;margin-left:12px;vertical-align:middle;">${titulo}</span>
     </div>
     <div style="padding:22px 24px;">
       ${cuerpoHtml}
     </div>
     <div style="padding:14px 24px;background:#fafafa;border-top:1px solid #e5e5e5;color:#5f5e5a;font-size:12px;">
-      SISVIA · Control de vehículos · Este es un correo automatico, no responder.
+      ${pieDeCorreo(organizacion)}
     </div>
   </div>
 </div>`;
@@ -104,7 +109,7 @@ const boton = (texto, url) => url
     : '';
 
 // Correo inmediato de falla critica (vehiculo no operativo).
-export const plantillaFallaCritica = ({ placa, conductor, criticidad, fecha, chequeoId, origen }) => {
+export const plantillaFallaCritica = ({ placa, conductor, criticidad, fecha, chequeoId, origen, organizacion }) => {
     const url = chequeoId && APP_URL ? `${APP_URL}/admin/chequeos/${chequeoId}` : '';
     const cuerpo = `
     <div style="background:#FBEAEA;border-left:4px solid ${COLORES.critico};padding:12px 16px;border-radius:6px;">
@@ -120,11 +125,11 @@ export const plantillaFallaCritica = ({ placa, conductor, criticidad, fecha, che
     </table>
     <div style="margin-top:12px;font-size:13px;color:#5f5e5a;">El vehiculo no puede operar hasta que un administrador lo revise y autorice.</div>
     ${boton('Ver el chequeo', url)}`;
-    return layout('Falla critica en un vehiculo', cuerpo);
+    return layout('Falla critica en un vehiculo', cuerpo, organizacion);
 };
 
 // Correo-resumen diario de documentos por vencer (un correo por admin).
-export const plantillaDigestVencimientos = ({ items, sedeNombre }) => {
+export const plantillaDigestVencimientos = ({ items, sedeNombre, organizacion }) => {
     const filas = items.map((it) => {
         const color = it.dias <= 0 ? COLORES.critico : it.dias <= 7 ? COLORES.critico : it.dias <= 15 ? COLORES.alerta : '#1a1a1a';
         const faltan = it.dias <= 0 ? 'VENCIDO' : `${it.dias} dia${it.dias === 1 ? '' : 's'}`;
@@ -147,11 +152,11 @@ export const plantillaDigestVencimientos = ({ items, sedeNombre }) => {
       ${filas}
     </table>
     <div style="margin-top:12px;font-size:13px;color:#5f5e5a;">Renueva estos documentos a tiempo para que los vehiculos puedan seguir operando.</div>`;
-    return layout('Documentos por vencer', cuerpo);
+    return layout('Documentos por vencer', cuerpo, organizacion);
 };
 
 // Informe escalado de un admin a su superior (nota + resumen opcional del area).
-export const plantillaInforme = ({ deQuien, cargo, area, asunto, mensaje, resumen }) => {
+export const plantillaInforme = ({ deQuien, cargo, area, asunto, mensaje, resumen, organizacion }) => {
     const filaResumen = (etiqueta, valor, color) => `
       <td style="padding:10px 14px;text-align:center;background:#fafafa;border:1px solid #eee;">
         <div style="font-size:22px;font-weight:bold;color:${color || '#1a1a1a'};">${valor}</div>
@@ -170,7 +175,23 @@ export const plantillaInforme = ({ deQuien, cargo, area, asunto, mensaje, resume
     <div style="font-size:17px;font-weight:bold;color:${COLORES.primarioOscuro};margin-top:12px;">${asunto || 'Informe'}</div>
     <div style="margin-top:8px;font-size:14px;white-space:pre-line;">${(mensaje || '').replace(/</g, '&lt;')}</div>
     ${bloqueResumen}`;
-    return layout('Informe de un administrador', cuerpo);
+    return layout('Informe de un administrador', cuerpo, organizacion);
+};
+
+// Todo lo que escribe un usuario va escapado: un nombre o un mensaje con "<" no
+// puede meter HTML en el correo.
+const escapar = (texto) => String(texto ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+// Copia por correo de "Escribir a SISVIA" (HU-18.3 y 18.5): el mensaje nuevo o la
+// respuesta. `ruta` es la pantalla de Soporte en la app.
+export const plantillaBuzon = ({ titulo, encabezado, texto, ruta, organizacion }) => {
+    const url = ruta && APP_URL ? `${APP_URL}${ruta}` : '';
+    const cuerpo = `
+    <div style="font-size:13px;color:#5f5e5a;">${escapar(encabezado)}</div>
+    <div style="margin-top:10px;font-size:14px;white-space:pre-line;">${escapar(texto)}</div>
+    ${boton('Abrir en Soporte', url)}`;
+    return layout(escapar(titulo), cuerpo, organizacion);
 };
 
 // ---- Orquestadores (resuelven destinatarios + arman el correo) ----
@@ -179,7 +200,8 @@ export const plantillaInforme = ({ deQuien, cargo, area, asunto, mensaje, resume
 export const enviarCorreoFallaCritica = async ({ sedeId, placa, conductor, criticidad, fecha, chequeoId }) => {
     const para = await emailsDeUsuarios(await resolverDestinatariosSede(sedeId));
     if (para.length === 0) return { enviado: false, sinDestinatarios: true };
-    const origen = lineaOrigen(await cabeceraDeSede(sedeId));
-    const html = plantillaFallaCritica({ placa, conductor, criticidad, fecha, chequeoId, origen });
+    const cabecera = await cabeceraDeSede(sedeId);
+    const origen = lineaOrigen(cabecera);
+    const html = plantillaFallaCritica({ placa, conductor, criticidad, fecha, chequeoId, origen, organizacion: cabecera.organizacion });
     return enviarCorreo({ para, asunto: `Falla critica: ${placa || 'vehiculo'} NO OPERATIVO`, html });
 };

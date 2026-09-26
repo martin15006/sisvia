@@ -1,0 +1,21 @@
+/* HU-18.9: "Escribir a SISVIA" junto al aviso de limite o de placa */
+.atajo-sisvia {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    margin-left: var(--espacio-sm);
+    padding: 0 var(--espacio-md);
+    border: 2px solid currentColor;
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: inherit;
+    font-family: inherit;
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.atajo-sisvia:hover {
+    background: var(--acento-suave);
+}

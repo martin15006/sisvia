@@ -1,0 +1,413 @@
+/* HU-19 · HU-20.1: "Actividad" y "Registro del equipo". Una columna de tiempo:
+   la hora a la izquierda, un icono del tipo y lo que paso en palabras. */
+
+.actividad {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-lg);
+    min-width: 0;
+    max-width: 1080px;
+    container-type: inline-size;
+    container-name: actividad;
+}
+
+.actividad-titulo {
+    margin: 0;
+    font-size: var(--tamano-xxl);
+    color: var(--texto-marca);
+    text-wrap: balance;
+}
+
+.actividad-subtitulo {
+    margin: var(--espacio-xs) 0 0;
+    max-width: 72ch;
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    color: var(--color-gris-700);
+    text-wrap: pretty;
+}
+
+/* ===== Filtros ===== */
+.actividad-filtros {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+    padding: var(--espacio-md) var(--espacio-lg);
+    background: var(--superficie);
+    border: var(--borde-card);
+    border-radius: var(--radio-lg);
+}
+
+.actividad-tipos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-sm);
+}
+
+/* Mismas pastillas que Soporte (HU-18): el mismo vocabulario en toda la app */
+.actividad-tipo {
+    min-height: 44px;
+    padding: 0 var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-xl);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+    transition: background-color 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out;
+}
+
+.actividad-tipo:hover {
+    border-color: var(--color-primario-oscuro);
+}
+
+.actividad-tipo--activo {
+    background: var(--acento-suave);
+    border-color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
+}
+
+.actividad-tipo:focus-visible,
+.actividad-limpiar:focus-visible,
+.actividad-mas:focus-visible,
+.actividad-input:focus-visible {
+    outline: 3px solid var(--marca-anillo);
+    outline-offset: 2px;
+}
+
+.actividad-campos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--espacio-md);
+}
+
+.actividad-campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+    min-width: 150px;
+}
+
+.actividad-campo--ancho {
+    flex: 1 1 220px;
+}
+
+.actividad-label {
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-700);
+}
+
+.actividad-input {
+    min-height: 44px;
+    padding: 0 var(--espacio-md);
+    border: 2px solid var(--color-input-borde);
+    border-radius: var(--radio-md);
+    background: var(--color-input-bg);
+    color: var(--texto);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+}
+
+.actividad-input::placeholder {
+    color: var(--texto-suave);
+}
+
+.actividad-limpiar {
+    min-height: 44px;
+    padding: 0 var(--espacio-lg);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+}
+
+.actividad-limpiar:hover:not(:disabled) {
+    border-color: var(--color-primario-oscuro);
+}
+
+.actividad-limpiar:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+/* ===== El registro ===== */
+.actividad-registro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-lg);
+    padding: var(--espacio-md) var(--espacio-lg) var(--espacio-lg);
+    background: var(--superficie);
+    border: var(--borde-card);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-sm);
+}
+
+.actividad-dia-titulo {
+    margin: 0;
+    padding: var(--espacio-sm) 0;
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borde);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    color: var(--texto);
+}
+
+.actividad-dia-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.actividad-fila {
+    display: grid;
+    grid-template-columns: 5.5rem 32px minmax(0, 1fr);
+    align-items: start;
+    gap: var(--espacio-md);
+    padding: var(--espacio-md) 0;
+    border-bottom: 1px solid var(--borde);
+    animation: actividad-entra 200ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.actividad-dia-lista .actividad-fila:last-child {
+    border-bottom: 0;
+}
+
+@keyframes actividad-entra {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.actividad-hora {
+    padding-top: 6px;
+    font-family: var(--fuente-monospace);
+    font-size: var(--tamano-xs);
+    color: var(--texto-suave);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.actividad-icono {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radio-circular);
+    background: var(--superficie-sutil);
+    color: var(--color-gris-700);
+}
+
+.actividad-icono svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Lo que hizo el equipo SISVIA en la cuenta de la empresa (HU-19.3): el icono
+   toma el color de "informacion" y lleva su sello, sin pintar la fila entera. */
+.actividad-fila--sisvia .actividad-icono {
+    background: var(--estado-info-fondo);
+    color: var(--estado-info-texto);
+}
+
+.actividad-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+/* Qué hizo, debajo del nombre */
+.actividad-texto {
+    margin: 0;
+    font-size: var(--tamano-md);
+    line-height: 1.4;
+    color: var(--texto);
+    overflow-wrap: anywhere;
+}
+
+/* Quién lo hizo: primero y en negrita (enmienda 7) */
+.actividad-quien {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--espacio-xs);
+    margin: 0;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-700);
+}
+
+/* El cargo va al lado del nombre, sin punto: si no entra, baja limpio */
+.actividad-cargo {
+    color: var(--color-gris-700);
+}
+
+.actividad-nombre {
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-bold);
+    color: var(--texto);
+}
+
+.actividad-sello {
+    margin-right: var(--espacio-xs);
+    padding: 1px var(--espacio-sm);
+    border: 1px solid var(--estado-info-borde);
+    border-radius: var(--radio-xl);
+    background: var(--estado-info-fondo);
+    color: var(--estado-info-texto);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    white-space: nowrap;
+}
+
+/* En el registro del equipo: en que empresa fue */
+.actividad-empresa {
+    margin-left: var(--espacio-xs);
+    padding: 1px var(--espacio-sm);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-sm);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    color: var(--texto);
+}
+
+/* ===== Cargando, vacio, error y "Ver mas" ===== */
+.actividad-fila--esqueleto {
+    animation: none;
+}
+
+.actividad-esqueleto {
+    display: block;
+    height: 12px;
+    border-radius: var(--radio-sm);
+    background: var(--superficie-sutil);
+    animation: actividad-late 1.2s ease-in-out infinite alternate;
+}
+
+.actividad-esqueleto--hora { width: 60%; margin-top: 8px; }
+.actividad-esqueleto--texto { width: min(70%, 420px); height: 14px; margin-top: 4px; }
+.actividad-esqueleto--quien { width: min(40%, 220px); margin-top: 8px; }
+
+@keyframes actividad-late {
+    from { opacity: 1; }
+    to { opacity: 0.45; }
+}
+
+.actividad-vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espacio-md);
+    padding: var(--espacio-lg) 0;
+}
+
+.actividad-vacio p {
+    margin: 0;
+    max-width: 60ch;
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    color: var(--color-gris-700);
+}
+
+.actividad-aviso--error {
+    margin: 0;
+    padding: var(--espacio-md);
+    border: 1px solid var(--estado-error-borde);
+    border-radius: var(--radio-md);
+    background: var(--estado-error-fondo);
+    color: var(--estado-error-texto);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+}
+
+.actividad-pie {
+    display: flex;
+    justify-content: center;
+    padding-top: var(--espacio-sm);
+}
+
+.actividad-mas {
+    min-height: 44px;
+    padding: 0 var(--espacio-xl);
+    border: 2px solid var(--color-primario-oscuro);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--texto-marca);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: background-color 160ms ease-out;
+}
+
+.actividad-mas:hover:not(:disabled) {
+    background: var(--acento-suave);
+}
+
+.actividad-mas:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.actividad-fin {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    color: var(--texto-suave);
+}
+
+/* ===== Espacio angosto (celular, o el menu abierto en una pantalla chica) ===== */
+@container actividad (max-width: 560px) {
+    .actividad-filtros,
+    .actividad-registro {
+        padding-left: var(--espacio-md);
+        padding-right: var(--espacio-md);
+    }
+
+    .actividad-fila {
+        grid-template-columns: 32px minmax(0, 1fr);
+        gap: var(--espacio-sm) var(--espacio-md);
+    }
+
+    /* La hora pasa arriba del texto, a la altura del cuerpo */
+    .actividad-hora {
+        grid-column: 2;
+        grid-row: 1;
+        padding-top: 0;
+    }
+
+    .actividad-icono {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+    }
+
+    .actividad-cuerpo {
+        grid-column: 2;
+    }
+
+    .actividad-campo {
+        flex: 1 1 140px;
+        min-width: 0;
+    }
+
+    .actividad-limpiar {
+        flex: 1 1 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .actividad-fila,
+    .actividad-esqueleto {
+        animation: none;
+    }
+
+    .actividad-tipo,
+    .actividad-mas {
+        transition: none;
+    }
+}

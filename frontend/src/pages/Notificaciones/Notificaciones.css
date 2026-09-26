@@ -235,3 +235,15 @@
         width: 100%;
     }
 }
+
+/* Superadmin dentro de una empresa: de quien son los avisos (HU-16.1) */
+.notif-de-empresa {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-700);
+}
+
+/* Informes y avisos de varias lineas (asunto, mensaje, resumen) */
+.notif-item-mensaje {
+    white-space: pre-line;
+}

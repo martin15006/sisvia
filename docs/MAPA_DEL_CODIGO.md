@@ -14,7 +14,7 @@ Esta es una **guía rápida** para que cualquier persona (programador o no) sepa
 |---|---|---|
 | El logo del producto | `frontend/public/logo.png` | Reemplazar el archivo PNG con el mismo nombre |
 | El **nombre** del producto | `frontend/src/lib/marca.js` y `backend/src/config/marca.js` | Cambiar ahí; no está hardcodeado en ningún componente |
-| El nombre de la organización cliente | `ORG_NOMBRE` / `VITE_ORG_NOMBRE` en los `.env` | Variable de entorno, no código |
+| El nombre de la organización cliente | El registro de cada empresa (módulo Empresas); lo leen `organizacionDeUsuario` y `cabeceraDeSede` en `backend/src/services/export/branding.js` y `frontend/src/lib/organizacion.js` | Dato de la base, no código ni variable de entorno |
 | El logo de ICI | `frontend/public/ici.png` | Reemplazar el archivo PNG |
 | Los íconos 🚛 y 🏁 del dashboard | `frontend/src/pages/Conductor/ConductorDashboard.jsx` | Son emojis Unicode escritos en el JSX. Buscar y reemplazar el emoji |
 | Los íconos de categorías del chequeo (Niveles, Pedales, etc.) | Base de datos, tabla `categorias_chequeo`, columna `icono` | Ver sección 3 (catálogo del chequeo) |

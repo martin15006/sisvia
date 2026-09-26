@@ -189,6 +189,26 @@
     color: var(--color-gris-700);
 }
 
+/* HU-18.9: aviso de limite del plan dentro del formulario de sede */
+.geografia-aviso-limite {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-sm);
+    margin: 0 0 var(--espacio-md);
+    padding: var(--espacio-sm) var(--espacio-md);
+    border-radius: var(--radio-md);
+    background: var(--estado-error-fondo);
+    border: 1px solid var(--estado-error-borde);
+    color: var(--estado-error-texto);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+}
+
+.geografia-aviso-limite .atajo-sisvia {
+    margin-left: 0;
+}
+
 .geografia-form-acciones {
     display: flex;
     justify-content: flex-end;

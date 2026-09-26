@@ -3,6 +3,7 @@ import { obtenerChequeoCompleto, obtenerChequeosDelConductor, listarChequeosPara
 import { obtenerVehiculoCompleto } from '../vehiculos.service.js';
 import { puedeAccederSede, obtenerScope, usuarioEnScope } from '../scope.service.js';
 import { cabeceraDeSede, origenDeUsuario, etiquetaEstado, fechaLarga } from './branding.js';
+import { filtroEmpresa } from '../scopeReglas.js';
 
 // Junta TODO lo necesario para exportar un chequeo (reusa la capa de datos existente,
 // respetando el scope del usuario). Devuelve { ok, error?, status?, chequeo, origen }.
@@ -21,7 +22,7 @@ export const datosChequeo = async (id, usuario) => {
 export const datosVehiculo = async (id, usuario) => {
     let vehiculo;
     try {
-        vehiculo = await obtenerVehiculoCompleto(id);
+        vehiculo = await obtenerVehiculoCompleto(id, usuario);
     } catch {
         return { ok: false, status: 404, error: 'Vehículo no encontrado.' };
     }
@@ -49,7 +50,7 @@ export const datosConductor = async (id, usuario) => {
     const { data: conductor } = await supabase
         .from('usuarios')
         .select('*, sede:sedes ( nombre, direccion, ciudad:ciudad_id ( nombre, departamento:departamento_id ( nombre ) ) )')
-        .eq('id', id)
+        .eq('id', id).match(filtroEmpresa(usuario))
         .maybeSingle();
     if (!conductor) return { ok: false, status: 404, error: 'Usuario no encontrado.' };
 

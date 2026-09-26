@@ -308,6 +308,17 @@
     opacity: 0.55;
 }
 
+/* HU-17.4: dado de baja por traspaso. Sin opacidad (el texto tiene que leerse):
+   borde punteado y la foto en gris. */
+.vehiculo-card-baja {
+    border: 2px dashed var(--color-gris-300);
+    box-shadow: none;
+}
+
+.vehiculo-card-baja .vehiculo-card-foto img {
+    filter: grayscale(1);
+}
+
 /* FOTO */
 .vehiculo-card-foto {
     position: relative;

@@ -1,0 +1,101 @@
+/* HU-17.2 · Dar de baja un vehiculo por traspaso */
+.baja-vehiculo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-lg);
+}
+
+.baja-vehiculo-texto {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    color: var(--color-gris-900);
+}
+
+.baja-vehiculo-campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+}
+
+.baja-vehiculo-label {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-900);
+}
+
+.baja-vehiculo-input {
+    width: 100%;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.baja-vehiculo-input:focus {
+    outline: none;
+    border-color: var(--color-primario-oscuro);
+}
+
+.baja-vehiculo-input--error {
+    border-color: var(--estado-error-texto);
+}
+
+.baja-vehiculo-ayuda {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+    text-align: right;
+}
+
+.baja-vehiculo-error {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--estado-error-texto);
+}
+
+.baja-vehiculo-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--espacio-md);
+}
+
+.baja-vehiculo-boton {
+    min-height: 44px;
+    padding: 0 var(--espacio-lg);
+    border-radius: var(--radio-md);
+    border: 2px solid var(--color-gris-300);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+}
+
+.baja-vehiculo-boton:hover:not(:disabled) {
+    background: var(--acento-suave);
+}
+
+.baja-vehiculo-boton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.baja-vehiculo-boton--peligro {
+    background: var(--estado-error-solido);
+    border-color: var(--estado-error-solido);
+    color: var(--texto-inverso);
+}
+
+.baja-vehiculo-boton--peligro:hover:not(:disabled) {
+    background: var(--estado-error-solido);
+    filter: brightness(0.92);
+}

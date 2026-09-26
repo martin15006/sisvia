@@ -1,0 +1,215 @@
+/* HU-18: "Escribir a SISVIA" (boton de la barra de arriba y su formulario) */
+
+.escribir-sisvia-boton {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-xs);
+    height: 40px;
+    padding: 0 var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background var(--velocidad-rapida) var(--suavizado), border-color var(--velocidad-rapida) var(--suavizado);
+}
+
+.escribir-sisvia-boton:hover {
+    background: var(--acento-suave);
+    color: var(--texto-marca);
+    border-color: var(--color-primario-oscuro);
+}
+
+.escribir-sisvia-boton svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* En pantallas chicas queda solo el icono: con el menu abierto, el titulo de la
+   pagina se cortaba ("So...") a 930 px. El nombre sigue para el lector de pantalla. */
+@media (max-width: 1100px) {
+    .escribir-sisvia-boton {
+        width: 40px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .escribir-sisvia-boton-texto {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+
+.escribir-sisvia {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-lg);
+}
+
+.escribir-sisvia-ayuda,
+.escribir-sisvia-exito {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    color: var(--color-gris-900);
+}
+
+.escribir-sisvia-exito {
+    font-size: var(--tamano-md);
+    font-weight: var(--peso-semibold);
+}
+
+.escribir-sisvia-campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+    min-width: 0;
+}
+
+.escribir-sisvia-label {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-900);
+}
+
+.escribir-sisvia-input {
+    width: 100%;
+    min-height: 44px;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    box-sizing: border-box;
+}
+
+.escribir-sisvia-input:focus {
+    outline: none;
+    border-color: var(--color-primario-oscuro);
+}
+
+.escribir-sisvia-texto {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.escribir-sisvia-contador {
+    align-self: flex-end;
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+}
+
+.escribir-sisvia-elegir {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px dashed var(--color-gris-300);
+    border-radius: var(--radio-md);
+    color: var(--color-gris-700);
+    font-size: var(--tamano-sm);
+    cursor: pointer;
+}
+
+.escribir-sisvia-elegir:hover {
+    border-color: var(--color-primario-oscuro);
+    color: var(--color-gris-900);
+}
+
+.escribir-sisvia-elegir input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.escribir-sisvia-archivo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+    min-height: 44px;
+    padding: var(--espacio-xs) var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+}
+
+.escribir-sisvia-archivo-nombre {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+}
+
+.escribir-sisvia-quitar {
+    min-height: 36px;
+    padding: 0 var(--espacio-md);
+    border: none;
+    border-radius: var(--radio-md);
+    background: transparent;
+    color: var(--estado-error-texto);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+}
+
+.escribir-sisvia-error {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--estado-error-texto);
+}
+
+.escribir-sisvia-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--espacio-md);
+}
+
+.escribir-sisvia-accion {
+    min-height: 44px;
+    padding: 0 var(--espacio-lg);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+}
+
+.escribir-sisvia-accion:hover:not(:disabled) {
+    background: var(--acento-suave);
+}
+
+.escribir-sisvia-accion:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.escribir-sisvia-accion--primaria {
+    background: var(--color-primario);
+    border-color: var(--color-primario-oscuro);
+    color: var(--texto-sobre-marca);
+}
+
+.escribir-sisvia-accion--primaria:hover:not(:disabled) {
+    background: var(--color-primario-hover);
+}

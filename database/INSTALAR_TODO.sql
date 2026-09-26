@@ -2,7 +2,7 @@
 --  SISVIA — INSTALACION COMPLETA EN UN SOLO ARCHIVO
 -- ============================================================================
 --  Generado el 2026-09-06 juntando database.sql + los 6 seeds.
---  Las 12 migraciones de database/migrations/ YA ESTAN incluidas en el
+--  Las 17 migraciones de database/migrations/ YA ESTAN incluidas en el
 --  esquema: no hay que correr ninguna aparte.
 --
 --  COMO USARLO (Supabase)
@@ -12,9 +12,10 @@
 --    4. Al final sale una tabla de verificacion con los conteos
 --
 --  QUE DEJA INSTALADO
---    22 tablas + 2 triggers + indices + RLS activo
+--    28 tablas + 10 triggers + indices + RLS activo
+--    1 empresa inicial "SISVIA" (multi-empresa, pacto para-empresas)
 --    5 categorias, 39 items de chequeo, 5 preguntas de aptitud
---    5 regiones, 33 departamentos, 34 ciudades, 5 sedes de muestra
+--    5 regiones, 33 departamentos, 1.122 municipios, 5 sedes de muestra
 --
 --  ANTES DE CORRERLO
 --    - Sirve para una base VACIA o recien creada.
@@ -361,6 +362,10 @@ CREATE TABLE IF NOT EXISTS chequeos_preoperacionales (
 
     notas_generales         TEXT,
 
+    -- Items que le tocaron al iniciar (RN-07 del pacto para-empresas): el cierre
+    -- espera esas respuestas y un cambio del catalogo no lo afecta (CB-04).
+    catalogo_items          INTEGER[],
+
     -- Timestamps
     created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -696,6 +701,460 @@ ALTER TABLE intentos_login              ENABLE ROW LEVEL SECURITY;
 
 
 -- ==========================================================================
+-- EMPRESAS (2026-09-18, pacto para-empresas)
+-- Igual a migrations/2026-09-18_empresas.sql. Crea la empresa "SISVIA" y deja
+-- todo lo que se cargue sin empresa_id dentro de ella.
+-- ==========================================================================
+
+BEGIN;
+
+-- ---------------------------------------------------------------------------
+-- 1. Empresas
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS empresas (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre              TEXT NOT NULL,
+    nit                 TEXT,
+    ciudad_id           UUID REFERENCES ciudades(id) ON DELETE SET NULL,
+    telefono            TEXT,
+    correo              TEXT,
+    limite_sedes        INTEGER NOT NULL CHECK (limite_sedes >= 1),
+    limite_vehiculos    INTEGER NOT NULL CHECK (limite_vehiculos >= 1),
+    activa              BOOLEAN NOT NULL DEFAULT true,
+    desactivada_en      TIMESTAMPTZ,
+    ultimo_respaldo_en  TIMESTAMPTZ,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Nombre unico sin importar mayusculas (CB-14).
+CREATE UNIQUE INDEX IF NOT EXISTS empresas_nombre_unico ON empresas (lower(nombre));
+ALTER TABLE empresas ENABLE ROW LEVEL SECURITY;
+
+-- Empresa inicial: todo lo que existe hoy es de ella (HU-07).
+INSERT INTO empresas (nombre, limite_sedes, limite_vehiculos)
+SELECT 'SISVIA',
+       GREATEST(1, (SELECT count(*) FROM sedes WHERE activo)),
+       GREATEST(1, (SELECT count(*) FROM vehiculos WHERE activo))
+WHERE NOT EXISTS (SELECT 1 FROM empresas WHERE lower(nombre) = 'sisvia');
+
+-- ---------------------------------------------------------------------------
+-- 2. empresa_id en los datos de cada empresa
+--    Valor por defecto = "SISVIA": el codigo viejo no la conoce y sigue andando.
+--    El codigo nuevo siempre la manda explicita.
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE
+    v_sisvia UUID := (SELECT id FROM empresas WHERE lower(nombre) = 'sisvia');
+    v_tabla  TEXT;
+BEGIN
+    FOREACH v_tabla IN ARRAY ARRAY['sedes', 'vehiculos', 'chequeos_preoperacionales', 'intentos_chequeo_bloqueado', 'suplencias'] LOOP
+        EXECUTE format('ALTER TABLE %I ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE', v_tabla);
+        EXECUTE format('UPDATE %I SET empresa_id = %L WHERE empresa_id IS NULL', v_tabla, v_sisvia);
+        EXECUTE format('ALTER TABLE %I ALTER COLUMN empresa_id SET DEFAULT %L', v_tabla, v_sisvia);
+        EXECUTE format('ALTER TABLE %I ALTER COLUMN empresa_id SET NOT NULL', v_tabla);
+        EXECUTE format('CREATE INDEX IF NOT EXISTS idx_%s_empresa ON %I (empresa_id)', v_tabla, v_tabla);
+    END LOOP;
+
+    -- Usuarios: el superadmin (equipo SISVIA) no tiene empresa; todos los demas si.
+    ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE;
+    UPDATE usuarios SET empresa_id = v_sisvia WHERE empresa_id IS NULL AND rol <> 'superadmin';
+    EXECUTE format('ALTER TABLE usuarios ALTER COLUMN empresa_id SET DEFAULT %L', v_sisvia);
+    CREATE INDEX IF NOT EXISTS idx_usuarios_empresa ON usuarios (empresa_id);
+END $$;
+
+-- El default de usuarios pondria empresa a un superadmin nuevo: se la saca el
+-- trigger, y la regla asegura que nadie mas quede sin empresa.
+CREATE OR REPLACE FUNCTION usuarios_superadmin_sin_empresa() RETURNS trigger AS $$
+BEGIN
+    IF NEW.rol = 'superadmin' THEN
+        NEW.empresa_id := NULL;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_usuarios_superadmin_sin_empresa ON usuarios;
+CREATE TRIGGER trg_usuarios_superadmin_sin_empresa
+    BEFORE INSERT OR UPDATE OF rol, empresa_id ON usuarios
+    FOR EACH ROW EXECUTE FUNCTION usuarios_superadmin_sin_empresa();
+
+ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_empresa_segun_rol;
+ALTER TABLE usuarios ADD CONSTRAINT usuarios_empresa_segun_rol
+    CHECK (rol = 'superadmin' OR empresa_id IS NOT NULL);
+
+-- ---------------------------------------------------------------------------
+-- 3. Rol nuevo: Administrador de empresa
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE v_nombre TEXT;
+BEGIN
+    SELECT conname INTO v_nombre
+    FROM pg_constraint
+    WHERE conrelid = 'usuarios'::regclass AND contype = 'c'
+      AND pg_get_constraintdef(oid) LIKE '%superadmin%' AND pg_get_constraintdef(oid) LIKE '%conductor%';
+    IF v_nombre IS NOT NULL THEN
+        EXECUTE format('ALTER TABLE usuarios DROP CONSTRAINT %I', v_nombre);
+    END IF;
+END $$;
+ALTER TABLE usuarios ADD CONSTRAINT usuarios_rol_check CHECK (rol IN (
+    'superadmin', 'admin_empresa', 'admin_departamental', 'admin_sede',
+    'admin',  -- alias historico = admin_sede
+    'conductor'
+));
+
+-- ---------------------------------------------------------------------------
+-- 4. Catalogo: base (empresa_id vacio) y propio de cada empresa
+-- ---------------------------------------------------------------------------
+ALTER TABLE categorias_chequeo ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE items_chequeo      ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE preguntas_aptitud  ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_categorias_empresa ON categorias_chequeo (empresa_id);
+CREATE INDEX IF NOT EXISTS idx_items_empresa      ON items_chequeo (empresa_id);
+CREATE INDEX IF NOT EXISTS idx_preguntas_empresa  ON preguntas_aptitud (empresa_id);
+
+-- El nombre de categoria era unico en todo el sistema; ahora es unico dentro
+-- del catalogo base y dentro de cada empresa. (Que una propia no repita el
+-- nombre de una base lo controla la app: CB-08.)
+ALTER TABLE categorias_chequeo DROP CONSTRAINT IF EXISTS categorias_chequeo_nombre_key;
+CREATE UNIQUE INDEX IF NOT EXISTS categorias_nombre_por_catalogo
+    ON categorias_chequeo (COALESCE(empresa_id, '00000000-0000-0000-0000-000000000000'::uuid), lower(nombre));
+
+CREATE TABLE IF NOT EXISTS bloqueos_catalogo (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id      UUID NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+    tipo            TEXT NOT NULL CHECK (tipo IN ('categoria', 'item', 'pregunta')),
+    elemento_id     INTEGER NOT NULL,       -- id del elemento BASE bloqueado
+    bloqueado_por   UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (empresa_id, tipo, elemento_id)
+);
+ALTER TABLE bloqueos_catalogo ENABLE ROW LEVEL SECURITY;
+
+-- ---------------------------------------------------------------------------
+-- 5. Baja por traspaso y placa unica entre los vehiculos no dados de baja
+-- ---------------------------------------------------------------------------
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS dado_de_baja BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS baja_motivo  TEXT;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS baja_en      TIMESTAMPTZ;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS baja_por     UUID REFERENCES usuarios(id) ON DELETE SET NULL;
+ALTER TABLE vehiculos DROP CONSTRAINT IF EXISTS vehiculos_placa_key;
+CREATE UNIQUE INDEX IF NOT EXISTS vehiculos_placa_unica_vigente ON vehiculos (placa) WHERE NOT dado_de_baja;
+
+-- ---------------------------------------------------------------------------
+-- 6. Registro de las acciones sobre empresas (RNF-05, RN-11)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS auditoria_empresas (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id      UUID REFERENCES empresas(id) ON DELETE SET NULL,
+    empresa_nombre  TEXT NOT NULL,          -- queda aunque la empresa se elimine
+    actor_id        UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    accion          TEXT NOT NULL,          -- 'creada', 'limites', 'desactivada', 'baja_vehiculo', ...
+    detalles        JSONB,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_auditoria_empresas_empresa ON auditoria_empresas (empresa_id, created_at DESC);
+ALTER TABLE auditoria_empresas ENABLE ROW LEVEL SECURITY;
+
+-- ---------------------------------------------------------------------------
+-- 7. Escribir a SISVIA (HU-18): el mensaje de una empresa y su hilo
+--    (migracion 2026-09-19_buzon.sql). Se borran con la empresa (CB-21).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS buzon_mensajes (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id        UUID NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+    autor_id          UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    autor_nombre      TEXT NOT NULL,          -- queda aunque el usuario ya no este
+    autor_cargo       TEXT,
+    tipo              TEXT NOT NULL CHECK (tipo IN ('falla', 'duda', 'cupo', 'traspaso', 'idea')),
+    mensaje           TEXT NOT NULL CHECK (char_length(btrim(mensaje)) BETWEEN 1 AND 2000),
+    estado            TEXT NOT NULL DEFAULT 'nuevo' CHECK (estado IN ('nuevo', 'en_revision', 'resuelto')),
+    pantalla          TEXT CHECK (char_length(pantalla) <= 300),   -- desde donde escribio (HU-18.3)
+    navegador         TEXT CHECK (char_length(navegador) <= 300),
+    adjunto_id        TEXT,                   -- public_id en Cloudinary (privado)
+    adjunto_recurso   TEXT CHECK (adjunto_recurso IN ('image', 'raw')),
+    adjunto_formato   TEXT,                   -- image/png, image/jpeg, application/pdf
+    adjunto_nombre    TEXT,
+    adjunto_bytes     INTEGER CHECK (adjunto_bytes BETWEEN 1 AND 5242880),
+    resuelto_en       TIMESTAMPTZ,
+    resuelto_por      UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    actualizado_en    TIMESTAMPTZ NOT NULL DEFAULT NOW()   -- ultima respuesta o cambio de estado
+);
+CREATE INDEX IF NOT EXISTS idx_buzon_mensajes_empresa ON buzon_mensajes (empresa_id, actualizado_en DESC);
+CREATE INDEX IF NOT EXISTS idx_buzon_mensajes_estado  ON buzon_mensajes (estado, created_at DESC);
+ALTER TABLE buzon_mensajes ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS buzon_respuestas (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    mensaje_id        UUID NOT NULL REFERENCES buzon_mensajes(id) ON DELETE CASCADE,
+    empresa_id        UUID NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+    autor_id          UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    autor_nombre      TEXT NOT NULL,
+    de_sisvia         BOOLEAN NOT NULL,       -- true = la escribio el equipo SISVIA
+    texto             TEXT NOT NULL CHECK (char_length(btrim(texto)) BETWEEN 1 AND 2000),
+    adjunto_id        TEXT,
+    adjunto_recurso   TEXT CHECK (adjunto_recurso IN ('image', 'raw')),
+    adjunto_formato   TEXT,
+    adjunto_nombre    TEXT,
+    adjunto_bytes     INTEGER CHECK (adjunto_bytes BETWEEN 1 AND 5242880),
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_buzon_respuestas_mensaje ON buzon_respuestas (mensaje_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_buzon_respuestas_empresa ON buzon_respuestas (empresa_id);
+ALTER TABLE buzon_respuestas ENABLE ROW LEVEL SECURITY;
+
+-- ---------------------------------------------------------------------------
+-- 8. Actividad de la empresa y Dueño de SISVIA (HU-19 · HU-20 · RN-14 · RN-15)
+--    (migracion 2026-09-21_actividad_y_dueno.sql). Cada registro de vehiculos,
+--    usuarios y empresas se copia solo a la actividad; las sedes y el catalogo
+--    propio los escribe el backend. La marca de dueño va a lo sumo en una cuenta.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS actividad (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- NULL: lo del equipo SISVIA sin empresa (sus cuentas) o de una empresa ya eliminada
+    empresa_id      UUID REFERENCES empresas(id) ON DELETE SET NULL,
+    empresa_nombre  TEXT,
+    actor_id        UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    actor_nombre    TEXT NOT NULL,                  -- queda aunque la persona se elimine (CB-24)
+    actor_cargo     TEXT,
+    de_sisvia       BOOLEAN NOT NULL DEFAULT false, -- lo hizo alguien del equipo SISVIA
+    tipo            TEXT NOT NULL CHECK (tipo IN ('vehiculo', 'usuario', 'sede', 'catalogo', 'empresa', 'equipo')),
+    accion          TEXT NOT NULL,
+    objeto_id       TEXT,                           -- id de lo que se toco (texto: el catalogo usa enteros)
+    objeto          TEXT,                           -- su nombre: placa, persona, sede, item...
+    detalles        JSONB,
+    origen          TEXT UNIQUE,                    -- de que registro se copio (evita duplicar)
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_actividad_empresa ON actividad (empresa_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_actividad_equipo  ON actividad (created_at DESC) WHERE de_sisvia;
+ALTER TABLE actividad ENABLE ROW LEVEL SECURITY;
+
+-- El cargo con el que se muestra a quien hizo algo (mismas etiquetas que la app).
+CREATE OR REPLACE FUNCTION actividad_cargo(p_rol TEXT, p_pool BOOLEAN) RETURNS TEXT LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE p_rol
+        WHEN 'superadmin' THEN 'Administrador general'
+        WHEN 'admin_empresa' THEN 'Administrador de empresa'
+        WHEN 'admin_departamental' THEN 'Director Regional'
+        WHEN 'admin_sede' THEN 'Coordinador de sede'
+        WHEN 'admin' THEN 'Coordinador de sede'
+        WHEN 'conductor' THEN CASE WHEN p_pool THEN 'Pool de transporte' ELSE 'Conductor' END
+        ELSE NULL END
+$$;
+
+-- ---------------------------------------------------------------------------
+-- 2. Copiar cada registro a la actividad (los viejos y los que vengan)
+-- ---------------------------------------------------------------------------
+
+-- Vehiculos: van a la empresa del vehiculo.
+CREATE OR REPLACE FUNCTION actividad_copiar_vehiculo(p auditoria_vehiculos) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+    INSERT INTO actividad (empresa_id, empresa_nombre, actor_id, actor_nombre, actor_cargo, de_sisvia, tipo, accion, objeto_id, objeto, detalles, origen, created_at)
+    SELECT v.empresa_id, e.nombre, p.accion_por_id, COALESCE(u.nombre_completo, 'Alguien que ya no está'), actividad_cargo(u.rol, u.es_pool),
+           COALESCE(u.rol = 'superadmin', false), 'vehiculo', p.accion, v.id::text, COALESCE(p.detalles->>'placa', v.placa), p.detalles,
+           'auditoria_vehiculos:' || p.id, p.created_at
+    FROM vehiculos v
+    JOIN empresas e ON e.id = v.empresa_id
+    LEFT JOIN usuarios u ON u.id = p.accion_por_id
+    WHERE v.id = p.vehiculo_id
+    ON CONFLICT (origen) DO NOTHING;
+END;
+$$;
+
+-- Usuarios: los de una empresa van a su actividad; los del equipo SISVIA, al
+-- registro del equipo (sin empresa).
+CREATE OR REPLACE FUNCTION actividad_copiar_usuario(p auditoria_usuarios) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+    INSERT INTO actividad (empresa_id, empresa_nombre, actor_id, actor_nombre, actor_cargo, de_sisvia, tipo, accion, objeto_id, objeto, detalles, origen, created_at)
+    SELECT e.id, e.nombre, p.accion_por_id, COALESCE(u.nombre_completo, 'Alguien que ya no está'), actividad_cargo(u.rol, u.es_pool),
+           COALESCE(u.rol = 'superadmin', false), CASE WHEN af.rol = 'superadmin' THEN 'equipo' ELSE 'usuario' END,
+           p.accion, af.id::text, COALESCE(p.detalles->>'nombre', af.nombre_completo), p.detalles,
+           'auditoria_usuarios:' || p.id, p.created_at
+    FROM usuarios af
+    LEFT JOIN empresas e ON e.id = af.empresa_id AND af.rol <> 'superadmin'
+    LEFT JOIN usuarios u ON u.id = p.accion_por_id
+    WHERE af.id = p.usuario_afectado_id
+    ON CONFLICT (origen) DO NOTHING;
+END;
+$$;
+
+-- Lo que hizo el equipo SISVIA con las empresas y adentro de ellas. Los cambios
+-- en vehiculos y usuarios ya se copian arriba con su detalle: su copia
+-- "soporte" no se repite.
+CREATE OR REPLACE FUNCTION actividad_copiar_empresa(p auditoria_empresas) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    v_ruta TEXT := COALESCE(p.detalles->>'ruta', '');
+BEGIN
+    IF p.accion = 'soporte' AND (v_ruta LIKE '/api/vehiculos%' OR v_ruta LIKE '/api/usuarios%') THEN
+        RETURN;
+    END IF;
+    INSERT INTO actividad (empresa_id, empresa_nombre, actor_id, actor_nombre, actor_cargo, de_sisvia, tipo, accion, objeto_id, objeto, detalles, origen, created_at)
+    SELECT p.empresa_id, p.empresa_nombre, p.actor_id, COALESCE(u.nombre_completo, 'Alguien del equipo SISVIA'),
+           COALESCE(actividad_cargo(u.rol, u.es_pool), 'Administrador general'), true,
+           CASE WHEN v_ruta LIKE '/api/geo/sedes%' THEN 'sede'
+                WHEN v_ruta LIKE '/api/catalogo-admin%' THEN 'catalogo'
+                ELSE 'empresa' END,
+           p.accion, CASE WHEN p.accion = 'soporte' THEN NULL ELSE p.empresa_id::text END,
+           CASE WHEN p.accion = 'soporte' THEN p.detalles->>'elemento' ELSE p.empresa_nombre END, p.detalles,
+           'auditoria_empresas:' || p.id, p.created_at
+    FROM (SELECT 1) uno
+    LEFT JOIN usuarios u ON u.id = p.actor_id
+    ON CONFLICT (origen) DO NOTHING;
+END;
+$$;
+
+-- Los que vengan: al escribirse. Si la copia falla, el registro de siempre se
+-- guarda igual (solo queda un aviso en el log de la base).
+CREATE OR REPLACE FUNCTION actividad_al_registrar() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    BEGIN
+        CASE TG_TABLE_NAME
+            WHEN 'auditoria_vehiculos' THEN PERFORM actividad_copiar_vehiculo(NEW);
+            WHEN 'auditoria_usuarios'  THEN PERFORM actividad_copiar_usuario(NEW);
+            WHEN 'auditoria_empresas'  THEN PERFORM actividad_copiar_empresa(NEW);
+        END CASE;
+    EXCEPTION WHEN OTHERS THEN
+        RAISE WARNING 'actividad: no se copio % %: %', TG_TABLE_NAME, NEW.id, SQLERRM;
+    END;
+    RETURN NULL;
+END;
+$$;
+DROP TRIGGER IF EXISTS actividad_vehiculos ON auditoria_vehiculos;
+CREATE TRIGGER actividad_vehiculos AFTER INSERT ON auditoria_vehiculos FOR EACH ROW EXECUTE FUNCTION actividad_al_registrar();
+DROP TRIGGER IF EXISTS actividad_usuarios ON auditoria_usuarios;
+CREATE TRIGGER actividad_usuarios AFTER INSERT ON auditoria_usuarios FOR EACH ROW EXECUTE FUNCTION actividad_al_registrar();
+DROP TRIGGER IF EXISTS actividad_empresas ON auditoria_empresas;
+CREATE TRIGGER actividad_empresas AFTER INSERT ON auditoria_empresas FOR EACH ROW EXECUTE FUNCTION actividad_al_registrar();
+
+-- Los que ya estan (HU-19.2)
+DO $$ BEGIN
+    PERFORM actividad_copiar_vehiculo(a) FROM auditoria_vehiculos a;
+    PERFORM actividad_copiar_usuario(a)  FROM auditoria_usuarios a;
+    PERFORM actividad_copiar_empresa(a)  FROM auditoria_empresas a;
+END $$;
+
+-- ---------------------------------------------------------------------------
+-- 3. La marca de dueño (RN-15)
+-- ---------------------------------------------------------------------------
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS es_dueno BOOLEAN NOT NULL DEFAULT false;
+-- Puede haber varios dueños (enmienda 7): la marca no es unica.
+-- Cada dueño es siempre un Administrador general activo: ni un error ni una
+-- llamada directa pueden desactivarlo o cambiarle el rol (HU-20.4).
+ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_dueno_superadmin_activo;
+ALTER TABLE usuarios ADD CONSTRAINT usuarios_dueno_superadmin_activo CHECK (NOT es_dueno OR (rol = 'superadmin' AND activo));
+-- ...y su cuenta no se borra (tampoco desde el panel de Supabase: primero se quita la marca)
+CREATE OR REPLACE FUNCTION impedir_borrar_dueno() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF OLD.es_dueno THEN
+        RAISE EXCEPTION 'La cuenta del dueño de SISVIA no se puede eliminar: primero quítate la marca.' USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN OLD;
+END;
+$$;
+DROP TRIGGER IF EXISTS usuarios_impedir_borrar_dueno ON usuarios;
+CREATE TRIGGER usuarios_impedir_borrar_dueno BEFORE DELETE ON usuarios FOR EACH ROW EXECUTE FUNCTION impedir_borrar_dueno();
+
+-- ---------------------------------------------------------------------------
+-- 4. Dar, pasar y quitarse la marca, cada una en una sola operacion
+--    (HU-20.5-7 · RN-15 · CB-22 · CB-23)
+-- ---------------------------------------------------------------------------
+-- Deja anotado en el registro del equipo quien hizo el cambio y sobre quien.
+CREATE OR REPLACE FUNCTION actividad_marca_dueno(p_quien usuarios, p_sobre usuarios, p_accion TEXT) RETURNS void LANGUAGE sql AS $$
+    INSERT INTO actividad (actor_id, actor_nombre, actor_cargo, de_sisvia, tipo, accion, objeto_id, objeto)
+    VALUES (p_quien.id, p_quien.nombre_completo, 'Administrador general', true, 'equipo', p_accion,
+            CASE WHEN p_sobre IS NULL THEN NULL ELSE p_sobre.id::text END,
+            CASE WHEN p_sobre IS NULL THEN p_quien.nombre_completo ELSE p_sobre.nombre_completo END);
+$$;
+
+-- El destino sirve si es otro Administrador general activo que todavia no es dueño (CB-22).
+CREATE OR REPLACE FUNCTION marca_destino_valido(p_de UUID, p_a UUID) RETURNS usuarios LANGUAGE plpgsql AS $$
+DECLARE
+    v_destino usuarios%ROWTYPE;
+BEGIN
+    SELECT * INTO v_destino FROM usuarios
+    WHERE id = p_a AND id <> p_de AND rol = 'superadmin' AND activo AND NOT es_dueno;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'destino_invalido';
+    END IF;
+    RETURN v_destino;
+END;
+$$;
+
+-- HU-20.5: dar la marca. Los dos quedan dueños.
+CREATE OR REPLACE FUNCTION dar_marca_dueno(p_de UUID, p_a UUID) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    v_de      usuarios%ROWTYPE;
+    v_destino usuarios%ROWTYPE;
+BEGIN
+    SELECT * INTO v_de FROM usuarios WHERE id = p_de AND es_dueno FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'ya_cambio';   -- quien la da ya no es dueño
+    END IF;
+    v_destino := marca_destino_valido(p_de, p_a);
+    UPDATE usuarios SET es_dueno = true WHERE id = v_destino.id;
+    PERFORM actividad_marca_dueno(v_de, v_destino, 'dio_marca');
+END;
+$$;
+
+-- HU-20.6: pasarle la mia. El otro queda dueño y quien la pasa deja de serlo.
+CREATE OR REPLACE FUNCTION pasar_marca_dueno(p_de UUID, p_a UUID) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    v_de      usuarios%ROWTYPE;
+    v_destino usuarios%ROWTYPE;
+BEGIN
+    SELECT * INTO v_de FROM usuarios WHERE id = p_de AND es_dueno FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'ya_cambio';
+    END IF;
+    v_destino := marca_destino_valido(p_de, p_a);
+    UPDATE usuarios SET es_dueno = true  WHERE id = v_destino.id;
+    UPDATE usuarios SET es_dueno = false WHERE id = p_de;
+    PERFORM actividad_marca_dueno(v_de, v_destino, 'traspaso_dueno');
+END;
+$$;
+
+-- HU-20.7: quitarse la propia. El ultimo dueño no puede: la app nunca queda sin
+-- ninguno (CB-23). El FOR UPDATE de todos los dueños hace esperar al otro que
+-- este haciendo lo mismo al mismo tiempo.
+CREATE OR REPLACE FUNCTION quitarme_marca_dueno(p_quien UUID) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    v_yo      usuarios%ROWTYPE;
+    v_cuantos INTEGER;
+BEGIN
+    PERFORM id FROM usuarios WHERE es_dueno ORDER BY id FOR UPDATE;
+    SELECT count(*) INTO v_cuantos FROM usuarios WHERE es_dueno;
+    SELECT * INTO v_yo FROM usuarios WHERE id = p_quien AND es_dueno;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'ya_cambio';
+    END IF;
+    IF v_cuantos <= 1 THEN
+        RAISE EXCEPTION 'ultimo_dueno';
+    END IF;
+    UPDATE usuarios SET es_dueno = false WHERE id = p_quien;
+    PERFORM actividad_marca_dueno(v_yo, NULL, 'dejo_marca');
+END;
+$$;
+
+-- Solo el backend: con la llave publica nadie las puede llamar por la API.
+DO $$
+DECLARE
+    v_funcion TEXT;
+BEGIN
+    FOREACH v_funcion IN ARRAY ARRAY['dar_marca_dueno(uuid, uuid)', 'pasar_marca_dueno(uuid, uuid)', 'quitarme_marca_dueno(uuid)',
+                                     'marca_destino_valido(uuid, uuid)', 'actividad_marca_dueno(usuarios, usuarios, text)',
+                                     'actividad_copiar_vehiculo(auditoria_vehiculos)',
+                                     'actividad_copiar_usuario(auditoria_usuarios)', 'actividad_copiar_empresa(auditoria_empresas)'] LOOP
+        EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC', v_funcion);
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN EXECUTE format('REVOKE ALL ON FUNCTION %s FROM anon', v_funcion); END IF;
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN EXECUTE format('REVOKE ALL ON FUNCTION %s FROM authenticated', v_funcion); END IF;
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO service_role', v_funcion); END IF;
+    END LOOP;
+END $$;
+
+COMMIT;
+
+
+-- ==========================================================================
 -- PARTE 2 de 3 · DATOS INICIALES
 -- Catalogos del chequeo y geografia de Colombia
 -- ==========================================================================
@@ -718,7 +1177,7 @@ INSERT INTO categorias_chequeo (nombre, descripcion, icono, orden) VALUES
     ('LUCES',          'Sistema de iluminación completo',           '💡', 3),
     ('SEGURIDAD VIAL', 'Kit de carretera obligatorio',              '🛟', 4),
     ('VARIOS',         'Estado mecánico y accesorios del vehículo', '🚛', 5)
-ON CONFLICT (nombre) DO NOTHING;
+ON CONFLICT DO NOTHING;  -- el nombre es unico por catalogo (base o de cada empresa)
 
 
 -- ==========================================================================
@@ -1064,20 +1523,1132 @@ SELECT
 
 
 -- ==========================================================================
+-- SEED 07_municipios
+-- ==========================================================================
+-- Los 1.122 municipios y areas no municipalizadas de Colombia (DIVIPOLA del
+-- DANE). Completa las capitales del seed 06; no duplica lo que ya existe.
+
+INSERT INTO ciudades (nombre, departamento_id)
+SELECT v.nombre, d.id
+FROM (VALUES
+    ('Amazonas', 'El Encanto'),
+    ('Amazonas', 'La Chorrera'),
+    ('Amazonas', 'La Pedrera'),
+    ('Amazonas', 'La Victoria'),
+    ('Amazonas', 'Mirití - Paraná'),
+    ('Amazonas', 'Puerto Alegría'),
+    ('Amazonas', 'Puerto Arica'),
+    ('Amazonas', 'Puerto Nariño'),
+    ('Amazonas', 'Puerto Santander'),
+    ('Amazonas', 'Tarapacá'),
+    ('Antioquia', 'Abejorral'),
+    ('Antioquia', 'Abriaquí'),
+    ('Antioquia', 'Alejandría'),
+    ('Antioquia', 'Amagá'),
+    ('Antioquia', 'Amalfi'),
+    ('Antioquia', 'Andes'),
+    ('Antioquia', 'Angelópolis'),
+    ('Antioquia', 'Angostura'),
+    ('Antioquia', 'Anorí'),
+    ('Antioquia', 'Anzá'),
+    ('Antioquia', 'Apartadó'),
+    ('Antioquia', 'Arboletes'),
+    ('Antioquia', 'Argelia'),
+    ('Antioquia', 'Armenia'),
+    ('Antioquia', 'Barbosa'),
+    ('Antioquia', 'Bello'),
+    ('Antioquia', 'Belmira'),
+    ('Antioquia', 'Betania'),
+    ('Antioquia', 'Betulia'),
+    ('Antioquia', 'Briceño'),
+    ('Antioquia', 'Buriticá'),
+    ('Antioquia', 'Cáceres'),
+    ('Antioquia', 'Caicedo'),
+    ('Antioquia', 'Caldas'),
+    ('Antioquia', 'Campamento'),
+    ('Antioquia', 'Cañasgordas'),
+    ('Antioquia', 'Caracolí'),
+    ('Antioquia', 'Caramanta'),
+    ('Antioquia', 'Carepa'),
+    ('Antioquia', 'Carolina'),
+    ('Antioquia', 'Caucasia'),
+    ('Antioquia', 'Chigorodó'),
+    ('Antioquia', 'Cisneros'),
+    ('Antioquia', 'Ciudad Bolívar'),
+    ('Antioquia', 'Cocorná'),
+    ('Antioquia', 'Concepción'),
+    ('Antioquia', 'Concordia'),
+    ('Antioquia', 'Copacabana'),
+    ('Antioquia', 'Dabeiba'),
+    ('Antioquia', 'Donmatías'),
+    ('Antioquia', 'Ebéjico'),
+    ('Antioquia', 'El Bagre'),
+    ('Antioquia', 'El Carmen de Viboral'),
+    ('Antioquia', 'El Santuario'),
+    ('Antioquia', 'Entrerríos'),
+    ('Antioquia', 'Envigado'),
+    ('Antioquia', 'Fredonia'),
+    ('Antioquia', 'Frontino'),
+    ('Antioquia', 'Giraldo'),
+    ('Antioquia', 'Girardota'),
+    ('Antioquia', 'Gómez Plata'),
+    ('Antioquia', 'Granada'),
+    ('Antioquia', 'Guadalupe'),
+    ('Antioquia', 'Guarne'),
+    ('Antioquia', 'Guatapé'),
+    ('Antioquia', 'Heliconia'),
+    ('Antioquia', 'Hispania'),
+    ('Antioquia', 'Itagüí'),
+    ('Antioquia', 'Ituango'),
+    ('Antioquia', 'Jardín'),
+    ('Antioquia', 'Jericó'),
+    ('Antioquia', 'La Ceja'),
+    ('Antioquia', 'La Estrella'),
+    ('Antioquia', 'La Pintada'),
+    ('Antioquia', 'La Unión'),
+    ('Antioquia', 'Liborina'),
+    ('Antioquia', 'Maceo'),
+    ('Antioquia', 'Marinilla'),
+    ('Antioquia', 'Montebello'),
+    ('Antioquia', 'Murindó'),
+    ('Antioquia', 'Mutatá'),
+    ('Antioquia', 'Nariño'),
+    ('Antioquia', 'Nechí'),
+    ('Antioquia', 'Necoclí'),
+    ('Antioquia', 'Olaya'),
+    ('Antioquia', 'Peñol'),
+    ('Antioquia', 'Peque'),
+    ('Antioquia', 'Pueblorrico'),
+    ('Antioquia', 'Puerto Berrío'),
+    ('Antioquia', 'Puerto Nare'),
+    ('Antioquia', 'Puerto Triunfo'),
+    ('Antioquia', 'Remedios'),
+    ('Antioquia', 'Retiro'),
+    ('Antioquia', 'Rionegro'),
+    ('Antioquia', 'Sabanalarga'),
+    ('Antioquia', 'Sabaneta'),
+    ('Antioquia', 'Salgar'),
+    ('Antioquia', 'San Andrés de Cuerquía'),
+    ('Antioquia', 'San Carlos'),
+    ('Antioquia', 'San Francisco'),
+    ('Antioquia', 'San Jerónimo'),
+    ('Antioquia', 'San José de la Montaña'),
+    ('Antioquia', 'San Juan de Urabá'),
+    ('Antioquia', 'San Luis'),
+    ('Antioquia', 'San Pedro de los Milagros'),
+    ('Antioquia', 'San Pedro de Urabá'),
+    ('Antioquia', 'San Rafael'),
+    ('Antioquia', 'San Roque'),
+    ('Antioquia', 'San Vicente Ferrer'),
+    ('Antioquia', 'Santa Bárbara'),
+    ('Antioquia', 'Santa Fé de Antioquia'),
+    ('Antioquia', 'Santa Rosa de Osos'),
+    ('Antioquia', 'Santo Domingo'),
+    ('Antioquia', 'Segovia'),
+    ('Antioquia', 'Sonsón'),
+    ('Antioquia', 'Sopetrán'),
+    ('Antioquia', 'Támesis'),
+    ('Antioquia', 'Tarazá'),
+    ('Antioquia', 'Tarso'),
+    ('Antioquia', 'Titiribí'),
+    ('Antioquia', 'Toledo'),
+    ('Antioquia', 'Turbo'),
+    ('Antioquia', 'Uramita'),
+    ('Antioquia', 'Urrao'),
+    ('Antioquia', 'Valdivia'),
+    ('Antioquia', 'Valparaíso'),
+    ('Antioquia', 'Vegachí'),
+    ('Antioquia', 'Venecia'),
+    ('Antioquia', 'Vigía del Fuerte'),
+    ('Antioquia', 'Yalí'),
+    ('Antioquia', 'Yarumal'),
+    ('Antioquia', 'Yolombó'),
+    ('Antioquia', 'Yondó'),
+    ('Antioquia', 'Zaragoza'),
+    ('Arauca', 'Arauquita'),
+    ('Arauca', 'Cravo Norte'),
+    ('Arauca', 'Fortul'),
+    ('Arauca', 'Puerto Rondón'),
+    ('Arauca', 'Saravena'),
+    ('Arauca', 'Tame'),
+    ('Atlántico', 'Baranoa'),
+    ('Atlántico', 'Campo de la Cruz'),
+    ('Atlántico', 'Candelaria'),
+    ('Atlántico', 'Galapa'),
+    ('Atlántico', 'Juan de Acosta'),
+    ('Atlántico', 'Luruaco'),
+    ('Atlántico', 'Malambo'),
+    ('Atlántico', 'Manatí'),
+    ('Atlántico', 'Palmar de Varela'),
+    ('Atlántico', 'Piojó'),
+    ('Atlántico', 'Polonuevo'),
+    ('Atlántico', 'Ponedera'),
+    ('Atlántico', 'Puerto Colombia'),
+    ('Atlántico', 'Repelón'),
+    ('Atlántico', 'Sabanagrande'),
+    ('Atlántico', 'Sabanalarga'),
+    ('Atlántico', 'Santa Lucía'),
+    ('Atlántico', 'Santo Tomás'),
+    ('Atlántico', 'Soledad'),
+    ('Atlántico', 'Suan'),
+    ('Atlántico', 'Tubará'),
+    ('Atlántico', 'Usiacurí'),
+    ('Bolívar', 'Achí'),
+    ('Bolívar', 'Altos del Rosario'),
+    ('Bolívar', 'Arenal'),
+    ('Bolívar', 'Arjona'),
+    ('Bolívar', 'Arroyohondo'),
+    ('Bolívar', 'Barranco de Loba'),
+    ('Bolívar', 'Calamar'),
+    ('Bolívar', 'Cantagallo'),
+    ('Bolívar', 'Cicuco'),
+    ('Bolívar', 'Clemencia'),
+    ('Bolívar', 'Córdoba'),
+    ('Bolívar', 'El Carmen de Bolívar'),
+    ('Bolívar', 'El Guamo'),
+    ('Bolívar', 'El Peñón'),
+    ('Bolívar', 'Hatillo de Loba'),
+    ('Bolívar', 'Magangué'),
+    ('Bolívar', 'Mahates'),
+    ('Bolívar', 'Margarita'),
+    ('Bolívar', 'María la Baja'),
+    ('Bolívar', 'Mompox'),
+    ('Bolívar', 'Montecristo'),
+    ('Bolívar', 'Morales'),
+    ('Bolívar', 'Norosí'),
+    ('Bolívar', 'Pinillos'),
+    ('Bolívar', 'Regidor'),
+    ('Bolívar', 'Río Viejo'),
+    ('Bolívar', 'San Cristóbal'),
+    ('Bolívar', 'San Estanislao'),
+    ('Bolívar', 'San Fernando'),
+    ('Bolívar', 'San Jacinto'),
+    ('Bolívar', 'San Jacinto del Cauca'),
+    ('Bolívar', 'San Juan Nepomuceno'),
+    ('Bolívar', 'San Martín de Loba'),
+    ('Bolívar', 'San Pablo'),
+    ('Bolívar', 'Santa Catalina'),
+    ('Bolívar', 'Santa Rosa'),
+    ('Bolívar', 'Santa Rosa del Sur'),
+    ('Bolívar', 'Simití'),
+    ('Bolívar', 'Soplaviento'),
+    ('Bolívar', 'Talaigua Nuevo'),
+    ('Bolívar', 'Tiquisio'),
+    ('Bolívar', 'Turbaco'),
+    ('Bolívar', 'Turbaná'),
+    ('Bolívar', 'Villanueva'),
+    ('Bolívar', 'Zambrano'),
+    ('Boyacá', 'Almeida'),
+    ('Boyacá', 'Aquitania'),
+    ('Boyacá', 'Arcabuco'),
+    ('Boyacá', 'Belén'),
+    ('Boyacá', 'Berbeo'),
+    ('Boyacá', 'Betéitiva'),
+    ('Boyacá', 'Boavita'),
+    ('Boyacá', 'Boyacá'),
+    ('Boyacá', 'Briceño'),
+    ('Boyacá', 'Buenavista'),
+    ('Boyacá', 'Busbanzá'),
+    ('Boyacá', 'Caldas'),
+    ('Boyacá', 'Campohermoso'),
+    ('Boyacá', 'Cerinza'),
+    ('Boyacá', 'Chinavita'),
+    ('Boyacá', 'Chiquinquirá'),
+    ('Boyacá', 'Chíquiza'),
+    ('Boyacá', 'Chiscas'),
+    ('Boyacá', 'Chita'),
+    ('Boyacá', 'Chitaraque'),
+    ('Boyacá', 'Chivatá'),
+    ('Boyacá', 'Chivor'),
+    ('Boyacá', 'Ciénega'),
+    ('Boyacá', 'Cómbita'),
+    ('Boyacá', 'Coper'),
+    ('Boyacá', 'Corrales'),
+    ('Boyacá', 'Covarachía'),
+    ('Boyacá', 'Cubará'),
+    ('Boyacá', 'Cucaita'),
+    ('Boyacá', 'Cuítiva'),
+    ('Boyacá', 'Duitama'),
+    ('Boyacá', 'El Cocuy'),
+    ('Boyacá', 'El Espino'),
+    ('Boyacá', 'Firavitoba'),
+    ('Boyacá', 'Floresta'),
+    ('Boyacá', 'Gachantivá'),
+    ('Boyacá', 'Gámeza'),
+    ('Boyacá', 'Garagoa'),
+    ('Boyacá', 'Guacamayas'),
+    ('Boyacá', 'Guateque'),
+    ('Boyacá', 'Guayatá'),
+    ('Boyacá', 'Güicán de la Sierra'),
+    ('Boyacá', 'Iza'),
+    ('Boyacá', 'Jenesano'),
+    ('Boyacá', 'Jericó'),
+    ('Boyacá', 'La Capilla'),
+    ('Boyacá', 'La Uvita'),
+    ('Boyacá', 'La Victoria'),
+    ('Boyacá', 'Labranzagrande'),
+    ('Boyacá', 'Macanal'),
+    ('Boyacá', 'Maripí'),
+    ('Boyacá', 'Miraflores'),
+    ('Boyacá', 'Mongua'),
+    ('Boyacá', 'Monguí'),
+    ('Boyacá', 'Moniquirá'),
+    ('Boyacá', 'Motavita'),
+    ('Boyacá', 'Muzo'),
+    ('Boyacá', 'Nobsa'),
+    ('Boyacá', 'Nuevo Colón'),
+    ('Boyacá', 'Oicatá'),
+    ('Boyacá', 'Otanche'),
+    ('Boyacá', 'Pachavita'),
+    ('Boyacá', 'Páez'),
+    ('Boyacá', 'Paipa'),
+    ('Boyacá', 'Pajarito'),
+    ('Boyacá', 'Panqueba'),
+    ('Boyacá', 'Pauna'),
+    ('Boyacá', 'Paya'),
+    ('Boyacá', 'Paz de Río'),
+    ('Boyacá', 'Pesca'),
+    ('Boyacá', 'Pisba'),
+    ('Boyacá', 'Puerto Boyacá'),
+    ('Boyacá', 'Quípama'),
+    ('Boyacá', 'Ramiriquí'),
+    ('Boyacá', 'Ráquira'),
+    ('Boyacá', 'Rondón'),
+    ('Boyacá', 'Saboyá'),
+    ('Boyacá', 'Sáchica'),
+    ('Boyacá', 'Samacá'),
+    ('Boyacá', 'San Eduardo'),
+    ('Boyacá', 'San José de Pare'),
+    ('Boyacá', 'San Luis de Gaceno'),
+    ('Boyacá', 'San Mateo'),
+    ('Boyacá', 'San Miguel de Sema'),
+    ('Boyacá', 'San Pablo de Borbur'),
+    ('Boyacá', 'Santa María'),
+    ('Boyacá', 'Santa Rosa de Viterbo'),
+    ('Boyacá', 'Santa Sofía'),
+    ('Boyacá', 'Santana'),
+    ('Boyacá', 'Sativanorte'),
+    ('Boyacá', 'Sativasur'),
+    ('Boyacá', 'Siachoque'),
+    ('Boyacá', 'Soatá'),
+    ('Boyacá', 'Socha'),
+    ('Boyacá', 'Socotá'),
+    ('Boyacá', 'Sogamoso'),
+    ('Boyacá', 'Somondoco'),
+    ('Boyacá', 'Sora'),
+    ('Boyacá', 'Soracá'),
+    ('Boyacá', 'Sotaquirá'),
+    ('Boyacá', 'Susacón'),
+    ('Boyacá', 'Sutamarchán'),
+    ('Boyacá', 'Sutatenza'),
+    ('Boyacá', 'Tasco'),
+    ('Boyacá', 'Tenza'),
+    ('Boyacá', 'Tibaná'),
+    ('Boyacá', 'Tibasosa'),
+    ('Boyacá', 'Tinjacá'),
+    ('Boyacá', 'Tipacoque'),
+    ('Boyacá', 'Toca'),
+    ('Boyacá', 'Togüí'),
+    ('Boyacá', 'Tópaga'),
+    ('Boyacá', 'Tota'),
+    ('Boyacá', 'Tununguá'),
+    ('Boyacá', 'Turmequé'),
+    ('Boyacá', 'Tuta'),
+    ('Boyacá', 'Tutazá'),
+    ('Boyacá', 'Úmbita'),
+    ('Boyacá', 'Ventaquemada'),
+    ('Boyacá', 'Villa de Leyva'),
+    ('Boyacá', 'Viracachá'),
+    ('Boyacá', 'Zetaquira'),
+    ('Caldas', 'Aguadas'),
+    ('Caldas', 'Anserma'),
+    ('Caldas', 'Aranzazu'),
+    ('Caldas', 'Belalcázar'),
+    ('Caldas', 'Chinchiná'),
+    ('Caldas', 'Filadelfia'),
+    ('Caldas', 'La Dorada'),
+    ('Caldas', 'La Merced'),
+    ('Caldas', 'Manzanares'),
+    ('Caldas', 'Marmato'),
+    ('Caldas', 'Marquetalia'),
+    ('Caldas', 'Marulanda'),
+    ('Caldas', 'Neira'),
+    ('Caldas', 'Norcasia'),
+    ('Caldas', 'Pácora'),
+    ('Caldas', 'Palestina'),
+    ('Caldas', 'Pensilvania'),
+    ('Caldas', 'Riosucio'),
+    ('Caldas', 'Risaralda'),
+    ('Caldas', 'Salamina'),
+    ('Caldas', 'Samaná'),
+    ('Caldas', 'San José'),
+    ('Caldas', 'Supía'),
+    ('Caldas', 'Victoria'),
+    ('Caldas', 'Villamaría'),
+    ('Caldas', 'Viterbo'),
+    ('Caquetá', 'Albania'),
+    ('Caquetá', 'Belén de los Andaquíes'),
+    ('Caquetá', 'Cartagena del Chairá'),
+    ('Caquetá', 'Curillo'),
+    ('Caquetá', 'El Doncello'),
+    ('Caquetá', 'El Paujíl'),
+    ('Caquetá', 'La Montañita'),
+    ('Caquetá', 'Milán'),
+    ('Caquetá', 'Morelia'),
+    ('Caquetá', 'Puerto Rico'),
+    ('Caquetá', 'San José del Fragua'),
+    ('Caquetá', 'San Vicente del Caguán'),
+    ('Caquetá', 'Solano'),
+    ('Caquetá', 'Solita'),
+    ('Caquetá', 'Valparaíso'),
+    ('Casanare', 'Aguazul'),
+    ('Casanare', 'Chámeza'),
+    ('Casanare', 'Hato Corozal'),
+    ('Casanare', 'La Salina'),
+    ('Casanare', 'Maní'),
+    ('Casanare', 'Monterrey'),
+    ('Casanare', 'Nunchía'),
+    ('Casanare', 'Orocué'),
+    ('Casanare', 'Paz de Ariporo'),
+    ('Casanare', 'Pore'),
+    ('Casanare', 'Recetor'),
+    ('Casanare', 'Sabanalarga'),
+    ('Casanare', 'Sácama'),
+    ('Casanare', 'San Luis de Palenque'),
+    ('Casanare', 'Támara'),
+    ('Casanare', 'Tauramena'),
+    ('Casanare', 'Trinidad'),
+    ('Casanare', 'Villanueva'),
+    ('Cauca', 'Almaguer'),
+    ('Cauca', 'Argelia'),
+    ('Cauca', 'Balboa'),
+    ('Cauca', 'Bolívar'),
+    ('Cauca', 'Buenos Aires'),
+    ('Cauca', 'Cajibío'),
+    ('Cauca', 'Caldono'),
+    ('Cauca', 'Caloto'),
+    ('Cauca', 'Corinto'),
+    ('Cauca', 'El Tambo'),
+    ('Cauca', 'Florencia'),
+    ('Cauca', 'Guachené'),
+    ('Cauca', 'Guapi'),
+    ('Cauca', 'Inzá'),
+    ('Cauca', 'Jambaló'),
+    ('Cauca', 'La Sierra'),
+    ('Cauca', 'La Vega'),
+    ('Cauca', 'López de Micay'),
+    ('Cauca', 'Mercaderes'),
+    ('Cauca', 'Miranda'),
+    ('Cauca', 'Morales'),
+    ('Cauca', 'Padilla'),
+    ('Cauca', 'Páez'),
+    ('Cauca', 'Patía'),
+    ('Cauca', 'Piamonte'),
+    ('Cauca', 'Piendamó - Tunía'),
+    ('Cauca', 'Puerto Tejada'),
+    ('Cauca', 'Puracé'),
+    ('Cauca', 'Rosas'),
+    ('Cauca', 'San Sebastián'),
+    ('Cauca', 'Santa Rosa'),
+    ('Cauca', 'Santander de Quilichao'),
+    ('Cauca', 'Silvia'),
+    ('Cauca', 'Sotará - Paispamba'),
+    ('Cauca', 'Suárez'),
+    ('Cauca', 'Sucre'),
+    ('Cauca', 'Timbío'),
+    ('Cauca', 'Timbiquí'),
+    ('Cauca', 'Toribío'),
+    ('Cauca', 'Totoró'),
+    ('Cauca', 'Villa Rica'),
+    ('Cesar', 'Aguachica'),
+    ('Cesar', 'Agustín Codazzi'),
+    ('Cesar', 'Astrea'),
+    ('Cesar', 'Becerril'),
+    ('Cesar', 'Bosconia'),
+    ('Cesar', 'Chimichagua'),
+    ('Cesar', 'Chiriguaná'),
+    ('Cesar', 'Curumaní'),
+    ('Cesar', 'El Copey'),
+    ('Cesar', 'El Paso'),
+    ('Cesar', 'Gamarra'),
+    ('Cesar', 'González'),
+    ('Cesar', 'La Gloria'),
+    ('Cesar', 'La Jagua de Ibirico'),
+    ('Cesar', 'La Paz'),
+    ('Cesar', 'Manaure Balcón del Cesar'),
+    ('Cesar', 'Pailitas'),
+    ('Cesar', 'Pelaya'),
+    ('Cesar', 'Pueblo Bello'),
+    ('Cesar', 'Río de Oro'),
+    ('Cesar', 'San Alberto'),
+    ('Cesar', 'San Diego'),
+    ('Cesar', 'San Martín'),
+    ('Cesar', 'Tamalameque'),
+    ('Chocó', 'Acandí'),
+    ('Chocó', 'Alto Baudó'),
+    ('Chocó', 'Atrato'),
+    ('Chocó', 'Bagadó'),
+    ('Chocó', 'Bahía Solano'),
+    ('Chocó', 'Bajo Baudó'),
+    ('Chocó', 'Bojayá'),
+    ('Chocó', 'Carmen del Darién'),
+    ('Chocó', 'Cértegui'),
+    ('Chocó', 'Condoto'),
+    ('Chocó', 'El Cantón del San Pablo'),
+    ('Chocó', 'El Carmen de Atrato'),
+    ('Chocó', 'El Litoral del San Juan'),
+    ('Chocó', 'Istmina'),
+    ('Chocó', 'Juradó'),
+    ('Chocó', 'Lloró'),
+    ('Chocó', 'Medio Atrato'),
+    ('Chocó', 'Medio Baudó'),
+    ('Chocó', 'Medio San Juan'),
+    ('Chocó', 'Nóvita'),
+    ('Chocó', 'Nuevo Belén de Bajirá'),
+    ('Chocó', 'Nuquí'),
+    ('Chocó', 'Río Iró'),
+    ('Chocó', 'Río Quito'),
+    ('Chocó', 'Riosucio'),
+    ('Chocó', 'San José del Palmar'),
+    ('Chocó', 'Sipí'),
+    ('Chocó', 'Tadó'),
+    ('Chocó', 'Unguía'),
+    ('Chocó', 'Unión Panamericana'),
+    ('Córdoba', 'Ayapel'),
+    ('Córdoba', 'Buenavista'),
+    ('Córdoba', 'Canalete'),
+    ('Córdoba', 'Cereté'),
+    ('Córdoba', 'Chimá'),
+    ('Córdoba', 'Chinú'),
+    ('Córdoba', 'Ciénaga de Oro'),
+    ('Córdoba', 'Cotorra'),
+    ('Córdoba', 'La Apartada'),
+    ('Córdoba', 'Lorica'),
+    ('Córdoba', 'Los Córdobas'),
+    ('Córdoba', 'Momil'),
+    ('Córdoba', 'Montelíbano'),
+    ('Córdoba', 'Moñitos'),
+    ('Córdoba', 'Planeta Rica'),
+    ('Córdoba', 'Pueblo Nuevo'),
+    ('Córdoba', 'Puerto Escondido'),
+    ('Córdoba', 'Puerto Libertador'),
+    ('Córdoba', 'Purísima de la Concepción'),
+    ('Córdoba', 'Sahagún'),
+    ('Córdoba', 'San Andrés de Sotavento'),
+    ('Córdoba', 'San Antero'),
+    ('Córdoba', 'San Bernardo del Viento'),
+    ('Córdoba', 'San Carlos'),
+    ('Córdoba', 'San José de Uré'),
+    ('Córdoba', 'San Pelayo'),
+    ('Córdoba', 'Tierralta'),
+    ('Córdoba', 'Tuchín'),
+    ('Córdoba', 'Valencia'),
+    ('Cundinamarca', 'Agua de Dios'),
+    ('Cundinamarca', 'Albán'),
+    ('Cundinamarca', 'Anapoima'),
+    ('Cundinamarca', 'Anolaima'),
+    ('Cundinamarca', 'Apulo'),
+    ('Cundinamarca', 'Arbeláez'),
+    ('Cundinamarca', 'Beltrán'),
+    ('Cundinamarca', 'Bituima'),
+    ('Cundinamarca', 'Bojacá'),
+    ('Cundinamarca', 'Cabrera'),
+    ('Cundinamarca', 'Cachipay'),
+    ('Cundinamarca', 'Cajicá'),
+    ('Cundinamarca', 'Caparrapí'),
+    ('Cundinamarca', 'Cáqueza'),
+    ('Cundinamarca', 'Carmen de Carupa'),
+    ('Cundinamarca', 'Chaguaní'),
+    ('Cundinamarca', 'Chía'),
+    ('Cundinamarca', 'Chipaque'),
+    ('Cundinamarca', 'Choachí'),
+    ('Cundinamarca', 'Chocontá'),
+    ('Cundinamarca', 'Cogua'),
+    ('Cundinamarca', 'Cota'),
+    ('Cundinamarca', 'Cucunubá'),
+    ('Cundinamarca', 'El Colegio'),
+    ('Cundinamarca', 'El Peñón'),
+    ('Cundinamarca', 'El Rosal'),
+    ('Cundinamarca', 'Facatativá'),
+    ('Cundinamarca', 'Fómeque'),
+    ('Cundinamarca', 'Fosca'),
+    ('Cundinamarca', 'Funza'),
+    ('Cundinamarca', 'Fúquene'),
+    ('Cundinamarca', 'Fusagasugá'),
+    ('Cundinamarca', 'Gachalá'),
+    ('Cundinamarca', 'Gachancipá'),
+    ('Cundinamarca', 'Gachetá'),
+    ('Cundinamarca', 'Gama'),
+    ('Cundinamarca', 'Girardot'),
+    ('Cundinamarca', 'Granada'),
+    ('Cundinamarca', 'Guachetá'),
+    ('Cundinamarca', 'Guaduas'),
+    ('Cundinamarca', 'Guasca'),
+    ('Cundinamarca', 'Guataquí'),
+    ('Cundinamarca', 'Guatavita'),
+    ('Cundinamarca', 'Guayabal de Síquima'),
+    ('Cundinamarca', 'Guayabetal'),
+    ('Cundinamarca', 'Gutiérrez'),
+    ('Cundinamarca', 'Jerusalén'),
+    ('Cundinamarca', 'Junín'),
+    ('Cundinamarca', 'La Calera'),
+    ('Cundinamarca', 'La Mesa'),
+    ('Cundinamarca', 'La Palma'),
+    ('Cundinamarca', 'La Peña'),
+    ('Cundinamarca', 'La Vega'),
+    ('Cundinamarca', 'Lenguazaque'),
+    ('Cundinamarca', 'Machetá'),
+    ('Cundinamarca', 'Madrid'),
+    ('Cundinamarca', 'Manta'),
+    ('Cundinamarca', 'Medina'),
+    ('Cundinamarca', 'Mosquera'),
+    ('Cundinamarca', 'Nariño'),
+    ('Cundinamarca', 'Nemocón'),
+    ('Cundinamarca', 'Nilo'),
+    ('Cundinamarca', 'Nimaima'),
+    ('Cundinamarca', 'Nocaima'),
+    ('Cundinamarca', 'Pacho'),
+    ('Cundinamarca', 'Paime'),
+    ('Cundinamarca', 'Pandi'),
+    ('Cundinamarca', 'Paratebueno'),
+    ('Cundinamarca', 'Pasca'),
+    ('Cundinamarca', 'Puerto Salgar'),
+    ('Cundinamarca', 'Pulí'),
+    ('Cundinamarca', 'Quebradanegra'),
+    ('Cundinamarca', 'Quetame'),
+    ('Cundinamarca', 'Quipile'),
+    ('Cundinamarca', 'Ricaurte'),
+    ('Cundinamarca', 'San Antonio del Tequendama'),
+    ('Cundinamarca', 'San Bernardo'),
+    ('Cundinamarca', 'San Cayetano'),
+    ('Cundinamarca', 'San Francisco'),
+    ('Cundinamarca', 'San Juan de Rioseco'),
+    ('Cundinamarca', 'Sasaima'),
+    ('Cundinamarca', 'Sesquilé'),
+    ('Cundinamarca', 'Sibaté'),
+    ('Cundinamarca', 'Silvania'),
+    ('Cundinamarca', 'Simijaca'),
+    ('Cundinamarca', 'Sopó'),
+    ('Cundinamarca', 'Subachoque'),
+    ('Cundinamarca', 'Suesca'),
+    ('Cundinamarca', 'Supatá'),
+    ('Cundinamarca', 'Susa'),
+    ('Cundinamarca', 'Sutatausa'),
+    ('Cundinamarca', 'Tabio'),
+    ('Cundinamarca', 'Tausa'),
+    ('Cundinamarca', 'Tena'),
+    ('Cundinamarca', 'Tenjo'),
+    ('Cundinamarca', 'Tibacuy'),
+    ('Cundinamarca', 'Tibirita'),
+    ('Cundinamarca', 'Tocaima'),
+    ('Cundinamarca', 'Tocancipá'),
+    ('Cundinamarca', 'Topaipí'),
+    ('Cundinamarca', 'Ubalá'),
+    ('Cundinamarca', 'Ubaque'),
+    ('Cundinamarca', 'Ubaté'),
+    ('Cundinamarca', 'Une'),
+    ('Cundinamarca', 'Útica'),
+    ('Cundinamarca', 'Venecia'),
+    ('Cundinamarca', 'Vergara'),
+    ('Cundinamarca', 'Vianí'),
+    ('Cundinamarca', 'Villagómez'),
+    ('Cundinamarca', 'Villapinzón'),
+    ('Cundinamarca', 'Villeta'),
+    ('Cundinamarca', 'Viotá'),
+    ('Cundinamarca', 'Yacopí'),
+    ('Cundinamarca', 'Zipacón'),
+    ('Cundinamarca', 'Zipaquirá'),
+    ('Guainía', 'Barrancominas'),
+    ('Guainía', 'Cacahual'),
+    ('Guainía', 'La Guadalupe'),
+    ('Guainía', 'Morichal'),
+    ('Guainía', 'Pana Pana'),
+    ('Guainía', 'Puerto Colombia'),
+    ('Guainía', 'San Felipe'),
+    ('Guaviare', 'Calamar'),
+    ('Guaviare', 'El Retorno'),
+    ('Guaviare', 'Miraflores'),
+    ('Huila', 'Acevedo'),
+    ('Huila', 'Agrado'),
+    ('Huila', 'Aipe'),
+    ('Huila', 'Algeciras'),
+    ('Huila', 'Altamira'),
+    ('Huila', 'Baraya'),
+    ('Huila', 'Campoalegre'),
+    ('Huila', 'Colombia'),
+    ('Huila', 'Elías'),
+    ('Huila', 'Garzón'),
+    ('Huila', 'Gigante'),
+    ('Huila', 'Guadalupe'),
+    ('Huila', 'Hobo'),
+    ('Huila', 'Íquira'),
+    ('Huila', 'Isnos'),
+    ('Huila', 'La Argentina'),
+    ('Huila', 'La Plata'),
+    ('Huila', 'Nátaga'),
+    ('Huila', 'Oporapa'),
+    ('Huila', 'Paicol'),
+    ('Huila', 'Palermo'),
+    ('Huila', 'Palestina'),
+    ('Huila', 'Pital'),
+    ('Huila', 'Pitalito'),
+    ('Huila', 'Rivera'),
+    ('Huila', 'Saladoblanco'),
+    ('Huila', 'San Agustín'),
+    ('Huila', 'Santa María'),
+    ('Huila', 'Suaza'),
+    ('Huila', 'Tarqui'),
+    ('Huila', 'Tello'),
+    ('Huila', 'Teruel'),
+    ('Huila', 'Tesalia'),
+    ('Huila', 'Timaná'),
+    ('Huila', 'Villavieja'),
+    ('Huila', 'Yaguará'),
+    ('La Guajira', 'Albania'),
+    ('La Guajira', 'Barrancas'),
+    ('La Guajira', 'Dibulla'),
+    ('La Guajira', 'Distracción'),
+    ('La Guajira', 'El Molino'),
+    ('La Guajira', 'Fonseca'),
+    ('La Guajira', 'Hatonuevo'),
+    ('La Guajira', 'La Jagua del Pilar'),
+    ('La Guajira', 'Maicao'),
+    ('La Guajira', 'Manaure'),
+    ('La Guajira', 'San Juan del Cesar'),
+    ('La Guajira', 'Uribia'),
+    ('La Guajira', 'Urumita'),
+    ('La Guajira', 'Villanueva'),
+    ('Magdalena', 'Algarrobo'),
+    ('Magdalena', 'Aracataca'),
+    ('Magdalena', 'Ariguaní'),
+    ('Magdalena', 'Cerro de San Antonio'),
+    ('Magdalena', 'Chivolo'),
+    ('Magdalena', 'Ciénaga'),
+    ('Magdalena', 'Concordia'),
+    ('Magdalena', 'El Banco'),
+    ('Magdalena', 'El Piñón'),
+    ('Magdalena', 'El Retén'),
+    ('Magdalena', 'Fundación'),
+    ('Magdalena', 'Guamal'),
+    ('Magdalena', 'Nueva Granada'),
+    ('Magdalena', 'Pedraza'),
+    ('Magdalena', 'Pijiño del Carmen'),
+    ('Magdalena', 'Pivijay'),
+    ('Magdalena', 'Plato'),
+    ('Magdalena', 'Puebloviejo'),
+    ('Magdalena', 'Remolino'),
+    ('Magdalena', 'Sabanas de San Ángel'),
+    ('Magdalena', 'Salamina'),
+    ('Magdalena', 'San Sebastián de Buenavista'),
+    ('Magdalena', 'San Zenón'),
+    ('Magdalena', 'Santa Ana'),
+    ('Magdalena', 'Santa Bárbara de Pinto'),
+    ('Magdalena', 'Sitionuevo'),
+    ('Magdalena', 'Tenerife'),
+    ('Magdalena', 'Zapayán'),
+    ('Magdalena', 'Zona Bananera'),
+    ('Meta', 'Acacías'),
+    ('Meta', 'Barranca de Upía'),
+    ('Meta', 'Cabuyaro'),
+    ('Meta', 'Castilla la Nueva'),
+    ('Meta', 'Cubarral'),
+    ('Meta', 'Cumaral'),
+    ('Meta', 'El Calvario'),
+    ('Meta', 'El Castillo'),
+    ('Meta', 'El Dorado'),
+    ('Meta', 'Fuente de Oro'),
+    ('Meta', 'Granada'),
+    ('Meta', 'Guamal'),
+    ('Meta', 'La Macarena'),
+    ('Meta', 'Lejanías'),
+    ('Meta', 'Mapiripán'),
+    ('Meta', 'Mesetas'),
+    ('Meta', 'Puerto Concordia'),
+    ('Meta', 'Puerto Gaitán'),
+    ('Meta', 'Puerto Lleras'),
+    ('Meta', 'Puerto López'),
+    ('Meta', 'Puerto Rico'),
+    ('Meta', 'Restrepo'),
+    ('Meta', 'San Carlos de Guaroa'),
+    ('Meta', 'San Juan de Arama'),
+    ('Meta', 'San Juanito'),
+    ('Meta', 'San Martín'),
+    ('Meta', 'Uribe'),
+    ('Meta', 'Vistahermosa'),
+    ('Nariño', 'Albán'),
+    ('Nariño', 'Aldana'),
+    ('Nariño', 'Ancuya'),
+    ('Nariño', 'Arboleda'),
+    ('Nariño', 'Barbacoas'),
+    ('Nariño', 'Belén'),
+    ('Nariño', 'Buesaco'),
+    ('Nariño', 'Chachagüí'),
+    ('Nariño', 'Colón'),
+    ('Nariño', 'Consacá'),
+    ('Nariño', 'Contadero'),
+    ('Nariño', 'Córdoba'),
+    ('Nariño', 'Cuaspud Carlosama'),
+    ('Nariño', 'Cumbal'),
+    ('Nariño', 'Cumbitara'),
+    ('Nariño', 'El Charco'),
+    ('Nariño', 'El Peñol'),
+    ('Nariño', 'El Rosario'),
+    ('Nariño', 'El Tablón de Gómez'),
+    ('Nariño', 'El Tambo'),
+    ('Nariño', 'Francisco Pizarro'),
+    ('Nariño', 'Funes'),
+    ('Nariño', 'Guachucal'),
+    ('Nariño', 'Guaitarilla'),
+    ('Nariño', 'Gualmatán'),
+    ('Nariño', 'Iles'),
+    ('Nariño', 'Imués'),
+    ('Nariño', 'Ipiales'),
+    ('Nariño', 'La Cruz'),
+    ('Nariño', 'La Florida'),
+    ('Nariño', 'La Llanada'),
+    ('Nariño', 'La Tola'),
+    ('Nariño', 'La Unión'),
+    ('Nariño', 'Leiva'),
+    ('Nariño', 'Linares'),
+    ('Nariño', 'Los Andes'),
+    ('Nariño', 'Magüí'),
+    ('Nariño', 'Mallama'),
+    ('Nariño', 'Mosquera'),
+    ('Nariño', 'Nariño'),
+    ('Nariño', 'Olaya Herrera'),
+    ('Nariño', 'Ospina'),
+    ('Nariño', 'Policarpa'),
+    ('Nariño', 'Potosí'),
+    ('Nariño', 'Providencia'),
+    ('Nariño', 'Puerres'),
+    ('Nariño', 'Pupiales'),
+    ('Nariño', 'Ricaurte'),
+    ('Nariño', 'Roberto Payán'),
+    ('Nariño', 'Samaniego'),
+    ('Nariño', 'San Bernardo'),
+    ('Nariño', 'San Lorenzo'),
+    ('Nariño', 'San Pablo'),
+    ('Nariño', 'San Pedro de Cartago'),
+    ('Nariño', 'Sandoná'),
+    ('Nariño', 'Santa Bárbara'),
+    ('Nariño', 'Santacruz'),
+    ('Nariño', 'Sapuyes'),
+    ('Nariño', 'Taminango'),
+    ('Nariño', 'Tangua'),
+    ('Nariño', 'Tumaco'),
+    ('Nariño', 'Túquerres'),
+    ('Nariño', 'Yacuanquer'),
+    ('Norte de Santander', 'Ábrego'),
+    ('Norte de Santander', 'Arboledas'),
+    ('Norte de Santander', 'Bochalema'),
+    ('Norte de Santander', 'Bucarasica'),
+    ('Norte de Santander', 'Cáchira'),
+    ('Norte de Santander', 'Cácota'),
+    ('Norte de Santander', 'Chinácota'),
+    ('Norte de Santander', 'Chitagá'),
+    ('Norte de Santander', 'Convención'),
+    ('Norte de Santander', 'Cucutilla'),
+    ('Norte de Santander', 'Durania'),
+    ('Norte de Santander', 'El Carmen'),
+    ('Norte de Santander', 'El Tarra'),
+    ('Norte de Santander', 'El Zulia'),
+    ('Norte de Santander', 'Gramalote'),
+    ('Norte de Santander', 'Hacarí'),
+    ('Norte de Santander', 'Herrán'),
+    ('Norte de Santander', 'La Esperanza'),
+    ('Norte de Santander', 'La Playa'),
+    ('Norte de Santander', 'Labateca'),
+    ('Norte de Santander', 'Los Patios'),
+    ('Norte de Santander', 'Lourdes'),
+    ('Norte de Santander', 'Mutiscua'),
+    ('Norte de Santander', 'Ocaña'),
+    ('Norte de Santander', 'Pamplona'),
+    ('Norte de Santander', 'Pamplonita'),
+    ('Norte de Santander', 'Puerto Santander'),
+    ('Norte de Santander', 'Ragonvalia'),
+    ('Norte de Santander', 'Salazar'),
+    ('Norte de Santander', 'San Calixto'),
+    ('Norte de Santander', 'San Cayetano'),
+    ('Norte de Santander', 'Santiago'),
+    ('Norte de Santander', 'Sardinata'),
+    ('Norte de Santander', 'Silos'),
+    ('Norte de Santander', 'Teorama'),
+    ('Norte de Santander', 'Tibú'),
+    ('Norte de Santander', 'Toledo'),
+    ('Norte de Santander', 'Villa Caro'),
+    ('Norte de Santander', 'Villa del Rosario'),
+    ('Putumayo', 'Colón'),
+    ('Putumayo', 'Orito'),
+    ('Putumayo', 'Puerto Asís'),
+    ('Putumayo', 'Puerto Caicedo'),
+    ('Putumayo', 'Puerto Guzmán'),
+    ('Putumayo', 'Puerto Leguízamo'),
+    ('Putumayo', 'San Francisco'),
+    ('Putumayo', 'San Miguel'),
+    ('Putumayo', 'Santiago'),
+    ('Putumayo', 'Sibundoy'),
+    ('Putumayo', 'Valle del Guamuez'),
+    ('Putumayo', 'Villagarzón'),
+    ('Quindío', 'Buenavista'),
+    ('Quindío', 'Calarcá'),
+    ('Quindío', 'Circasia'),
+    ('Quindío', 'Córdoba'),
+    ('Quindío', 'Filandia'),
+    ('Quindío', 'Génova'),
+    ('Quindío', 'La Tebaida'),
+    ('Quindío', 'Montenegro'),
+    ('Quindío', 'Pijao'),
+    ('Quindío', 'Quimbaya'),
+    ('Quindío', 'Salento'),
+    ('Risaralda', 'Apía'),
+    ('Risaralda', 'Balboa'),
+    ('Risaralda', 'Belén de Umbría'),
+    ('Risaralda', 'Dosquebradas'),
+    ('Risaralda', 'Guática'),
+    ('Risaralda', 'La Celia'),
+    ('Risaralda', 'La Virginia'),
+    ('Risaralda', 'Marsella'),
+    ('Risaralda', 'Mistrató'),
+    ('Risaralda', 'Pueblo Rico'),
+    ('Risaralda', 'Quinchía'),
+    ('Risaralda', 'Santa Rosa de Cabal'),
+    ('Risaralda', 'Santuario'),
+    ('San Andrés y Providencia', 'Providencia'),
+    ('Santander', 'Aguada'),
+    ('Santander', 'Albania'),
+    ('Santander', 'Aratoca'),
+    ('Santander', 'Barbosa'),
+    ('Santander', 'Barichara'),
+    ('Santander', 'Barrancabermeja'),
+    ('Santander', 'Betulia'),
+    ('Santander', 'Bolívar'),
+    ('Santander', 'Cabrera'),
+    ('Santander', 'California'),
+    ('Santander', 'Capitanejo'),
+    ('Santander', 'Carcasí'),
+    ('Santander', 'Cepitá'),
+    ('Santander', 'Cerrito'),
+    ('Santander', 'Charalá'),
+    ('Santander', 'Charta'),
+    ('Santander', 'Chima'),
+    ('Santander', 'Chipatá'),
+    ('Santander', 'Cimitarra'),
+    ('Santander', 'Concepción'),
+    ('Santander', 'Confines'),
+    ('Santander', 'Contratación'),
+    ('Santander', 'Coromoro'),
+    ('Santander', 'Curití'),
+    ('Santander', 'El Carmen de Chucurí'),
+    ('Santander', 'El Guacamayo'),
+    ('Santander', 'El Peñón'),
+    ('Santander', 'El Playón'),
+    ('Santander', 'Encino'),
+    ('Santander', 'Enciso'),
+    ('Santander', 'Florián'),
+    ('Santander', 'Floridablanca'),
+    ('Santander', 'Galán'),
+    ('Santander', 'Gámbita'),
+    ('Santander', 'Girón'),
+    ('Santander', 'Guaca'),
+    ('Santander', 'Guadalupe'),
+    ('Santander', 'Guapotá'),
+    ('Santander', 'Guavatá'),
+    ('Santander', 'Güepsa'),
+    ('Santander', 'Hato'),
+    ('Santander', 'Jesús María'),
+    ('Santander', 'Jordán'),
+    ('Santander', 'La Belleza'),
+    ('Santander', 'La Paz'),
+    ('Santander', 'Landázuri'),
+    ('Santander', 'Lebrija'),
+    ('Santander', 'Los Santos'),
+    ('Santander', 'Macaravita'),
+    ('Santander', 'Málaga'),
+    ('Santander', 'Matanza'),
+    ('Santander', 'Mogotes'),
+    ('Santander', 'Molagavita'),
+    ('Santander', 'Ocamonte'),
+    ('Santander', 'Oiba'),
+    ('Santander', 'Onzaga'),
+    ('Santander', 'Palmar'),
+    ('Santander', 'Palmas del Socorro'),
+    ('Santander', 'Páramo'),
+    ('Santander', 'Piedecuesta'),
+    ('Santander', 'Pinchote'),
+    ('Santander', 'Puente Nacional'),
+    ('Santander', 'Puerto Parra'),
+    ('Santander', 'Puerto Wilches'),
+    ('Santander', 'Rionegro'),
+    ('Santander', 'Sabana de Torres'),
+    ('Santander', 'San Andrés'),
+    ('Santander', 'San Benito'),
+    ('Santander', 'San Gil'),
+    ('Santander', 'San Joaquín'),
+    ('Santander', 'San José de Miranda'),
+    ('Santander', 'San Miguel'),
+    ('Santander', 'San Vicente de Chucurí'),
+    ('Santander', 'Santa Bárbara'),
+    ('Santander', 'Santa Helena del Opón'),
+    ('Santander', 'Simacota'),
+    ('Santander', 'Socorro'),
+    ('Santander', 'Suaita'),
+    ('Santander', 'Sucre'),
+    ('Santander', 'Suratá'),
+    ('Santander', 'Tona'),
+    ('Santander', 'Valle de San José'),
+    ('Santander', 'Vélez'),
+    ('Santander', 'Vetas'),
+    ('Santander', 'Villanueva'),
+    ('Santander', 'Zapatoca'),
+    ('Sucre', 'Buenavista'),
+    ('Sucre', 'Caimito'),
+    ('Sucre', 'Chalán'),
+    ('Sucre', 'Colosó'),
+    ('Sucre', 'Corozal'),
+    ('Sucre', 'Coveñas'),
+    ('Sucre', 'El Roble'),
+    ('Sucre', 'Galeras'),
+    ('Sucre', 'Guaranda'),
+    ('Sucre', 'La Unión'),
+    ('Sucre', 'Los Palmitos'),
+    ('Sucre', 'Majagual'),
+    ('Sucre', 'Morroa'),
+    ('Sucre', 'Ovejas'),
+    ('Sucre', 'Palmito'),
+    ('Sucre', 'Sampués'),
+    ('Sucre', 'San Benito Abad'),
+    ('Sucre', 'San José de Toluviejo'),
+    ('Sucre', 'San Juan de Betulia'),
+    ('Sucre', 'San Luis de Sincé'),
+    ('Sucre', 'San Marcos'),
+    ('Sucre', 'San Onofre'),
+    ('Sucre', 'San Pedro'),
+    ('Sucre', 'Sucre'),
+    ('Sucre', 'Tolú'),
+    ('Tolima', 'Alpujarra'),
+    ('Tolima', 'Alvarado'),
+    ('Tolima', 'Ambalema'),
+    ('Tolima', 'Anzoátegui'),
+    ('Tolima', 'Armero'),
+    ('Tolima', 'Ataco'),
+    ('Tolima', 'Cajamarca'),
+    ('Tolima', 'Carmen de Apicalá'),
+    ('Tolima', 'Casabianca'),
+    ('Tolima', 'Chaparral'),
+    ('Tolima', 'Coello'),
+    ('Tolima', 'Coyaima'),
+    ('Tolima', 'Cunday'),
+    ('Tolima', 'Dolores'),
+    ('Tolima', 'Falan'),
+    ('Tolima', 'Flandes'),
+    ('Tolima', 'Fresno'),
+    ('Tolima', 'Guamo'),
+    ('Tolima', 'Herveo'),
+    ('Tolima', 'Honda'),
+    ('Tolima', 'Icononzo'),
+    ('Tolima', 'Lérida'),
+    ('Tolima', 'Líbano'),
+    ('Tolima', 'Mariquita'),
+    ('Tolima', 'Melgar'),
+    ('Tolima', 'Murillo'),
+    ('Tolima', 'Natagaima'),
+    ('Tolima', 'Ortega'),
+    ('Tolima', 'Palocabildo'),
+    ('Tolima', 'Piedras'),
+    ('Tolima', 'Planadas'),
+    ('Tolima', 'Prado'),
+    ('Tolima', 'Purificación'),
+    ('Tolima', 'Rioblanco'),
+    ('Tolima', 'Roncesvalles'),
+    ('Tolima', 'Rovira'),
+    ('Tolima', 'Saldaña'),
+    ('Tolima', 'San Antonio'),
+    ('Tolima', 'San Luis'),
+    ('Tolima', 'Santa Isabel'),
+    ('Tolima', 'Suárez'),
+    ('Tolima', 'Valle de San Juan'),
+    ('Tolima', 'Venadillo'),
+    ('Tolima', 'Villahermosa'),
+    ('Tolima', 'Villarrica'),
+    ('Valle del Cauca', 'Alcalá'),
+    ('Valle del Cauca', 'Andalucía'),
+    ('Valle del Cauca', 'Ansermanuevo'),
+    ('Valle del Cauca', 'Argelia'),
+    ('Valle del Cauca', 'Bolívar'),
+    ('Valle del Cauca', 'Buenaventura'),
+    ('Valle del Cauca', 'Buga'),
+    ('Valle del Cauca', 'Bugalagrande'),
+    ('Valle del Cauca', 'Caicedonia'),
+    ('Valle del Cauca', 'Calima'),
+    ('Valle del Cauca', 'Candelaria'),
+    ('Valle del Cauca', 'Cartago'),
+    ('Valle del Cauca', 'Dagua'),
+    ('Valle del Cauca', 'El Águila'),
+    ('Valle del Cauca', 'El Cairo'),
+    ('Valle del Cauca', 'El Cerrito'),
+    ('Valle del Cauca', 'El Dovio'),
+    ('Valle del Cauca', 'Florida'),
+    ('Valle del Cauca', 'Ginebra'),
+    ('Valle del Cauca', 'Guacarí'),
+    ('Valle del Cauca', 'Jamundí'),
+    ('Valle del Cauca', 'La Cumbre'),
+    ('Valle del Cauca', 'La Unión'),
+    ('Valle del Cauca', 'La Victoria'),
+    ('Valle del Cauca', 'Obando'),
+    ('Valle del Cauca', 'Palmira'),
+    ('Valle del Cauca', 'Pradera'),
+    ('Valle del Cauca', 'Restrepo'),
+    ('Valle del Cauca', 'Riofrío'),
+    ('Valle del Cauca', 'Roldanillo'),
+    ('Valle del Cauca', 'San Pedro'),
+    ('Valle del Cauca', 'Sevilla'),
+    ('Valle del Cauca', 'Toro'),
+    ('Valle del Cauca', 'Trujillo'),
+    ('Valle del Cauca', 'Tuluá'),
+    ('Valle del Cauca', 'Ulloa'),
+    ('Valle del Cauca', 'Versalles'),
+    ('Valle del Cauca', 'Vijes'),
+    ('Valle del Cauca', 'Yotoco'),
+    ('Valle del Cauca', 'Yumbo'),
+    ('Valle del Cauca', 'Zarzal'),
+    ('Vaupés', 'Carurú'),
+    ('Vaupés', 'Pacoa'),
+    ('Vaupés', 'Papunahua'),
+    ('Vaupés', 'Taraira'),
+    ('Vaupés', 'Yavaraté'),
+    ('Vichada', 'Cumaribo'),
+    ('Vichada', 'La Primavera'),
+    ('Vichada', 'Santa Rosalía')
+) AS v(departamento, nombre)
+JOIN departamentos d ON d.nombre = v.departamento
+WHERE NOT EXISTS (
+    SELECT 1 FROM ciudades c
+    WHERE c.departamento_id = d.id AND lower(c.nombre) = lower(v.nombre)
+);
+
+
+-- ==========================================================================
 -- PARTE 3 de 3 · VERIFICACION
 -- Si algun numero da 0, ese pedazo no entro
 -- ==========================================================================
 
+
+-- La empresa inicial "SISVIA" se creo antes de los seeds: sus limites se
+-- ajustan a las sedes de muestra que se acaban de cargar.
+UPDATE empresas SET limite_sedes = GREATEST(1, (SELECT count(*) FROM sedes WHERE activo)),
+                    limite_vehiculos = GREATEST(1, (SELECT count(*) FROM vehiculos WHERE activo))
+WHERE lower(nombre) = 'sisvia';
 
 SELECT 'categorias_chequeo' AS tabla, COUNT(*) AS filas, 5   AS esperado FROM categorias_chequeo
 UNION ALL SELECT 'items_chequeo',      COUNT(*), 39 FROM items_chequeo
 UNION ALL SELECT 'preguntas_aptitud',  COUNT(*), 5  FROM preguntas_aptitud
 UNION ALL SELECT 'regiones',           COUNT(*), 5  FROM regiones
 UNION ALL SELECT 'departamentos',      COUNT(*), 33 FROM departamentos
-UNION ALL SELECT 'ciudades',           COUNT(*), 34 FROM ciudades
+UNION ALL SELECT 'ciudades',           COUNT(*), 1122 FROM ciudades
 UNION ALL SELECT 'sedes',              COUNT(*), 5  FROM sedes
 UNION ALL SELECT 'usuarios',           COUNT(*), 0  FROM usuarios
 UNION ALL SELECT 'vehiculos',          COUNT(*), 0  FROM vehiculos
+UNION ALL SELECT 'empresas',           COUNT(*), 1  FROM empresas
 ORDER BY tabla;
 
 
@@ -1100,7 +2671,8 @@ ORDER BY tabla;
 --
 --   PASO 2 · descomenta el INSERT de abajo, pega el UUID y ejecutalo.
 --
--- El rol 'superadmin' ve TODO el sistema y no necesita sede asignada.
+-- El rol 'superadmin' es el equipo SISVIA: ve TODAS las empresas y no tiene
+-- sede ni empresa asignada.
 
 -- OJO: la tabla `usuarios` NO tiene columna `email` (el correo vive en
 -- auth.users) ni `apellido`. El nombre va completo en `nombre_completo`.
@@ -1114,5 +2686,9 @@ ORDER BY tabla;
 --     true
 -- );
 
+-- Y tu marca de dueño de SISVIA (HU-20.6): solo una cuenta la tiene; ve el
+-- "Registro del equipo" y nadie la puede desactivar ni eliminar desde la app.
+-- UPDATE usuarios SET es_dueno = true WHERE cedula = '1000000000' AND rol = 'superadmin';
+
 -- Comprobacion:
--- SELECT nombre_completo, cedula, rol, activo FROM usuarios;
+-- SELECT nombre_completo, cedula, rol, activo, es_dueno FROM usuarios;

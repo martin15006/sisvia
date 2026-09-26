@@ -10,6 +10,8 @@
 
 import { supabase } from '../config/supabase.js';
 import { poolsVigentesEnSede } from './suplencias.service.js';
+import { elegirDestinatarios } from './notificacionesReglas.js';
+import { deLaEmpresa } from './scopeReglas.js';
 
 // Roles que pueden recibir notificaciones administrativas (todos los niveles).
 const ROLES_DESTINATARIOS = [
@@ -21,33 +23,33 @@ const ROLES_DESTINATARIOS = [
 
 // resolverDestinatariosSede: devuelve los IDs de los usuarios que deben recibir
 // un aviso de una sede dada. Misma regla de scope que usa la campanita:
-//   - sede_id null             -> TODOS los admins activos
-//   - admin SIN sede (global)  -> recibe todo
+//   - solo admins de la EMPRESA del evento (la de su sede); sin empresa, nadie
+//   - admin de la empresa SIN sede (Administrador de empresa, Regional) -> recibe
 //   - admin CON sede           -> solo si coincide con el del evento
 //   - + pool con suplencia VIGENTE en esa sede (actua como Coordinador)
 // Se usa para la campanita Y para los correos de avisos importantes.
 //
 // Nota: usamos .neq('rol', 'conductor') (no .in(roles)) porque rol es un ENUM en BD;
 // "todos los que no son conductor" = todos los admins, robusto ante cambios del enum.
-export const resolverDestinatariosSede = async (sede_id = null, { soloSede = false } = {}) => {
-    const { data: todosAdmins, error } = await supabase
-        .from('usuarios')
-        .select('id, sede_id')
-        .neq('rol', 'conductor')
-        .eq('activo', true);
+export const resolverDestinatariosSede = async (sede_id = null, { soloSede = false, empresa_id = null } = {}) => {
+    // La empresa del evento: la de su sede o, si no hay sede, la que se pase.
+    let empresaId = empresa_id;
+    if (sede_id) {
+        const { data: sede } = await supabase.from('sedes').select('empresa_id').eq('id', sede_id).maybeSingle();
+        empresaId = sede?.empresa_id || null;
+    }
+    if (!empresaId) return [];
+
+    const { data: admins, error } = await deLaEmpresa(
+        supabase.from('usuarios').select('id, sede_id, empresa_id').neq('rol', 'conductor').eq('activo', true),
+        empresaId
+    );
     if (error) {
         console.error('[notificaciones] error obteniendo destinatarios:', error);
         return [];
     }
-    const ids = (todosAdmins || [])
-        .filter((u) => {
-            if (!sede_id) return true;
-            // soloSede: UNICAMENTE los admins de esa sede (Coordinador de sede).
-            // Por defecto tambien reciben los globales/departamentales (sin sede).
-            if (soloSede) return u.sede_id === sede_id;
-            return !u.sede_id || u.sede_id === sede_id;
-        })
-        .map((u) => u.id);
+    // Regla pura con tests (notificacionesReglas.js): solo gente de la empresa.
+    const ids = elegirDestinatarios(admins, { sedeId: sede_id, empresaId, soloSede });
 
     if (sede_id) {
         const poolIds = await poolsVigentesEnSede(sede_id);
@@ -89,6 +91,7 @@ export const crearNotificacion = async ({
     dedupeHoras = null,
     maxPorVentana = 1,
     soloSede = false,
+    empresa_id = null,   // solo hace falta si el aviso no tiene sede
 }) => {
     if (!tipo || !titulo || !mensaje) {
         throw new Error('tipo, titulo y mensaje son obligatorios');
@@ -112,7 +115,7 @@ export const crearNotificacion = async ({
         }
     }
 
-    const destinatarioIds = await resolverDestinatariosSede(sede_id, { soloSede });
+    const destinatarioIds = await resolverDestinatariosSede(sede_id, { soloSede, empresa_id });
 
     if (destinatarioIds.length === 0) {
         // No hay a quien notificar — no es un error, solo no se crea nada
@@ -193,6 +196,23 @@ export const listarMisNotificaciones = async ({
     };
 };
 
+
+// Avisos de UNA empresa (los que les llegaron a sus usuarios), con a quien le
+// llego cada uno. Lo usa el superadmin dentro de una empresa (HU-16.1): ve sus
+// avisos, no los propios. Solo lectura: marcarlos es cosa de cada destinatario.
+export const listarNotificacionesDeEmpresa = async ({ empresaId, pagina = 1, limite = 20, soloNoLeidas = false }) => {
+    const desde = (pagina - 1) * limite;
+    let query = supabase
+        .from('notificaciones')
+        .select('*, destinatario:destinatario_id!inner(nombre_completo, empresa_id)', { count: 'exact' })
+        .eq('destinatario.empresa_id', empresaId)
+        .order('created_at', { ascending: false })
+        .range(desde, desde + limite - 1);
+    if (soloNoLeidas) query = query.eq('leida', false);
+    const { data, count, error } = await query;
+    if (error) throw error;
+    return { notificaciones: data || [], total: count || 0, pagina, limite, deEmpresa: true };
+};
 
 // contarNoLeidas: solo el numero (para el badge de la campanita).
 export const contarNoLeidas = async (destinatarioId) => {

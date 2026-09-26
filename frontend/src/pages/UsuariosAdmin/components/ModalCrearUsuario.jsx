@@ -6,6 +6,8 @@ import {
   ETIQUETA_ROL,
   NIVEL_TERRITORIO,
   rolesQuePuedeCrear,
+  rolesSegunSedes,
+  rolesSegunLugar,
   esDirector,
 } from "../../../lib/roles.js";
 import "./ModalCrearUsuario.css";
@@ -38,7 +40,7 @@ const categoriaLicencia = (texto) =>
     (texto || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 2);
 
 function ModalCrearUsuario({ abierto, onCerrar, onCreado }) {
-  const { usuario } = useAuth();
+  const { usuario, empresaActiva } = useAuth();
   const [form, setForm] = useState(ESTADO_INICIAL);
   const [foto, setFoto] = useState(null);
   const [fotoPreview, setFotoPreview] = useState(null);
@@ -98,17 +100,23 @@ function ModalCrearUsuario({ abierto, onCerrar, onCreado }) {
     cargar("/geo/departamentos", setDepartamentos);
   }, [abierto]);
 
-  const esConductor = form.rol === "conductor";
-  // Nivel de territorio que necesita el NUEVO usuario: 'departamento' (Director
-  // Regional) o 'sede' (Coordinador / Conductor). null = superadmin (sin territorio).
-  const nivelTerritorio = NIVEL_TERRITORIO[form.rol] || null;
-
   // Roles que el admin actual puede crear (solo rangos inferiores). Si por algun
   // motivo no hay ninguno, dejamos al menos 'conductor' como fallback seguro.
   const rolesCreables = (() => {
-    const lista = rolesQuePuedeCrear(usuario?.rol);
+    // HU-11: el superadmin afuera solo crea equipo SISVIA; adentro, gente de la empresa.
+    const segunLugar = rolesSegunLugar(rolesQuePuedeCrear(usuario?.rol), usuario?.rol, empresaActiva);
+    // HU-10: con una sola sede activa, el Administrador de empresa solo ve "Conductor".
+    const lista = rolesSegunSedes(segunLugar, sedes.length, usuario?.rol);
     return lista.length > 0 ? lista : ["conductor"];
   })();
+  // El rol del formulario, siempre uno de los permitidos (el inicial es "conductor",
+  // que el superadmin afuera no puede crear).
+  const rolForm = rolesCreables.includes(form.rol) ? form.rol : rolesCreables[0];
+
+  const esConductor = rolForm === "conductor";
+  // Nivel de territorio que necesita el NUEVO usuario: 'departamento' (Director
+  // Regional) o 'sede' (Coordinador / Conductor). null = superadmin (sin territorio).
+  const nivelTerritorio = NIVEL_TERRITORIO[rolForm] || null;
 
   // ===== CASCADA DE TERRITORIO (#116 — "que el usuario haga lo minimo") =====
   // Segun QUIEN crea, solo se piden los niveles que faltan entre el creador y el
@@ -137,7 +145,7 @@ function ModalCrearUsuario({ abierto, onCerrar, onCreado }) {
   )?.nombre;
   const sedeSel = sedes.find((c) => c.id === form.sede_id);
   const resumenCadena = (() => {
-    if (form.rol === "admin_departamental" && form.departamento_id) {
+    if (rolForm === "admin_departamental" && form.departamento_id) {
       return `Será Director Regional de ${nombreDeptoSel}. Reportará al Administrador general.`;
     }
     if (nivelTerritorio === "sede") {
@@ -146,9 +154,9 @@ function ModalCrearUsuario({ abierto, onCerrar, onCreado }) {
         ? `${sedeSel.ciudad ? sedeSel.ciudad + " · " : ""}${sedeSel.departamento || ""}`
         : "";
       if (!sede) return null;
-      const cargo = form.rol === "conductor" ? "Conductor" : "Coordinador de sede";
+      const cargo = rolForm === "conductor" ? "Conductor" : "Coordinador de sede";
       const superior =
-        form.rol === "conductor"
+        rolForm === "conductor"
           ? "Reportará al Coordinador de sede de esa sede."
           : "Reportará al Director Regional de ese departamento.";
       return `Será ${cargo} en ${sede}${ciudadDepto ? ` (${ciudadDepto})` : ""}. ${superior}`;
@@ -260,7 +268,7 @@ function ModalCrearUsuario({ abierto, onCerrar, onCreado }) {
       }
 
       // Preparar datos: quitar campos vacios opcionales
-      const datos = { ...form };
+      const datos = { ...form, rol: rolForm };
       // El Coordinador hereda SU sede automaticamente (no eligio nada).
       if (sedeAutoAsignado) datos.sede_id = usuario.sede_id;
       Object.keys(datos).forEach((k) => {
@@ -407,7 +415,7 @@ function ModalCrearUsuario({ abierto, onCerrar, onCreado }) {
               <label className="form-usuario-label">Cargo *</label>
               <select
                 className="form-usuario-input"
-                value={form.rol}
+                value={rolForm}
                 onChange={(e) => cambiarRol(e.target.value)}
                 disabled={cargando}
               >

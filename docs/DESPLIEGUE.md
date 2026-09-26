@@ -27,7 +27,6 @@ El repositorio ya tiene `.gitignore` configurado: los `.env` **no** se suben. La
 ```
 NODE_ENV=production
 CORS_ORIGIN=https://TEMPORAL.pages.dev
-ORG_NOMBRE=El nombre de la empresa cliente
 SUPABASE_URL=...
 SUPABASE_SERVICE_ROLE_KEY=...
 CLOUDINARY_CLOUD_NAME=...
@@ -64,7 +63,6 @@ Debe devolver un JSON con un saludo. Si falla, revisar los *Deploy Logs*.
 
 ```
 VITE_API_URL=https://TU-BACKEND.up.railway.app/api
-VITE_ORG_NOMBRE=El nombre de la empresa cliente
 ```
 
 > [!] `VITE_API_URL` termina en **`/api`**. El cliente arma las rutas encima de ese valor; sin el `/api` todas las peticiones dan 404.
@@ -123,4 +121,4 @@ Redesplegar el backend. En producción el código compara el origen **literalmen
 - [ ] Cargar datos reales o de demostración: sedes, vehículos y al menos un conductor
 - [ ] Configurar el correo de avisos
 - [ ] Dominio propio en vez de `.pages.dev`
-- [ ] Revisar `ORG_NOMBRE` en las dos plataformas
+- [ ] Borrar `ORG_NOMBRE` y `VITE_ORG_NOMBRE` de las dos plataformas: ya no se usan (el nombre sale de cada empresa, módulo Empresas)

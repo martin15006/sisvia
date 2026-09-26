@@ -1,5 +1,6 @@
 import { supabase } from "../config/supabase.js";
 import { cloudinary } from "../config/cloudinary.js";
+import { filtroEmpresa } from './scopeReglas.js';
 
 export const registrarAuditoriaVehiculo = async ({
     vehiculoId,
@@ -15,11 +16,12 @@ export const registrarAuditoriaVehiculo = async ({
     });
 };
 
-export const obtenerVehiculoCompleto = async (id) => {
+export const obtenerVehiculoCompleto = async (id, usuario = null) => {
     const { data: vehiculo, error } = await supabase
         .from("vehiculos")
         .select(`
             *,
+            baja_usuario:baja_por ( nombre_completo ),
             sede:sedes (
                 id,
                 nombre,
@@ -45,8 +47,8 @@ export const obtenerVehiculoCompleto = async (id) => {
                 orden
             )
         `)
-        .eq("id", id)
-        .single();
+        .eq("id", id).match((usuario ? filtroEmpresa(usuario) : {}))
+        .maybeSingle(); // sin fila -> null (el controlador responde 404), no un error
 
     if (error) throw error;
     return vehiculo;

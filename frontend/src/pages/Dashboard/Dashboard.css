@@ -62,6 +62,33 @@
     font-style: italic;
 }
 
+/* ===== Plan de la empresa (HU-02.5) ===== */
+.dashboard-plan {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+    align-items: end;
+    gap: var(--espacio-lg);
+    background: var(--superficie);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-lg);
+    padding: var(--espacio-md) var(--espacio-xl);
+    margin: calc(-1 * var(--espacio-md)) 0 var(--espacio-xl);
+    box-shadow: var(--sombra-sm);
+}
+
+.dashboard-plan-nota {
+    margin: 0;
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+}
+
+@media (max-width: 700px) {
+    .dashboard-plan {
+        grid-template-columns: 1fr;
+        padding: var(--espacio-md);
+    }
+}
+
 /* ===== Error general ===== */
 .dashboard-error {
     background: var(--estado-error-fondo);

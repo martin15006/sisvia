@@ -16,10 +16,8 @@ export const MARCA = {
     lema: "Chequeo preoperacional y control de vehículos",
 };
 
-// Nombre de la ORGANIZACION que usa el sistema (el cliente, no el producto).
-// Encabeza los PDF y Word generados. Por entorno, para que el mismo
-// despliegue sirva a varios clientes.
-export const ORGANIZACION = process.env.ORG_NOMBRE || "Mi organización";
+// El nombre de la ORGANIZACION (el cliente) ya no va aca: sale de la empresa de
+// cada sede o usuario (pacto para-empresas, HU-08 · CL-02). Ver export/branding.js.
 
 // Logo para documentos y correos. PNG porque @react-pdf/renderer y los
 // clientes de correo no renderizan SVG.

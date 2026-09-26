@@ -1,4 +1,4 @@
-// Pantalla de Aptitud del conductor (5 preguntas, una por pantalla).
+// Pantalla de Aptitud del conductor (las preguntas de su empresa, una por pantalla).
 // Las preguntas se administran desde Panel Admin -> Catalogo del chequeo.
 
 import { useEffect, useState } from "react";
@@ -27,7 +27,7 @@ function ChequeoAptitud() {
     const [error, setError] = useState(null);
     const [enviando, setEnviando] = useState(false);
 
-    // Cargar las 5 preguntas del catalogo al inicio
+    // Cargar las preguntas de su empresa al inicio (base + propias, menos las bloqueadas)
     useEffect(() => {
         api("/chequeos/catalogo")
             .then((data) => {

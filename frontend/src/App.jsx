@@ -21,6 +21,10 @@ import ChequeosAdmin from "./pages/ChequeosAdmin/ChequeosAdmin.jsx";
 import ChequeoDetalle from "./pages/ChequeoDetalle/ChequeoDetalle.jsx";
 import IntentosBloqueados from "./pages/IntentosBloqueados/IntentosBloqueados.jsx";
 import GeografiaAdmin from "./pages/GeografiaAdmin/GeografiaAdmin.jsx";
+import EmpresasAdmin from "./pages/EmpresasAdmin/EmpresasAdmin.jsx";
+import Soporte from "./pages/Soporte/Soporte.jsx";
+import Actividad from "./pages/Actividad/Actividad.jsx";
+import ConfirmarSoporte from "./components/ConfirmarSoporte/ConfirmarSoporte.jsx";
 import ActividadPool from "./pages/ActividadPool/ActividadPool.jsx";
 import SelectorSedeSuplencia from "./pages/SelectorSedeSuplencia/SelectorSedeSuplencia.jsx";
 
@@ -28,6 +32,8 @@ function App() {
     return (
         <AuthProvider>
             <BrowserRouter>
+                {/* HU-16: contraseña del superadmin para cambios dentro de una empresa */}
+                <ConfirmarSoporte />
                 <Routes>
                     <Route path='/' element={<Navigate to='/login' replace />} />
                     <Route path='/login' element={<Login />} />
@@ -71,6 +77,36 @@ function App() {
                     <Route path="/admin/geografia" element={
                         <ProtectedRoutes>
                             <GeografiaAdmin />
+                        </ProtectedRoutes>
+                    } />
+
+                    <Route path="/admin/empresas" element={
+                        <ProtectedRoutes>
+                            <EmpresasAdmin />
+                        </ProtectedRoutes>
+                    } />
+
+                    {/* HU-18: Soporte (mensajes a SISVIA) */}
+                    <Route path="/admin/soporte" element={
+                        <ProtectedRoutes>
+                            <Soporte />
+                        </ProtectedRoutes>
+                    } />
+                    <Route path="/admin/soporte/:id" element={
+                        <ProtectedRoutes>
+                            <Soporte />
+                        </ProtectedRoutes>
+                    } />
+
+                    {/* HU-19: Actividad de la empresa · HU-20.1: Registro del equipo (dueño) */}
+                    <Route path="/admin/actividad" element={
+                        <ProtectedRoutes>
+                            <Actividad modo="empresa" />
+                        </ProtectedRoutes>
+                    } />
+                    <Route path="/admin/registro-equipo" element={
+                        <ProtectedRoutes>
+                            <Actividad modo="equipo" />
                         </ProtectedRoutes>
                     } />
 

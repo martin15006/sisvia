@@ -1,180 +1,121 @@
-// Controllers del admin del catalogo del chequeo
-// Todos requieren rol admin (validado en el middleware del router)
+// Controllers del catalogo del chequeo (pacto para-empresas, HU-12 a HU-14).
+// Los permisos (base / propio / solo lectura) los decide el servicio con
+// catalogoReglas.js; aca solo se validan los datos obligatorios.
 
-import {
-    listarCategoriasAdmin,
-    crearCategoria,
-    actualizarCategoria,
-    eliminarCategoria,
-    listarItemsAdmin,
-    crearItem,
-    actualizarItem,
-    eliminarItem,
-    listarPreguntasAdmin,
-    crearPregunta,
-    actualizarPregunta,
-    eliminarPregunta,
-} from "../services/catalogoAdmin.service.js";
+import { listar, crear, actualizar, eliminar, cambiarBloqueo } from "../services/catalogoAdmin.service.js";
+import { registrarActividad } from "../services/actividad.service.js";
+import { nombreDeCatalogo } from "../services/actividadReglas.js";
 
-// -- Categorias --
-
-export const getCategorias = async (req, res) => {
-     try{
-        const data = await listarCategoriasAdmin();
-        res.json({ categorias: data, total: data.length });
-    } catch (err) {
-        console.error("Error listando categorias:", err);
-        res.status(500).json({ error: err.message || "Error al listar categorias" });
-    }
+// Los errores con status (403 sin permiso, 404, 400 nombre repetido) salen tal cual.
+const responderError = (res, err, generico) => {
+    if (err.status) return res.status(err.status).json({ error: err.message });
+    console.error(generico, err);
+    return res.status(500).json({ error: err.message || generico });
 };
 
-export const postCategoria = async (req, res) => {
-    try {
-        const { nombre, descripcion, icono, orden } = req.body;
-        if (!nombre || !nombre.trim()) {
-            return res.status(400).json({ error: "El nombre es obligatorio" });
-        }
-        const data = await crearCategoria({ nombre, descripcion, icono, orden });
-        res.status(201).json({ mensaje: "Categoria creada", categoria: data });
-    } catch (err) {
-        console.error("Error creando categoria:", err);
-        res.status(500).json({ error: err.message || "Error al crear la categoria" });
-    }
+// Por cada tipo: clave de la respuesta, nombre para los mensajes y que se exige al crear.
+const TIPOS = {
+    categoria: {
+        plural: "categorias", singular: "categoria", nombre: "Categoría",
+        obligatorio: (b) => (!b.nombre || !b.nombre.trim() ? "El nombre es obligatorio" : null),
+    },
+    item: {
+        plural: "items", singular: "item", nombre: "Ítem",
+        obligatorio: (b) => (!b.categoria_id ? "categoria_id es obligatorio"
+            : !b.descripcion || !b.descripcion.trim() ? "La descripcion es obligatoria" : null),
+    },
+    pregunta: {
+        plural: "preguntas", singular: "pregunta", nombre: "Pregunta",
+        obligatorio: (b) => (!b.pregunta || !b.pregunta.trim() ? "La pregunta es obligatoria"
+            : !b.respuesta_apta ? "respuesta_apta es obligatoria ('si' o 'no')" : null),
+    },
 };
 
-export const putCategoria = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const data = await actualizarCategoria(id, req.body);
-        res.json({ mensaje: "Categoria actualizada", categoria: data });
-    } catch (err) {
-        console.error("Error actualizando categoria:", err);
-        res.status(500).json({ error: err.message || "Error al actualizar la categoria" });
-    }
+const handlers = (tipo) => {
+    const t = TIPOS[tipo];
+    // HU-19.2: el catalogo propio queda en la actividad de la empresa (el base,
+    // que cambia el equipo SISVIA afuera, en su registro del equipo).
+    const anotar = (req, res, accion, fila) => registrarActividad({
+        usuario: req.usuario, res, tipo: "catalogo", accion,
+        objetoId: fila?.id ?? null, objeto: nombreDeCatalogo(tipo, fila), detalles: { clase: tipo },
+    });
+    return {
+        listar: async (req, res) => {
+            try {
+                const data = await listar(tipo, req.usuario);
+                res.json({ [t.plural]: data, total: data.length });
+            } catch (err) {
+                responderError(res, err, `Error al listar ${t.plural}`);
+            }
+        },
+        crear: async (req, res) => {
+            try {
+                const falta = t.obligatorio(req.body || {});
+                if (falta) return res.status(400).json({ error: falta });
+                const data = await crear(tipo, req.usuario, req.body);
+                await anotar(req, res, "creado", data);
+                res.status(201).json({ mensaje: `${t.nombre} creada`, [t.singular]: data });
+            } catch (err) {
+                responderError(res, err, `Error al crear ${t.singular}`);
+            }
+        },
+        actualizar: async (req, res) => {
+            try {
+                const data = await actualizar(tipo, req.usuario, req.params.id, req.body || {});
+                await anotar(req, res, "editado", data);
+                res.json({ mensaje: `${t.nombre} actualizada`, [t.singular]: data });
+            } catch (err) {
+                responderError(res, err, `Error al actualizar ${t.singular}`);
+            }
+        },
+        eliminar: async (req, res) => {
+            try {
+                const resultado = await eliminar(tipo, req.usuario, req.params.id);
+                await anotar(req, res, resultado.tipo === "hard" ? "borrado" : "apagado", resultado.data);
+                const mensaje = resultado.tipo === "hard"
+                    ? `${t.nombre} eliminada permanentemente.`
+                    : `${t.nombre} desactivada porque tiene historial en chequeos previos.`;
+                res.json({ mensaje, tipo: resultado.tipo, [t.singular]: resultado.data });
+            } catch (err) {
+                responderError(res, err, `Error al eliminar ${t.singular}`);
+            }
+        },
+    };
 };
 
-export const deleteCategoria = async (req, res) => {
+const categoria = handlers("categoria");
+const item = handlers("item");
+const pregunta = handlers("pregunta");
+
+export const getCategorias = categoria.listar;
+export const postCategoria = categoria.crear;
+export const putCategoria = categoria.actualizar;
+export const deleteCategoria = categoria.eliminar;
+export const getItems = item.listar;
+export const postItem = item.crear;
+export const putItem = item.actualizar;
+export const deleteItem = item.eliminar;
+export const getPreguntas = pregunta.listar;
+export const postPregunta = pregunta.crear;
+export const putPregunta = pregunta.actualizar;
+export const deletePregunta = pregunta.eliminar;
+
+// POST /api/catalogo-admin/bloqueos/bloquear   { tipo, elemento_id }
+// POST /api/catalogo-admin/bloqueos/desbloquear { tipo, elemento_id }
+// HU-14: solo el superadmin dentro de una empresa. La contraseña y el registro
+// los pone el middleware (RN-11); aca se suma que elemento fue.
+export const postBloqueo = (bloquear) => async (req, res) => {
     try {
-        const { id } = req.params;
-        const resultado = await eliminarCategoria(id);
-        const mensaje = resultado.tipo === "hard"
-            ? "Categoria eliminada permanentemente."
-            : "Categoria desactivada porque tiene historial en chequeos previos.";
+        const { tipo, elemento_id } = req.body || {};
+        const { elemento, detalle } = await cambiarBloqueo(req.usuario, { tipo, elemento_id, bloquear });
+        res.locals.auditoria = { elemento: detalle };
         res.json({
-            mensaje,
-            tipo: resultado.tipo,
-            categoria: resultado.data,
+            mensaje: bloquear ? "Bloqueado para esta empresa" : "Desbloqueado para esta empresa",
+            tipo,
+            elemento_id: elemento.id,
+            bloqueado: bloquear,
         });
     } catch (err) {
-        console.error("Error eliminando categoria:", err);
-        res.status(500).json({ error: err.message || "Error al eliminar la categoria" });
-    }
-};
-
-// -- Items --
-
-export const getItems = async (req, res) => {
-    try {
-        const data = await listarItemsAdmin();
-        res.json({ items: data, total: data.length });
-    } catch (err) {
-        console.error("Error listando items:", err);
-        res.status(500).json({ error: err.message || "Error al listar items" });
-    }
-};
-
-export const postItem = async (req, res) => {
-    try {
-        const { categoria_id, descripcion } = req.body;
-        if (!categoria_id) {
-            return res.status(400).json({ error: "categoria_id es obligatorio" });
-        }
-        if (!descripcion || !descripcion.trim()) {
-            return res.status(400).json({ error: "La descripcion es obligatoria" });
-        }
-        const data = await crearItem(req.body);
-        res.status(201).json({ mensaje: "Item creado", item: data });
-    } catch (err) {
-        console.error("Error creando item:", err);
-        res.status(500).json({ error: err.message || "Error al crear el item" });
-    }
-};
-
-export const putItem = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const data = await actualizarItem(id, req.body);
-        res.json({ mensaje: "Item actualizado", item: data });
-    } catch (err) {
-        console.error("Error actualizando item:", err);
-        res.status(500).json({ error: err.message || "Error al actualizar el item" });
-    }
-};
-
-export const deleteItem = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const resultado = await eliminarItem(id);
-        const mensaje = resultado.tipo === "hard"
-            ? "Item eliminado permanentemente."
-            : "Item desactivado porque tiene historial en chequeos previos.";
-        res.json({ mensaje, tipo: resultado.tipo, item: resultado.data });
-    } catch (err) {
-        console.error("Error eliminando item:", err);
-        res.status(500).json({ error: err.message || "Error al eliminar el item" });
-    }
-};
-
-// -- Preguntas de aptitud --
-
-export const getPreguntas = async (req, res) => {
-    try {
-        const data = await listarPreguntasAdmin();
-        res.json({ preguntas: data, total: data.length });
-    } catch (err) {
-        console.error("Error listando preguntas:", err);
-        res.status(500).json({ error: err.message || "Error al listar preguntas" });
-    }
-};
-
-export const postPregunta = async (req, res) => {
-    try {
-        const { pregunta, respuesta_apta } = req.body;
-        if (!pregunta || !pregunta.trim()) {
-            return res.status(400).json({ error: "La pregunta es obligatoria" });
-        }
-        if (!respuesta_apta) {
-            return res.status(400).json({ error: "respuesta_apta es obligatoria ('si' o 'no')" });
-        }
-        const data = await crearPregunta(req.body);
-        res.status(201).json({ mensaje: "Pregunta creada", pregunta: data });
-    } catch (err) {
-        console.error("Error creando pregunta:", err);
-        res.status(500).json({ error: err.message || "Error al crear la pregunta" });
-    }
-};
-
-export const putPregunta = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const data = await actualizarPregunta(id, req.body);
-        res.json({ mensaje: "Pregunta actualizada", pregunta: data });
-    } catch (err) {
-        console.error("Error actualizando pregunta:", err);
-        res.status(500).json({ error: err.message || "Error al actualizar la pregunta" });
-    }
-};
-
-export const deletePregunta = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const resultado = await eliminarPregunta(id);
-        const mensaje = resultado.tipo === "hard"
-            ? "Pregunta eliminada permanentemente."
-            : "Pregunta desactivada porque tiene historial en chequeos previos.";
-        res.json({ mensaje, tipo: resultado.tipo, pregunta: resultado.data });
-    } catch (err) {
-        console.error("Error eliminando pregunta:", err);
-        res.status(500).json({ error: err.message || "Error al eliminar la pregunta" });
+        responderError(res, err, "Error al cambiar el bloqueo");
     }
 };

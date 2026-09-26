@@ -1,5 +1,7 @@
 import { supabase } from '../config/supabase.js';
 import { obtenerScope, puedeAccederSede } from './scope.service.js';
+import { filtroEmpresa } from './scopeReglas.js';
+import { deLaEmpresa } from './scopeReglas.js';
 
 // "Vigente" = activa AND ahora dentro de [desde, hasta] (hasta NULL = abierta).
 const SELECT_SUPLENCIA = `
@@ -21,8 +23,11 @@ export const sedesCubiertosDeSuplencia = async (suplencia) => {
             .from('ciudades').select('id').eq('departamento_id', suplencia.departamento_id);
         const ciudadIds = (ciudades || []).map((c) => c.id);
         if (ciudadIds.length === 0) return [];
-        const { data: sedes } = await supabase
-            .from('sedes').select('id, nombre').in('ciudad_id', ciudadIds).eq('activo', true);
+        // Solo las sedes de la empresa de la suplencia (no las de otras empresas en ese depto)
+        const { data: sedes } = await deLaEmpresa(
+            supabase.from('sedes').select('id, nombre').in('ciudad_id', ciudadIds).eq('activo', true),
+            suplencia.empresa_id
+        );
         return sedes || [];
     }
     // alcance 'sede' (o legado sin alcance)
@@ -88,14 +93,16 @@ export const poolsVigentesEnSede = async (sedeId) => {
     // Por departamento: resolver a que depto pertenece la sede (sede -> ciudad -> depto)
     const { data: sede } = await supabase
         .from('sedes')
-        .select('ciudad:ciudad_id ( departamento_id )')
+        .select('empresa_id, ciudad:ciudad_id ( departamento_id )')
         .eq('id', sedeId)
         .maybeSingle();
     const deptoId = sede?.ciudad?.departamento_id;
     let porDepto = [];
     if (deptoId) {
-        const { data } = await supabase
-            .from('suplencias').select('*').eq('departamento_id', deptoId).eq('activa', true);
+        const { data } = await deLaEmpresa(
+            supabase.from('suplencias').select('*').eq('departamento_id', deptoId).eq('activa', true),
+            sede?.empresa_id
+        );
         porDepto = data || [];
     }
 
@@ -113,8 +120,8 @@ export const activarSuplencia = async ({
 }) => {
     const { data: pool, error: errPool } = await supabase
         .from('usuarios')
-        .select('id, rol, es_pool, sede_id, activo')
-        .eq('id', poolId)
+        .select('id, rol, es_pool, sede_id, activo, empresa_id')
+        .eq('id', poolId).match(filtroEmpresa(actor))
         .maybeSingle();
     if (errPool) throw errPool;
 
@@ -168,6 +175,7 @@ export const activarSuplencia = async ({
         .from('suplencias')
         .insert({
             pool_id: poolId,
+            empresa_id: pool.empresa_id,
             alcance,
             sede_id: sedeCubierto,
             departamento_id: deptoCubierto,
@@ -186,7 +194,7 @@ export const desactivarSuplencia = async ({ actor, suplenciaId }) => {
     const { data: sup, error: errSup } = await supabase
         .from('suplencias')
         .select('id, sede_id, departamento_id, activa')
-        .eq('id', suplenciaId)
+        .eq('id', suplenciaId).match(filtroEmpresa(actor))
         .maybeSingle();
     if (errSup) throw errSup;
     if (!sup) { const e = new Error('Suplencia no encontrada.'); e.status = 404; throw e; }
@@ -235,7 +243,7 @@ export const listarSuplencias = async ({ actor, sedeId = null, soloActivas = fal
 export const actividadDelPool = async ({ actor, poolId, desde = null, hasta = null }) => {
     // El pool debe estar en el area del actor.
     const { data: pool } = await supabase
-        .from('usuarios').select('id, sede_id').eq('id', poolId).maybeSingle();
+        .from('usuarios').select('id, sede_id').eq('id', poolId).match(filtroEmpresa(actor)).maybeSingle();
     if (!pool) { const e = new Error('Conductor no encontrado.'); e.status = 404; throw e; }
     const tieneScope = await puedeAccederSede(actor, pool.sede_id);
     if (!tieneScope) { const e = new Error('Ese conductor no es de tu area.'); e.status = 403; throw e; }

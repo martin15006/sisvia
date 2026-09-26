@@ -17,6 +17,9 @@ import { useAuth } from "../../hooks/useAuth.js";
 import { api, API_URL } from "../../lib/api.js";
 import AdminLayout from "../../components/AdminLayout/AdminLayout.jsx";
 import Toast from "../../components/Toast/Toast.jsx";
+import MarcaDueno from "../../components/MarcaDueno/MarcaDueno.jsx";
+import CambiarMarca from "../../components/CambiarMarca/CambiarMarca.jsx";
+import InputPassword from "../../components/InputPassword/InputPassword.jsx";
 import { ETIQUETA_ROL } from "../../lib/roles.js";
 import { filtrarTelefono, telefonoValido, AVISO_TELEFONO, EJEMPLO_TELEFONO } from "../../lib/telefono.js";
 import "./MiPerfil.css";
@@ -31,11 +34,20 @@ function MiPerfil() {
         telefono: "",
     });
     const [foto, setFoto] = useState(null);            // archivo seleccionado
+    // Si la contraseña falla, la foto ya subida se reusa al reintentar (no se sube dos veces)
+    const [fotoSubida, setFotoSubida] = useState(null);
+    // Todo cambio pide la contraseña de la persona (pedido de Martín, 2026-09-23)
+    const [password, setPassword] = useState("");
     const [fotoPreview, setFotoPreview] = useState(null); // url preview o url remota
     const [cargando, setCargando] = useState(false);
     const [subiendoFoto, setSubiendoFoto] = useState(false);
     const [error, setError] = useState(null);
     const [toast, setToast] = useState(null);
+    // HU-20.5-7: dar, pasar o quitarse la marca de dueño
+    const [cambiarMarca, setCambiarMarca] = useState(null);
+    const [duenos, setDuenos] = useState([]);
+    const [versionDuenos, setVersionDuenos] = useState(0);
+    const esDueno = usuario?.rol === "superadmin" && usuario?.es_dueno === true;
 
     // Avisos contextuales debajo de cada campo (mismo patron que ModalCrear/Editar).
     // Se muestran al tipear un caracter no permitido y se borran a los 2.5s.
@@ -46,6 +58,17 @@ function MiPerfil() {
     const fileInputRef = useRef(null);
 
     const mostrarToast = (mensaje, tipo = "exito") => setToast({ mensaje, tipo });
+    const otrosDuenos = duenos.filter((d) => d.id !== usuario?.id);
+
+    // HU-20.3: quiénes más tienen la marca
+    useEffect(() => {
+        if (usuario?.rol !== "superadmin") return undefined;
+        let vigente = true;
+        api("/equipo/duenos")
+            .then((r) => { if (vigente) setDuenos(r.duenos || []); })
+            .catch(() => { /* si falla, la sección igual funciona */ });
+        return () => { vigente = false; };
+    }, [usuario?.rol, versionDuenos]);
 
     const mostrarAviso = (campo, mensaje) => {
         if (timersAvisos.current[campo]) {
@@ -85,6 +108,14 @@ function MiPerfil() {
 
     const inicial = usuario.nombre_completo?.charAt(0).toUpperCase() || "U";
 
+    // ¿Hay algo distinto de lo guardado? Sin cambios, "Guardar cambios" queda apagado.
+    // (El teléfono ya viene normalizado del filtro; el nombre, sin espacios de más.)
+    const limpio = (t) => (t || "").trim().replace(/\s+/g, " ");
+    const hayCambios =
+        limpio(form.nombre_completo) !== limpio(usuario.nombre_completo) ||
+        (form.telefono || "") !== (usuario.telefono || "") ||
+        !!foto;
+
     // Filtros de input (mismo patron que en otros formularios)
     const soloLetrasYEspacios = (texto) =>
         (texto || "").replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, "");
@@ -102,6 +133,7 @@ function MiPerfil() {
         }
         setError(null);
         setFoto(archivo);
+        setFotoSubida(null);
         const reader = new FileReader();
         reader.onload = (ev) => setFotoPreview(ev.target.result);
         reader.readAsDataURL(archivo);
@@ -109,6 +141,7 @@ function MiPerfil() {
 
     const guardar = async (e) => {
         e.preventDefault();
+        if (!hayCambios || !password) return;
         setError(null);
 
         if (!telefonoValido(form.telefono)) {
@@ -120,8 +153,10 @@ function MiPerfil() {
         try {
             let foto_url = usuario.foto_url;
 
-            // Si hay nueva foto, subir primero
-            if (foto) {
+            // Si hay nueva foto, subir primero (salvo que ya se haya subido en un intento anterior)
+            if (foto && fotoSubida) {
+                foto_url = fotoSubida;
+            } else if (foto) {
                 setSubiendoFoto(true);
                 const fd = new FormData();
                 fd.append("foto", foto);
@@ -140,6 +175,7 @@ function MiPerfil() {
                     throw new Error(dataUpload.error || "Error subiendo la foto");
                 }
                 foto_url = dataUpload.url;
+                setFotoSubida(dataUpload.url);
                 setSubiendoFoto(false);
             }
 
@@ -149,17 +185,23 @@ function MiPerfil() {
                     nombre_completo: form.nombre_completo,
                     telefono: form.telefono,
                     foto_url,
+                    password,
                 },
             });
 
             // Actualizar el usuario global del AuthContext para que el header
             // y demas componentes reflejen los cambios sin recargar.
-            if (actualizarUsuario) actualizarUsuario(resp.usuario);
+            // Se completa sobre el usuario que ya estaba: si la respuesta no trae
+            // algún dato (la marca de dueño, la suplencia), no se pierde.
+            if (actualizarUsuario) actualizarUsuario({ ...usuario, ...resp.usuario });
 
             mostrarToast(resp.mensaje || "Perfil actualizado correctamente", "exito");
             setFoto(null);
+            setFotoSubida(null);
+            setPassword("");
         } catch (err) {
             if (!err.sesionExpirada) setError(err.message);
+            setPassword("");
         } finally {
             setCargando(false);
             setSubiendoFoto(false);
@@ -182,6 +224,7 @@ function MiPerfil() {
                     )}
                     <h2 className="mi-perfil-nombre">{usuario.nombre_completo}</h2>
                     <div className="mi-perfil-rol">{ETIQUETA_ROL[usuario.rol] || usuario.rol}</div>
+                    {esDueno && <MarcaDueno />}
                     {usuario.sede_nombre && (
                         <div className="mi-perfil-sede">{usuario.sede_nombre}</div>
                     )}
@@ -310,6 +353,22 @@ function MiPerfil() {
                         )}
                     </div>
 
+                    {hayCambios && (
+                        <div className="mi-perfil-campo mi-perfil-confirmar">
+                            <label className="mi-perfil-label" htmlFor="mi-perfil-password">
+                                Tu contraseña, para confirmar los cambios
+                            </label>
+                            <InputPassword
+                                id="mi-perfil-password"
+                                className="mi-perfil-input"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                autoComplete="off"
+                                disabled={cargando}
+                            />
+                        </div>
+                    )}
+
                     {error && (
                         <div className="mi-perfil-error animar-shake">⚠️ {error}</div>
                     )}
@@ -330,13 +389,62 @@ function MiPerfil() {
                         <button
                             type="submit"
                             className="mi-perfil-boton-guardar"
-                            disabled={cargando}
+                            disabled={cargando || !hayCambios || !password}
+                            aria-describedby="mi-perfil-guardar-ayuda"
                         >
                             {cargando ? "Guardando..." : "Guardar cambios"}
                         </button>
                     </div>
+                    <p id="mi-perfil-guardar-ayuda" className="mi-perfil-guardar-ayuda">
+                        {!hayCambios
+                            ? "No hay cambios para guardar."
+                            : !password
+                            ? "Escribe tu contraseña para guardar los cambios."
+                            : "Listo para guardar."}
+                    </p>
                 </form>
+
+                {/* HU-20.3-5: lo que significa ser el dueño, y como dejar de serlo */}
+                {esDueno && (
+                    <section className="mi-perfil-dueno" aria-labelledby="mi-perfil-dueno-titulo">
+                        <h3 className="mi-perfil-seccion-titulo" id="mi-perfil-dueno-titulo">Dueño de SISVIA</h3>
+                        <p className="mi-perfil-dueno-texto">
+                            Tu cuenta tiene la marca de dueño: ves el Registro del equipo, y nadie puede
+                            desactivarla, eliminarla ni cambiarle el rol desde la app. Puede haber varios dueños:
+                            dale la marca a quien corresponda, o quítate la tuya cuando ya no lo seas.
+                        </p>
+                        {otrosDuenos.length > 0 && (
+                            <p className="mi-perfil-dueno-texto">
+                                {otrosDuenos.length === 1 ? "El otro dueño de SISVIA es " : "Los otros dueños de SISVIA son "}
+                                <b>{otrosDuenos.map((d) => d.nombre_completo).join(" · ")}</b>.
+                            </p>
+                        )}
+                        <div className="mi-perfil-dueno-botones">
+                            <button type="button" className="mi-perfil-boton-pass" onClick={() => setCambiarMarca("dar")}>
+                                Dar la marca…
+                            </button>
+                            <button type="button" className="mi-perfil-boton-pass" onClick={() => setCambiarMarca("pasar")}>
+                                Pasarle la mía…
+                            </button>
+                            <button type="button" className="mi-perfil-boton-quitar" onClick={() => setCambiarMarca("quitar")}>
+                                Quitarme la marca
+                            </button>
+                        </div>
+                    </section>
+                )}
             </div>
+
+            <CambiarMarca
+                modo={cambiarMarca}
+                onCerrar={() => setCambiarMarca(null)}
+                onHecho={(mensaje, modo) => {
+                    setCambiarMarca(null);
+                    // Con "dar" sigo siendo dueño; con "pasar" y "quitar", ya no.
+                    if (modo !== "dar" && actualizarUsuario) actualizarUsuario({ ...usuario, es_dueno: false });
+                    setVersionDuenos((v) => v + 1);
+                    mostrarToast(mensaje, "exito");
+                }}
+            />
 
             {toast && (
                 <Toast

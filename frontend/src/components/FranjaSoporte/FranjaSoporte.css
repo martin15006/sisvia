@@ -1,0 +1,39 @@
+/* Franja del superadmin dentro de una empresa (HU-16): neutra, para no
+   confundirse con la marca ni con la barra morada de suplencia. */
+.franja-soporte {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--espacio-sm);
+    padding: var(--espacio-sm) var(--espacio-xl);
+    background: var(--estado-neutro-fondo);
+    color: var(--estado-neutro-texto);
+    font-size: var(--tamano-sm);
+}
+
+.franja-soporte-texto strong {
+    font-weight: var(--peso-bold);
+}
+
+.franja-soporte-salir {
+    min-height: 44px;
+    padding: 0 var(--espacio-lg);
+    border: 2px solid currentColor;
+    border-radius: var(--radio-md);
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+}
+
+.franja-soporte-salir:hover {
+    background: var(--blanco-15);
+}
+
+@media (max-width: 700px) {
+    .franja-soporte {
+        padding: var(--espacio-sm) var(--espacio-md);
+    }
+}

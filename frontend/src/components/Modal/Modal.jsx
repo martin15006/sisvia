@@ -1,33 +1,45 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import './Modal.css';
 
-function Modal({ abierto, onCerrar, titulo, children, ancho = 'mediano' }) {
-    // Cerrar con la tecla Esc 
+// Modales abiertos, de abajo hacia arriba. Con uno encima de otro (por ejemplo,
+// la contraseña del superadmin sobre el formulario de un vehículo), Esc cierra
+// solo el de arriba y el scroll de la pagina sigue trabado hasta cerrar el ultimo.
+const pila = [];
+
+function Modal({ abierto, onCerrar, titulo, children, ancho = 'mediano', encima = false }) {
+    // onCerrar suele llegar como funcion nueva en cada render: se guarda en una
+    // ref para que el modal no cambie de lugar en la pila al re-renderizar.
+    const cerrarRef = useRef(onCerrar);
+    useEffect(() => { cerrarRef.current = onCerrar; });
+
+    // Cerrar con la tecla Esc (solo el modal de arriba)
     useEffect(() => {
         if (!abierto) return;
+        const yo = {};
+        pila.push(yo);
         const handler = (e) => {
-            if (e.key === 'Escape') onCerrar();
+            if (e.key === 'Escape' && pila[pila.length - 1] === yo) cerrarRef.current();
         };
         window.addEventListener('keydown', handler);
-        return () => window.removeEventListener('keydown', handler);
-    }, [abierto, onCerrar]);
-
-    // Bloquear el scroll del body cuando el modal permanece abierto 
-    useEffect(() => {
-        if (abierto) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
         return () => {
-            document.body.style.overflow = '';
+            window.removeEventListener('keydown', handler);
+            pila.splice(pila.indexOf(yo), 1);
+        };
+    }, [abierto]);
+
+    // Bloquear el scroll del body mientras haya algun modal abierto
+    useEffect(() => {
+        if (!abierto) return;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            if (pila.length === 0) document.body.style.overflow = '';
         };
     }, [abierto]);
 
     if (!abierto) return null;
 
     return (
-        <div className="modal-overlay">
+        <div className={`modal-overlay${encima ? " modal-overlay--encima" : ""}`}>
             <div className={`modal-contenedor modal-ancho-${ancho}`}>
                 <div className="modal-cabecera">
                     <h2 className="modal-titulo">{titulo}</h2>

@@ -230,3 +230,12 @@
         max-width: none;
     }
 }
+
+/* Informes de varias lineas: se respetan los saltos; en el desplegable, hasta 4 lineas */
+.campanita-item-mensaje {
+    white-space: pre-line;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

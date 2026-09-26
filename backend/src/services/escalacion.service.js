@@ -9,7 +9,9 @@ import { rolEfectivo } from './jerarquia.service.js';
 import { obtenerScope, aplicarScope } from './scope.service.js';
 import { emailsDeUsuarios, enviarCorreo, plantillaInforme } from './email.service.js';
 import { crearNotificacionDirecta } from './notificaciones.service.js';
-import { cabeceraDeSede, etiquetaCargo } from './export/branding.js';
+import { textoInforme, ofreceResumen } from './informeReglas.js';
+import { cabeceraDeSede, etiquetaCargo, organizacionDeUsuario } from './export/branding.js';
+import { deLaEmpresa } from './scopeReglas.js';
 
 const idsActivos = async (filtro) => {
     const { data } = await filtro;
@@ -17,25 +19,33 @@ const idsActivos = async (filtro) => {
 };
 
 // Devuelve { ids, etiqueta, sinSuperior? } del superior inmediato.
+// Todo sube DENTRO de la empresa (pacto para-empresas, OB-06):
+//   Coordinador de sede -> Director Regional de su departamento (de su empresa)
+//                       -> si no hay, el Administrador de empresa
+//   Director Regional   -> Administrador de empresa
+//   Administrador de empresa y superadmin -> no tienen superior
+// Si la empresa todavia no tiene Administrador (por ejemplo la empresa inicial
+// "SISVIA" recien migrada), sube al equipo SISVIA para que no se pierda.
 export const resolverSuperior = async (usuario) => {
     const rol = rolEfectivo(usuario);
-    if (rol === 'superadmin') return { ids: [], etiqueta: null, sinSuperior: true };
+    if (rol === 'superadmin' || rol === 'admin_empresa') return { ids: [], etiqueta: null, sinSuperior: true };
 
-    const superadmins = () => idsActivos(
-        supabase.from('usuarios').select('id').eq('rol', 'superadmin').eq('activo', true)
-    );
+    const administracion = async () => {
+        const ids = await idsActivos(
+            deLaEmpresa(supabase.from('usuarios').select('id').eq('rol', 'admin_empresa').eq('activo', true), usuario.empresa_id)
+        );
+        if (ids.length > 0) return { ids, etiqueta: 'la Administración de tu empresa' };
+        const equipo = await idsActivos(
+            supabase.from('usuarios').select('id').eq('rol', 'superadmin').eq('activo', true)
+        );
+        return { ids: equipo, etiqueta: 'el equipo SISVIA', equipoSisvia: true };
+    };
 
-    // Director Regional -> Administración general
-    if (rol === 'admin_departamental') {
-        return { ids: await superadmins(), etiqueta: 'la Administración general' };
-    }
+    if (rol === 'admin_departamental') return administracion();
 
     // Coordinador / admin con sede / suplente -> Director Regional de su departamento
     const sedeId = usuario.sedeActiva || usuario.sede_id;
-    if (!sedeId) {
-        // Admin general sin sede: su superior es el Nacional
-        return { ids: await superadmins(), etiqueta: 'la Administración general' };
-    }
+    if (!sedeId) return administracion();
     const { data: sede } = await supabase
         .from('sedes')
         .select('ciudad:ciudad_id ( departamento:departamento_id ( id, nombre ) )')
@@ -44,12 +54,18 @@ export const resolverSuperior = async (usuario) => {
     const depto = sede?.ciudad?.departamento;
     if (depto?.id) {
         const ids = await idsActivos(
-            supabase.from('usuarios').select('id').eq('rol', 'admin_departamental').eq('departamento_id', depto.id).eq('activo', true)
+            deLaEmpresa(
+                supabase.from('usuarios').select('id')
+                    .eq('rol', 'admin_departamental')
+                    .eq('departamento_id', depto.id)
+                    .eq('activo', true),
+                usuario.empresa_id
+            )
         );
         if (ids.length > 0) return { ids, etiqueta: `el Director Regional de ${depto.nombre}` };
     }
-    // Sin Regional en ese departamento: sube directo al Nacional para que no se pierda
-    return { ids: await superadmins(), etiqueta: 'la Administración general' };
+    // Sin Regional de su empresa en ese departamento: sube a la Administración
+    return administracion();
 };
 
 // Etiqueta del área del remitente (sede o regional) para el encabezado del informe.
@@ -83,7 +99,7 @@ export const resumenDeArea = async (usuario) => {
     };
 };
 
-// Envía el informe: campanita + correo al superior. Devuelve { ok, ... }.
+// Envía el informe: campanita (con todo) + copia por correo al superior. Devuelve { ok, ... }.
 export const enviarInforme = async ({ usuario, asunto, mensaje, incluirResumen }) => {
     if (!mensaje || !mensaje.trim()) {
         return { ok: false, status: 400, error: 'El mensaje es obligatorio.' };
@@ -96,7 +112,7 @@ export const enviarInforme = async ({ usuario, asunto, mensaje, incluirResumen }
         return { ok: false, status: 404, error: 'No se encontró un superior activo para escalar.' };
     }
 
-    const resumen = incluirResumen ? await resumenDeArea(usuario) : null;
+    const resumen = incluirResumen && ofreceResumen(superior) ? await resumenDeArea(usuario) : null;
     const asuntoLimpio = (asunto || '').trim() || 'Informe';
     const cargo = etiquetaCargo(usuario.rol, usuario.es_pool);
     const area = await areaDelUsuario(usuario);
@@ -106,24 +122,21 @@ export const enviarInforme = async ({ usuario, asunto, mensaje, incluirResumen }
     let correoEnviado = false;
     try {
         const para = await emailsDeUsuarios(superior.ids);
-        const html = plantillaInforme({ deQuien: usuario.nombre_completo, cargo, area, asunto: asuntoLimpio, mensaje, resumen });
+        const html = plantillaInforme({ deQuien: usuario.nombre_completo, cargo, area, asunto: asuntoLimpio, mensaje, resumen, organizacion: organizacionDeUsuario(usuario) });
         const r = await enviarCorreo({ para, asunto: `Informe: ${asuntoLimpio}`, html });
         correoEnviado = r.enviado === true;
     } catch {
         correoEnviado = false;
     }
 
-    // 2) Campanita al superior (SIEMPRE, aunque el correo esté deshabilitado).
-    //    Si el correo sí salió, lo avisamos para que el superior sepa que también
-    //    le llegó ahí y no quede buscando "¿me envió un informe pero a dónde?".
-    const notaCorreo = correoEnviado
-        ? ' · 📧 También te llegó una copia a tu correo.'
-        : '';
+    // 2) Campanita al superior (SIEMPRE, aunque el correo esté deshabilitado),
+    //    con el mensaje y el resumen completos. Si el correo sí salió, se avisa
+    //    que también le llegó una copia.
     await crearNotificacionDirecta({
         destinatarioIds: superior.ids,
         tipo: 'informe_escalado',
         titulo: `${usuario.nombre_completo} te envió un informe`,
-        mensaje: `${asuntoLimpio}${notaCorreo}`,
+        mensaje: textoInforme({ asunto: asuntoLimpio, mensaje, area, resumen, correoEnviado }),
         url_destino: '/admin/notificaciones',
     });
 

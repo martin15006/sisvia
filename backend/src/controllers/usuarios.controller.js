@@ -3,8 +3,31 @@ import { normalizarTelefono, validarTelefono } from '../utils/telefono.js';
 import { normalizarDocumento, validarDocumento } from '../utils/documento.js';
 import { generarPasswordTemporal, contarAdminsActivos, registrarAuditoria, } from '../services/usuarios.service.js';
 import { obtenerScope, usuarioEnScope } from '../services/scope.service.js';
-import { puedeCrearRol, puedeGestionarRol, ETIQUETA_ROL, rolEfectivo as rolEfectivoActor } from '../services/jerarquia.service.js';
+import { puedeCrearRol, puedeGestionarRol, ETIQUETA_ROL, rolEfectivo as rolEfectivoActor, rolPermitidoPorSedes, MENSAJE_ROLES_SEDES } from '../services/jerarquia.service.js';
 import { mapaSuplenciasVigentes, suplenciaVigenteDePool } from '../services/suplencias.service.js';
+import { filtroEmpresa, deLaEmpresa } from '../services/scopeReglas.js';
+import { empresaDeSede, empresaDelUsuario } from '../services/scope.service.js';
+import { areaFueraDeScope } from '../services/scopeReglas.js';
+import { dejaSinDueno, MENSAJES_EMPRESA } from '../services/empresasReglas.js';
+import { adminsActivosDeEmpresa } from '../services/empresas.service.js';
+import { protegerDueno } from '../services/duenoReglas.js';
+
+// RN-04 · HU-10: con menos de dos sedes activas, la empresa solo crea Conductores.
+// El superadmin no tiene esta limitacion ("ademas de lo que haga el superadmin").
+const faltanSedesParaRol = async (actor, rol) => {
+    // Un rol que se permite aun sin sedes (el Conductor) no depende de cuantas haya.
+    if (rolEfectivoActor(actor) === 'superadmin' || rolPermitidoPorSedes(rol, 0)) return false;
+    const { count } = await deLaEmpresa(
+        supabase.from('sedes').select('id', { count: 'exact', head: true }),
+        empresaDelUsuario(actor),
+    ).eq('activo', true);
+    return !rolPermitidoPorSedes(rol, count ?? 0);
+};
+
+// CB-17: la empresa nunca queda sin Administrador de empresa activo.
+const quedaSinDueno = async (objetivo, accion, rolNuevo = null) =>
+    objetivo?.rol === 'admin_empresa' &&
+    dejaSinDueno({ objetivo, accion, rolNuevo, adminsActivos: await adminsActivosDeEmpresa(objetivo.empresa_id) });
 
 
 // Helper: indexa los emails de auth.users por id para hacer merge con la tabla usuarios.
@@ -32,8 +55,8 @@ const verificarAccesoUsuarioObjetivo = async (req, idObjetivo, { exigirRango = t
 
     const { data: objetivo } = await supabase
         .from('usuarios')
-        .select('rol, sede_id, ciudad_id, departamento_id, region_id')
-        .eq('id', idObjetivo)
+        .select('rol, sede_id, ciudad_id, departamento_id, region_id, empresa_id')
+        .eq('id', idObjetivo).match(filtroEmpresa(req.usuario))
         .maybeSingle();
 
     if (!objetivo) {
@@ -64,6 +87,7 @@ const verificarAccesoUsuarioObjetivo = async (req, idObjetivo, { exigirRango = t
 const construirAmbito = (u) => {
     const rol = u.rol;
     if (rol === 'superadmin') return { nivel: 'nacional', etiqueta: 'Nacional', ciudad: null };
+    if (rol === 'admin_empresa') return { nivel: 'empresa', etiqueta: 'Toda la empresa', ciudad: null };
     if (rol === 'admin_departamental') return { nivel: 'departamento', etiqueta: u.departamento?.nombre || '—', ciudad: null };
     // conductor / admin_sede / alias 'admin' con sede
     if (u.sede) return { nivel: 'sede', etiqueta: u.sede.nombre, ciudad: u.sede.ciudad?.nombre || null };
@@ -85,10 +109,16 @@ export const listarUsuarios = async (req, res) => {
                 departamento:departamento_id ( nombre ),
                 region:region_id ( nombre )
             `)
+            .match(filtroEmpresa(req.usuario)) // solo su empresa desde la base; el territorio se filtra abajo
             .order('created_at', { ascending: false });
 
         if (rol) query = query.eq('rol', rol);
         if (activo !== undefined) query = query.eq('activo', activo === 'true');
+        // HU-11.1: el superadmin afuera de las empresas ve solo al equipo SISVIA;
+        // la gente de cada empresa la ve entrando a ella (HU-11.2 · HU-16).
+        if (rolEfectivoActor(req.usuario) === 'superadmin' && !req.usuario.empresaActiva) {
+            query = query.eq('rol', 'superadmin');
+        }
 
         const [{ data, error }, mapaEmails, scope] = await Promise.all([
             query,
@@ -157,7 +187,7 @@ export const obtenerUsuario = async (req, res) => {
         const { data, error } = await supabase
             .from('usuarios')
             .select('*')
-            .eq('id', id)
+            .eq('id', id).match(filtroEmpresa(req.usuario))
             .single();
 
         if (error || !data) {
@@ -244,8 +274,11 @@ export const crearUsuario = async (req, res) => {
         // crea cualquier admin pero no otro superadmin.
         if (!puedeCrearRol(rolEfectivoActor(req.usuario), rol)) {
             return res.status(403).json({
-                error: `No tienes permiso para crear usuarios con el rol "${ETIQUETA_ROL[rol] || rol}". Solo puedes crear roles inferiores al tuyo.`,
+                error: 'No tienes permiso para crear ese rol', // texto exacto de HU-09.3
             });
+        }
+        if (await faltanSedesParaRol(req.usuario, rol)) {
+            return res.status(403).json({ error: MENSAJE_ROLES_SEDES });
         }
 
         // Scope territorial: el area asignada (sede/ciudad/departamento/region
@@ -254,11 +287,7 @@ export const crearUsuario = async (req, res) => {
         // verificacion de seguridad en el servidor.
         const scopeActor = await obtenerScope(req.usuario);
         if (scopeActor.tipo !== 'global') {
-            const fueraDeArea =
-                (sede_id && !scopeActor.sedeIds.includes(sede_id)) ||
-                (ciudad_id && !scopeActor.ciudadIds.includes(ciudad_id)) ||
-                (departamento_id && !scopeActor.departamentoIds.includes(departamento_id)) ||
-                (region_id && !scopeActor.regionIds.includes(region_id));
+            const fueraDeArea = areaFueraDeScope(scopeActor, { sede_id, ciudad_id, departamento_id, region_id });
             if (fueraDeArea) {
                 return res.status(403).json({
                     error: 'No puedes asignar un área (territorio) fuera de la tuya.',
@@ -298,6 +327,10 @@ export const crearUsuario = async (req, res) => {
                 .json({ error: 'Ya existe un usuario con esa cedula' });
         }
 
+        const empresaUsuarioNuevo = rol === 'superadmin'
+            ? null
+            : (await empresaDeSede(sede_id)) || empresaDelUsuario(req.usuario);
+
         const passwordTemporal = generarPasswordTemporal();
 
         // crear en supabase auth 
@@ -321,6 +354,10 @@ export const crearUsuario = async (req, res) => {
                 telefono: normalizarTelefono(telefono),
                 rol,
                 sede_id: sede_id || null,
+                // La empresa sale de su sede o, sin sede, de quien lo crea (el
+                // superadmin, de la empresa a la que entro: HU-16). Afuera de una
+                // empresa solo crea superadmins (lo frena controlarSuperadmin).
+                ...(empresaUsuarioNuevo ? { empresa_id: empresaUsuarioNuevo } : {}),
                 ciudad_id: ciudad_id || null,
                 departamento_id: departamento_id || null,
                 region_id: region_id || null,
@@ -334,7 +371,7 @@ export const crearUsuario = async (req, res) => {
                 // los Directores, y solo aplica al rol conductor.
                 es_pool:
                     rol === 'conductor' &&
-                    ['superadmin', 'admin_departamental'].includes(req.usuario.rol)
+                    ['superadmin', 'admin_empresa', 'admin_departamental'].includes(req.usuario.rol)
                         ? req.body.es_pool === true
                         : false,
             })
@@ -391,12 +428,19 @@ export const actualizarUsuario = async (req, res) => {
 
         const { data: usuarioActual } = await supabase
             .from('usuarios')
-            .select('rol, licencia_numero, licencia_categoria, licencia_vencimiento, eps, arl, sede_id, ciudad_id, departamento_id, region_id')
-            .eq('id', id)
+            .select('rol, activo, es_dueno, licencia_numero, licencia_categoria, licencia_vencimiento, eps, arl, sede_id, ciudad_id, departamento_id, region_id, empresa_id')
+            .eq('id', id).match(filtroEmpresa(req.usuario))
             .maybeSingle();
 
         if (!usuarioActual) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        // HU-20.4: al dueño de SISVIA nadie le cambia el rol (tampoco el mismo).
+        // Va antes que el control de rangos: su aviso es el que manda.
+        if (rol && rol !== usuarioActual.rol) {
+            const dueno = protegerDueno(usuarioActual, 'cambiar_rol');
+            if (dueno) return res.status(400).json({ error: dueno });
         }
 
         const scopeActor = await obtenerScope(req.usuario);
@@ -431,6 +475,12 @@ export const actualizarUsuario = async (req, res) => {
                 error: `No puedes asignar el rol "${ETIQUETA_ROL[rolNuevo] || rolNuevo}". Solo puedes asignar roles inferiores al tuyo.`,
             });
         }
+        if (rolNuevo && (await faltanSedesParaRol(req.usuario, rolNuevo))) {
+            return res.status(403).json({ error: MENSAJE_ROLES_SEDES });
+        }
+        if (rolNuevo && (await quedaSinDueno(usuarioActual, 'cambiar_rol', rolNuevo))) {
+            return res.status(400).json({ error: MENSAJES_EMPRESA.sinDueno });
+        }
         // Rol con el que el usuario QUEDARA tras este update (para las validaciones)
         const rolEfectivo = rolNuevo || usuarioActual.rol;
 
@@ -448,11 +498,7 @@ export const actualizarUsuario = async (req, res) => {
         // Scope territorial: el area asignada debe estar dentro del area del admin
         // que edita (mismo control que al crear).
         if (scopeActor.tipo !== 'global') {
-            const fueraDeArea =
-                (sede_id && !scopeActor.sedeIds.includes(sede_id)) ||
-                (ciudad_id && !scopeActor.ciudadIds.includes(ciudad_id)) ||
-                (departamento_id && !scopeActor.departamentoIds.includes(departamento_id)) ||
-                (region_id && !scopeActor.regionIds.includes(region_id));
+            const fueraDeArea = areaFueraDeScope(scopeActor, { sede_id, ciudad_id, departamento_id, region_id });
             if (fueraDeArea) {
                 return res.status(403).json({
                     error: 'No puedes asignar un área (territorio) fuera de la tuya.',
@@ -497,7 +543,7 @@ export const actualizarUsuario = async (req, res) => {
 
         // Conductor del pool: solo lo cambian los Directores. Si el usuario deja de
         // ser conductor (rolEfectivo distinto), se apaga la marca por coherencia.
-        const actorEsDirector = ['superadmin', 'admin_departamental'].includes(req.usuario.rol);
+        const actorEsDirector = ['superadmin', 'admin_empresa', 'admin_departamental'].includes(req.usuario.rol);
         if (rolEfectivo !== 'conductor') {
             cambios.es_pool = false;
         } else if (req.body.es_pool !== undefined && actorEsDirector) {
@@ -530,7 +576,8 @@ export const actualizarUsuario = async (req, res) => {
             usuarioAfectadoId: id,
             accionPorId: req.usuario.id,
             accion: 'actualizado',
-            detalles: req.body,
+            // Con el rol anterior, la actividad cuenta el cambio de rol (HU-19.1).
+            detalles: rolNuevo ? { ...req.body, rol_anterior: usuarioActual.rol } : req.body,
         });
 
         res.json({ usuario: data })
@@ -545,6 +592,10 @@ export const desactivarUsuario = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // HU-20.4: la cuenta del dueño de SISVIA no se desactiva (tampoco el mismo).
+        if (id === req.usuario.id && protegerDueno(req.usuario, 'desactivar')) {
+            return res.status(400).json({ error: protegerDueno(req.usuario, 'desactivar') });
+        }
         if (id === req.usuario.id) {
             return res
                 .status(400)
@@ -553,13 +604,15 @@ export const desactivarUsuario = async (req, res) => {
 
         const { data: usuario } = await supabase
             .from('usuarios')
-            .select('rol, sede_id, ciudad_id, departamento_id, region_id')
-            .eq('id', id)
+            .select('rol, activo, es_dueno, sede_id, ciudad_id, departamento_id, region_id, empresa_id')
+            .eq('id', id).match(filtroEmpresa(req.usuario))
             .single();
 
         if (!usuario) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
+        const dueno = protegerDueno(usuario, 'desactivar');
+        if (dueno) return res.status(400).json({ error: dueno });
 
         // Multinivel (#102): solo puedes desactivar a alguien dentro de tu area...
         const scope = await obtenerScope(req.usuario);
@@ -575,6 +628,10 @@ export const desactivarUsuario = async (req, res) => {
             return res.status(403).json({
                 error: `No puedes desactivar a un "${ETIQUETA_ROL[usuario.rol] || usuario.rol}". Solo puedes gestionar usuarios de rango inferior al tuyo.`,
             });
+        }
+
+        if (await quedaSinDueno(usuario, 'desactivar')) {
+            return res.status(400).json({ error: MENSAJES_EMPRESA.sinDueno });
         }
 
         if (usuario.rol === 'admin') {
@@ -612,8 +669,8 @@ export const reactivarUsuario = async (req, res) => {
 
         const { data: usuario } = await supabase
             .from('usuarios')
-            .select('rol, sede_id, ciudad_id, departamento_id, region_id')
-            .eq('id', id)
+            .select('rol, sede_id, ciudad_id, departamento_id, region_id, empresa_id')
+            .eq('id', id).match(filtroEmpresa(req.usuario))
             .single();
 
         if (!usuario) {
@@ -657,6 +714,10 @@ export const eliminarUsuario = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // HU-20.4: la cuenta del dueño de SISVIA no se elimina (tampoco el mismo).
+        if (id === req.usuario.id && protegerDueno(req.usuario, 'eliminar')) {
+            return res.status(400).json({ error: protegerDueno(req.usuario, 'eliminar') });
+        }
         if (id === req.usuario.id) {
             return res
                 .status(400)
@@ -665,13 +726,15 @@ export const eliminarUsuario = async (req, res) => {
 
         const { data: usuario } = await supabase
             .from('usuarios')
-            .select('rol, nombre_completo, sede_id, ciudad_id, departamento_id, region_id')
-            .eq('id', id)
+            .select('rol, activo, es_dueno, nombre_completo, sede_id, ciudad_id, departamento_id, region_id, empresa_id')
+            .eq('id', id).match(filtroEmpresa(req.usuario))
             .single();
 
         if (!usuario) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
+        const dueno = protegerDueno(usuario, 'eliminar');
+        if (dueno) return res.status(400).json({ error: dueno });
 
         // Multinivel (#102): solo puedes eliminar a alguien dentro de tu area...
         const scope = await obtenerScope(req.usuario);
@@ -687,6 +750,10 @@ export const eliminarUsuario = async (req, res) => {
             return res.status(403).json({
                 error: `No puedes eliminar a un "${ETIQUETA_ROL[usuario.rol] || usuario.rol}". Solo puedes gestionar usuarios de rango inferior al tuyo.`,
             });
+        }
+
+        if (await quedaSinDueno(usuario, 'eliminar')) {
+            return res.status(400).json({ error: MENSAJES_EMPRESA.sinDueno });
         }
 
         if (usuario.rol === 'admin') {
@@ -749,7 +816,7 @@ export const resetearPassword = async (req, res) => {
         await supabase
             .from('usuarios')
             .update({ debe_cambiar_password: true })
-            .eq('id', id);
+            .eq('id', id).match(filtroEmpresa(req.usuario));
 
         await registrarAuditoria({
             usuarioAfectadoId: id,
@@ -898,7 +965,7 @@ export const cambiarCedula = async (req, res) => {
         const { data: actualizado, error: errUpdate } = await supabase
             .from('usuarios')
             .update({ cedula: cedulaLimpia })
-            .eq('id', id)
+            .eq('id', id).match(filtroEmpresa(req.usuario))
             .select()
             .single();
 
@@ -958,7 +1025,7 @@ export const obtenerPerfilDetalle = async (req, res) => {
                     ciudad_id
                 )
             `)
-            .eq('id', id)
+            .eq('id', id).match(filtroEmpresa(req.usuario))
             .single();
 
         if (errUsuario || !usuario) {

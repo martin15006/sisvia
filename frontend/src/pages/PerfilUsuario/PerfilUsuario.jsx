@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth.js";
+import CabeceraDetalle from "../../components/CabeceraDetalle/CabeceraDetalle.jsx";
 import { api } from "../../lib/api.js";
 import { etiquetaCargo } from "../../lib/roles.js";
 import Footer from "../../components/Footer/Footer.jsx";
@@ -19,6 +19,7 @@ import Toast from "../../components/Toast/Toast.jsx";
 import BotonVolver from "../../components/BotonVolver/BotonVolver.jsx";
 import BotonExportar from "../../components/BotonExportar/BotonExportar.jsx";
 import ModalEditarUsuario from "../UsuariosAdmin/components/ModalEditarUsuario.jsx";
+import MarcaDueno from "../../components/MarcaDueno/MarcaDueno.jsx";
 import "./PerfilUsuario.css";
 
 // Etiquetas legibles para las acciones de auditoria
@@ -89,7 +90,6 @@ const tiempoHasta = (iso) => {
 
 function PerfilUsuario() {
     const { id } = useParams();
-    const { usuario: usuarioActual, cerrarSesion } = useAuth();
     const navigate = useNavigate();
 
     const [data, setData] = useState(null);
@@ -118,11 +118,6 @@ function PerfilUsuario() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
-    const cerrar = () => {
-        cerrarSesion();
-        navigate("/login");
-    };
-
     if (cargando) {
         return (
             <div className="perfil-pagina">
@@ -149,21 +144,7 @@ function PerfilUsuario() {
     return (
         <div className="perfil-pagina">
             {/* Header igual que el resto del admin */}
-            <header className="perfil-header">
-                <div className="perfil-logo-wrapper">
-                    <img src="/logo.png" alt="SISVIA" className="perfil-logo-img" />
-                    <div className="perfil-logo">Gestión de Flota</div>
-                </div>
-                <div className="perfil-usuario-header">
-                    <div className="perfil-usuario-info">
-                        <div className="perfil-usuario-nombre">{usuarioActual.nombre_completo}</div>
-                        <div className="perfil-usuario-rol">{usuarioActual.rol}</div>
-                    </div>
-                    <button className="perfil-logout" onClick={cerrar}>
-                        Cerrar sesión
-                    </button>
-                </div>
-            </header>
+            <CabeceraDetalle />
 
             <main className="perfil-main">
                 <div className="perfil-acciones-top">
@@ -204,6 +185,8 @@ function PerfilUsuario() {
                                 {etiquetaCargo(usuario)}
                                 {usuario.supliendo && " · suplencia"}
                             </span>
+                            {/* HU-20.3 */}
+                            {usuario.es_dueno === true && <MarcaDueno />}
                             {usuario.sede_nombre && (
                                 <span className="perfil-hero-sede">
                                     {usuario.sede_nombre}

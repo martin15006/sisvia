@@ -1,10 +1,11 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.js";
 import { esAdminEfectivo } from "../../lib/roles.js";
 import './ProtectedRoute.css';
 
 function ProtectedRoute({ children, soloAdmin = false }) {
     const { usuario, cargando } = useAuth();
+    const { pathname } = useLocation();
 
     if (cargando) {
         return (
@@ -18,6 +19,12 @@ function ProtectedRoute({ children, soloAdmin = false }) {
     // si no esta authenticado redirige al login 
     if (!usuario) {
         return <Navigate to='/login' replace />;
+    }
+
+    // Contraseña temporal: hasta cambiarla no entra a ningun modulo, aunque ya
+    // tenga la sesion abierta o recargue la pagina (antes solo lo exigia el login).
+    if (usuario.debe_cambiar_password && pathname !== "/cambiar-password") {
+        return <Navigate to="/cambiar-password" replace />;
     }
 
     if (soloAdmin && !esAdminEfectivo(usuario)) {

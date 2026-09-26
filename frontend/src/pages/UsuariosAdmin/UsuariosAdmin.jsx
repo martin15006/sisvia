@@ -11,6 +11,7 @@ import BotonExportar from "../../components/BotonExportar/BotonExportar.jsx";
 import ModalCrearUsuario from "./components/ModalCrearUsuario.jsx";
 import ModalEditarUsuario from "./components/ModalEditarUsuario.jsx";
 import ModalSuplencia from "./components/ModalSuplencia.jsx";
+import MarcaDueno from "../../components/MarcaDueno/MarcaDueno.jsx";
 
 // Texto secundario (gris) que describe el NIVEL del ámbito en la tabla.
 const descriptorAmbito = (ambito) => {
@@ -27,7 +28,9 @@ const descriptorAmbito = (ambito) => {
 };
 
 function UsuariosAdmin() {
-  const { usuario, actualizarUsuario } = useAuth();
+  const { usuario, actualizarUsuario, empresaActiva } = useAuth();
+  // HU-11: afuera de las empresas, el superadmin ve y crea solo al equipo SISVIA.
+  const equipoSisvia = usuario?.rol === "superadmin" && !empresaActiva;
   const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -53,6 +56,8 @@ function UsuariosAdmin() {
   const soySuplente = enSuplencia(usuario);
   const suplenteNoTocaAdmin = (u) => soySuplente && esAdmin(u.rol);
   const esMiFila = (u) => u.id === usuario?.id; // nadie se desactiva/elimina a si mismo
+  // HU-20.4: a la cuenta del dueño de SISVIA nadie la desactiva ni la elimina.
+  const esDelDueno = (u) => u.es_dueno === true;
 
   const cargarUsuarios = async () => {
     setCargando(true);
@@ -160,6 +165,7 @@ function UsuariosAdmin() {
           <div>
             <h1 className="usuarios-admin-titulo">Gestión de usuarios</h1>
             <p className="usuarios-admin-subtitulo">
+              {equipoSisvia && "Equipo SISVIA · la gente de cada empresa se ve entrando a ella, desde Empresas · "}
               {usuarios.length} registrados · {usuariosFiltrados.length} visibles
             </p>
           </div>
@@ -277,6 +283,7 @@ function UsuariosAdmin() {
                     </td>
                     <td className="usuarios-admin-nombre">
                       {u.nombre_completo}
+                      {esDelDueno(u) && <MarcaDueno className="usuarios-admin-marca-dueno" />}
                     </td>
                     <td>{u.cedula}</td>
                     <td>
@@ -350,7 +357,7 @@ function UsuariosAdmin() {
                             Resetear
                           </button>
                         )}
-                        {!esMiFila(u) && !suplenteNoTocaAdmin(u) && (
+                        {!esMiFila(u) && !suplenteNoTocaAdmin(u) && !esDelDueno(u) && (
                           u.activo ? (
                             <button
                               className="usuarios-admin-accion usuarios-admin-accion-warning"
@@ -369,7 +376,7 @@ function UsuariosAdmin() {
                             </button>
                           )
                         )}
-                        {!esMiFila(u) && !suplenteNoTocaAdmin(u) && (
+                        {!esMiFila(u) && !suplenteNoTocaAdmin(u) && !esDelDueno(u) && (
                           <button
                             className="usuarios-admin-accion usuarios-admin-accion-danger"
                             onClick={() => eliminar(u.id, u.nombre_completo)}

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../components/Modal/Modal.jsx";
-import { api, API_URL } from "../../../lib/api.js";
+import { api, apiArchivo } from "../../../lib/api.js";
 import { useAuth } from "../../../hooks/useAuth.js";
 import { esDirector } from "../../../lib/roles.js";
 import { filtrarPlaca, validarPlaca, ayudaPlaca, ejemploPlaca, filtrarColor } from "../../../lib/placa.js";
 import "./ModalVehiculo.css";
+import AtajoSisvia from "../../../components/AtajoSisvia/AtajoSisvia.jsx";
 
 const ESTADO_INICIAL = {
     sede_id: "",
@@ -88,6 +89,7 @@ function ModalVehiculo({ abierto, onCerrar, onGuardado, vehiculo = null, mostrar
     const [fotosNuevasPreview, setFotosNuevasPreview] = useState([]);
     const [runtNuevo, setRuntNuevo] = useState(null);
     const [error, setError] = useState(null);
+    const [errorCodigo, setErrorCodigo] = useState(null); // HU-18.9: limite_plan / placa_en_sisvia
     const [cargando, setCargando] = useState(false);
     const [paso, setPaso] = useState("");
 
@@ -282,6 +284,7 @@ function ModalVehiculo({ abierto, onCerrar, onGuardado, vehiculo = null, mostrar
     const enviar = async (e) => {
         e.preventDefault();
         setError(null);
+        setErrorCodigo(null);
 
         const errorPlaca = validarPlaca(form.placa, form.tipo);
         if (errorPlaca) {
@@ -326,48 +329,27 @@ function ModalVehiculo({ abierto, onCerrar, onGuardado, vehiculo = null, mostrar
                 vehiculoId = resultado.vehiculo.id;
             }
 
-            const token = localStorage.getItem("token");
-
+            // apiArchivo manda los mismos encabezados que api() y, si el superadmin
+            // esta dentro de una empresa, pide su contraseña (HU-16).
             if (fotosNuevas.length > 0) {
                 setPaso(`Subiendo ${fotosNuevas.length} foto(s)...`);
                 const fd = new FormData();
                 fotosNuevas.forEach((f) => fd.append("fotos", f));
-                const resp = await fetch(
-                    `${API_URL}/vehiculos/${vehiculoId}/fotos`,
-                    {
-                        method: "POST",
-                        headers: { Authorization: `Bearer ${token}` },
-                        body: fd,
-                    }
-                );
-                if (!resp.ok) {
-                    const err = await resp.json();
-                    throw new Error(err.error || "Error subiendo fotos");
-                }
+                await apiArchivo(`/vehiculos/${vehiculoId}/fotos`, fd);
             }
 
             if (runtNuevo) {
                 setPaso("Subiendo archivo RUNT...");
                 const fd = new FormData();
                 fd.append("runt", runtNuevo);
-                const resp = await fetch(
-                    `${API_URL}/vehiculos/${vehiculoId}/runt`,
-                    {
-                        method: "POST",
-                        headers: { Authorization: `Bearer ${token}` },
-                        body: fd,
-                    }
-                );
-                if (!resp.ok) {
-                    const err = await resp.json();
-                    throw new Error(err.error || "Error subiendo RUNT");
-                }
+                await apiArchivo(`/vehiculos/${vehiculoId}/runt`, fd);
             }
 
             onGuardado(resultado.vehiculo, esEdicion);
             cerrar();
         } catch (err) {
             setError(err.message);
+            setErrorCodigo(err.codigo || null);
         } finally {
             setCargando(false);
             setPaso("");
@@ -825,7 +807,10 @@ function ModalVehiculo({ abierto, onCerrar, onGuardado, vehiculo = null, mostrar
                 </div>
 
                 {error && (
-                    <div className="form-vehiculo-error animar-shake">{error}</div>
+                    <div className="form-vehiculo-error animar-shake">
+                        {error}
+                        <AtajoSisvia codigo={errorCodigo} placa={form.placa} />
+                    </div>
                 )}
 
                 {paso && (

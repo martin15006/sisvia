@@ -1,0 +1,539 @@
+/* HU-18: "Soporte", los mensajes a SISVIA y su hilo */
+
+.soporte {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-lg);
+    min-width: 0;
+    /* El corte a una columna mira el espacio de la pagina, no el de la pantalla:
+       con el menu abierto, una pantalla de 930 px deja solo ~620 para Soporte. */
+    container-type: inline-size;
+    container-name: soporte;
+}
+
+.soporte-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+}
+
+.soporte-titulo {
+    margin: 0;
+    font-size: var(--tamano-xxl);
+    color: var(--texto-marca);
+}
+
+.soporte-subtitulo {
+    margin: var(--espacio-xs) 0 0;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-700);
+}
+
+/* ===== Filtros ===== */
+.soporte-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-sm);
+}
+
+.soporte-filtro {
+    min-height: 40px;
+    padding: 0 var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-xl);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    cursor: pointer;
+}
+
+.soporte-filtro--activo {
+    background: var(--acento-suave);
+    border-color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
+}
+
+/* ===== Bandeja + hilo ===== */
+.soporte-cuerpo {
+    display: grid;
+    grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+    gap: var(--espacio-lg);
+    align-items: start;
+}
+
+.soporte-bandeja,
+.soporte-detalle {
+    min-width: 0;
+    background: var(--superficie);
+    border: var(--borde-card);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-sm);
+}
+
+.soporte-lista {
+    list-style: none;
+    margin: 0;
+    padding: var(--espacio-xs);
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+}
+
+.soporte-item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid transparent;
+    border-radius: var(--radio-md);
+    background: transparent;
+    color: var(--color-gris-900);
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.soporte-item:hover {
+    background: var(--superficie-sutil);
+}
+
+.soporte-item--activo {
+    border-color: var(--color-primario-oscuro);
+    background: var(--acento-suave);
+}
+
+.soporte-item-arriba {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-sm);
+}
+
+.soporte-item-tipo {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+}
+
+.soporte-item-quien,
+.soporte-item-respuestas {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+}
+
+.soporte-item-texto {
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.soporte-estado {
+    flex-shrink: 0;
+    padding: 2px 10px;
+    border-radius: var(--radio-xl);
+    border: 1px solid;
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    white-space: nowrap;
+}
+
+.soporte-estado--nuevo {
+    background: var(--estado-info-fondo);
+    border-color: var(--estado-info-borde);
+    color: var(--estado-info-texto);
+}
+
+.soporte-estado--en_revision {
+    background: var(--acento-suave);
+    border-color: var(--color-primario-oscuro);
+    color: var(--texto-marca);
+}
+
+.soporte-estado--resuelto {
+    background: var(--estado-exito-fondo);
+    border-color: var(--estado-exito-borde);
+    color: var(--estado-exito-texto);
+}
+
+.soporte-vacio {
+    padding: var(--espacio-xl);
+    text-align: center;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-700);
+}
+
+.soporte-volver {
+    display: none;
+}
+
+/* ===== Hilo ===== */
+.soporte-hilo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-lg);
+    padding: var(--espacio-lg);
+}
+
+.soporte-hilo-cabecera {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+}
+
+.soporte-hilo-titulos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-sm);
+}
+
+.soporte-hilo-titulo {
+    margin: 0;
+    font-size: var(--tamano-xl);
+    color: var(--color-gris-900);
+}
+
+.soporte-hilo-quien {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-700);
+    overflow-wrap: anywhere;
+}
+
+.soporte-hilo-quien b {
+    color: var(--color-gris-900);
+}
+
+.soporte-hilo-datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-sm) var(--espacio-lg);
+    margin: var(--espacio-xs) 0 0;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border-radius: var(--radio-md);
+    background: var(--superficie-sutil);
+    font-size: var(--tamano-xs);
+}
+
+.soporte-hilo-datos div {
+    display: flex;
+    gap: var(--espacio-xs);
+    min-width: 0;
+}
+
+.soporte-hilo-datos dt {
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-900);
+}
+
+.soporte-hilo-datos dd {
+    margin: 0;
+    color: var(--color-gris-700);
+    overflow-wrap: anywhere;
+}
+
+/* El hilo se desliza por dentro: el alto no crece con cada mensaje y la caja
+   de responder queda a la vista. El alto sale de la pantalla: arriba del hilo hay
+   ~400 px (titulo, filtros, cabecera) y debajo ~190 (la caja de responder). */
+.soporte-conversacion {
+    list-style: none;
+    margin: 0;
+    padding: var(--espacio-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+    max-height: clamp(260px, calc(100vh - 600px), 620px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--color-gris-200);
+    border-radius: var(--radio-md);
+    background: var(--superficie-sutil);
+}
+
+.soporte-conversacion:focus-visible {
+    outline: 2px solid var(--color-primario-oscuro);
+    outline-offset: 2px;
+}
+
+.soporte-burbuja {
+    max-width: 85%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+    padding: var(--espacio-md);
+    border-radius: var(--radio-lg);
+    border: 2px solid var(--color-gris-300);
+    background: var(--superficie);
+}
+
+/* Como un chat: lo propio a la derecha y en amarillo, lo del otro lado a la
+   izquierda y en blanco. La esquina de abajo, del lado de quien habla, va recta. */
+.soporte-burbuja--propia {
+    align-self: flex-end;
+    background: var(--acento-suave);
+    border-color: var(--color-primario-oscuro);
+    border-bottom-right-radius: var(--radio-sm);
+}
+
+.soporte-burbuja--otra {
+    align-self: flex-start;
+    background: var(--superficie);
+    border-color: var(--color-gris-300);
+    border-bottom-left-radius: var(--radio-sm);
+}
+
+.soporte-burbuja--propia .soporte-burbuja-autor {
+    align-self: flex-end;
+}
+
+.soporte-burbuja-autor {
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    color: var(--color-gris-700);
+}
+
+.soporte-burbuja-texto {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    color: var(--color-gris-900);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.soporte-adjunto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-sm);
+}
+
+.soporte-adjunto-boton {
+    max-width: 100%;
+    min-height: 36px;
+    padding: 0 var(--espacio-md);
+    border: 1px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.soporte-resuelto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+    padding: var(--espacio-md);
+    border-radius: var(--radio-md);
+    background: var(--estado-exito-fondo);
+    border: 1px solid var(--estado-exito-borde);
+}
+
+.soporte-resuelto p {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--estado-exito-texto);
+}
+
+/* ===== Responder ===== */
+.soporte-responder {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-sm);
+}
+
+.soporte-campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+}
+
+.soporte-label {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-900);
+}
+
+.soporte-input {
+    width: 100%;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.soporte-input:focus {
+    outline: none;
+    border-color: var(--color-primario-oscuro);
+}
+
+.soporte-responder-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+}
+
+.soporte-elegir {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--espacio-md);
+    border: 2px dashed var(--color-gris-300);
+    border-radius: var(--radio-md);
+    color: var(--color-gris-700);
+    font-size: var(--tamano-sm);
+    cursor: pointer;
+}
+
+.soporte-elegir input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.soporte-adjunto-elegido {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-sm);
+    min-width: 0;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+    overflow-wrap: anywhere;
+}
+
+.soporte-quitar {
+    min-height: 36px;
+    padding: 0 var(--espacio-sm);
+    border: none;
+    background: transparent;
+    color: var(--estado-error-texto);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+}
+
+.soporte-error {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--estado-error-texto);
+}
+
+.soporte-hilo-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-md);
+    padding-top: var(--espacio-md);
+    border-top: 1px solid var(--color-gris-200);
+}
+
+.soporte-confirmar {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-sm);
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+}
+
+.soporte-boton {
+    min-height: 44px;
+    padding: 0 var(--espacio-lg);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.soporte-boton:hover:not(:disabled) {
+    background: var(--acento-suave);
+    border-color: var(--color-primario-oscuro);
+}
+
+.soporte-boton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.soporte-boton--primario {
+    background: var(--color-primario);
+    border-color: var(--color-primario-oscuro);
+    color: var(--texto-sobre-marca);
+}
+
+.soporte-boton--primario:hover:not(:disabled) {
+    background: var(--color-primario-hover);
+}
+
+/* ===== Poco espacio (celular, o el menu abierto en una pantalla chica): una cosa a la vez ===== */
+@container soporte (max-width: 760px) {
+    .soporte-cuerpo {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .soporte--con-hilo .soporte-bandeja,
+    .soporte--con-hilo .soporte-filtros,
+    .soporte:not(.soporte--con-hilo) .soporte-detalle {
+        display: none;
+    }
+
+    .soporte-volver {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        margin: var(--espacio-sm) var(--espacio-md) 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: var(--texto-marca);
+        font-family: inherit;
+        font-size: var(--tamano-sm);
+        font-weight: var(--peso-bold);
+        cursor: pointer;
+    }
+
+    .soporte-hilo {
+        padding: var(--espacio-md);
+    }
+
+    .soporte-burbuja {
+        max-width: 90%;
+    }
+
+    .soporte-conversacion {
+        max-height: clamp(200px, calc(100dvh - 620px), 60vh);
+        padding: var(--espacio-sm);
+    }
+}

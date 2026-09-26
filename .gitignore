@@ -43,3 +43,8 @@ build/
 backups/
 
 # Documentacion: SI va al repo (es parte del producto).
+
+
+# carpetas no subidas
+docs/
+.vscode/

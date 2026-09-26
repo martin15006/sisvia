@@ -6,6 +6,7 @@ import AdminLayout from "../../components/AdminLayout/AdminLayout.jsx";
 import Toast from "../../components/Toast/Toast.jsx";
 import BotonExportar from "../../components/BotonExportar/BotonExportar.jsx";
 import ModalVehiculo from "./components/ModalVehiculo.jsx";
+import ModalBajaVehiculo from "./components/ModalBajaVehiculo.jsx";
 import "./VehiculosAdmin.css";
 
 const ESTADOS = {
@@ -31,8 +32,11 @@ const TIPOS_LABEL = {
 };
 
 function VehiculosAdmin() {
-    const { usuario } = useAuth();
+    const { usuario, empresaActiva } = useAuth();
     const navigate = useNavigate();
+    // HU-17.2: la baja por traspaso la hace solo el equipo SISVIA, dentro de la empresa.
+    const puedeDarDeBaja = usuario?.rol === "superadmin" && !!empresaActiva;
+    const [bajaDe, setBajaDe] = useState(null);
     const [vehiculos, setVehiculos] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
@@ -403,7 +407,7 @@ function VehiculosAdmin() {
                             return (
                                 <div
                                     key={v.id}
-                                    className={`vehiculo-card vehiculo-card-${estadoInfo.color} ${!v.activo ? "vehiculo-card-inactivo" : ""}`}
+                                    className={`vehiculo-card vehiculo-card-${estadoInfo.color} ${v.dado_de_baja ? "vehiculo-card-baja" : !v.activo ? "vehiculo-card-inactivo" : ""}`}
                                 >
                                     <div className="vehiculo-card-foto">
                                         {fotoPrincipal ? (
@@ -414,10 +418,16 @@ function VehiculosAdmin() {
                                                 <span className="vehiculo-card-sin-foto">Sin foto</span>
                                             </div>
                                         )}
-                                        <div className={`vehiculo-card-estado-badge vehiculo-card-badge-${estadoInfo.color}`}>
-                                            {estadoInfo.texto}
-                                            {v.nivel_criticidad > 0 && ` ${v.nivel_criticidad}%`}
-                                        </div>
+                                        {v.dado_de_baja ? (
+                                            <div className="vehiculo-card-estado-badge vehiculo-card-badge-gris">
+                                                Dado de baja por traspaso
+                                            </div>
+                                        ) : (
+                                            <div className={`vehiculo-card-estado-badge vehiculo-card-badge-${estadoInfo.color}`}>
+                                                {estadoInfo.texto}
+                                                {v.nivel_criticidad > 0 && ` ${v.nivel_criticidad}%`}
+                                            </div>
+                                        )}
                                         {v.es_vip && (
                                             <div
                                                 className="vehiculo-card-vip-badge"
@@ -453,6 +463,8 @@ function VehiculosAdmin() {
                                         >
                                             Detalle
                                         </button>
+                                        {/* HU-17.4: dado de baja, solo se consulta y se exporta */}
+                                        {!v.dado_de_baja && (<>
                                         <button
                                             className="vehiculo-card-accion"
                                             onClick={() => setVehiculoEnEdicion(v)}
@@ -480,6 +492,15 @@ function VehiculosAdmin() {
                                         >
                                             Eliminar
                                         </button>
+                                        {puedeDarDeBaja && (
+                                            <button
+                                                className="vehiculo-card-accion vehiculo-card-accion-danger"
+                                                onClick={() => setBajaDe(v)}
+                                            >
+                                                Dar de baja
+                                            </button>
+                                        )}
+                                        </>)}
                                         <BotonExportar
                                             base={`/export/vehiculo/${v.id}`}
                                             nombre={`vehiculo-${v.placa || v.id}`}
@@ -492,6 +513,17 @@ function VehiculosAdmin() {
                     </div>
                 )}
             </div>
+
+            <ModalBajaVehiculo
+                vehiculo={bajaDe}
+                empresa={empresaActiva?.nombre}
+                onCerrar={() => setBajaDe(null)}
+                onHecho={(v) => {
+                    setBajaDe(null);
+                    mostrarToast(`Vehículo ${v.placa} dado de baja por traspaso`, "advertencia");
+                    cargarVehiculos({ silencioso: true });
+                }}
+            />
 
             <ModalVehiculo
                 abierto={modalCrearAbierto}

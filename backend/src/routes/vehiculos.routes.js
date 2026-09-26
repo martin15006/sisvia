@@ -7,6 +7,7 @@ import {
     actualizarVehiculo,
     desactivarVehiculo,
     reactivarVehiculo,
+    darDeBajaVehiculo,
     eliminarVehiculo,
     subirFotos,
     eliminarFoto,
@@ -45,6 +46,7 @@ router.post("/", crearVehiculo);
 router.patch("/:id", actualizarVehiculo);
 router.patch("/:id/desactivar", desactivarVehiculo);
 router.patch("/:id/reactivar", reactivarVehiculo);
+router.patch("/:id/baja", darDeBajaVehiculo); // HU-17: solo el equipo SISVIA, dentro de la empresa
 
 router.delete("/:id", eliminarVehiculo);
 

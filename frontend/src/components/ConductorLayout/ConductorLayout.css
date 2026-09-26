@@ -48,6 +48,20 @@
     white-space: nowrap;
 }
 
+/* Marca + empresa del conductor (HU-08.1). Largo -> "…" (CB-16). */
+.cond-layout-marca-texto {
+    min-width: 0;
+    line-height: 1.15;
+}
+
+.cond-layout-org {
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .cond-layout-acciones {
     display: flex;
     align-items: center;
@@ -125,8 +139,9 @@
     .cond-layout-header {
         padding: var(--espacio-sm) var(--espacio-md);
     }
-    .cond-layout-titulo-app {
-        display: none; /* en movil solo se ve el logo, ahorra espacio */
+    .cond-layout-titulo-app,
+    .cond-layout-org {
+        display: none; /* en movil solo se ve el logo, ahorra espacio (la empresa va en el pie) */
     }
     /* Dejamos que el bloque de acciones se comprima (de base es flex-shrink:0),
        para que el header no desborde al sumarle el interruptor de tema. */

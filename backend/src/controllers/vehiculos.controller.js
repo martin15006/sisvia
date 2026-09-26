@@ -8,14 +8,30 @@ import {
 } from "../services/vehiculos.service.js";
 import { obtenerScope, aplicarScope, puedeAccederSede } from "../services/scope.service.js";
 import { normalizarPlaca, validarPlaca, validarColor } from "../utils/placa.js";
+import { filtroEmpresa } from '../services/scopeReglas.js';
+import { empresaDeSede } from '../services/scope.service.js';
+import { verificarLimite } from '../services/empresas.service.js';
+import { CODIGO_LIMITE } from '../services/limitesReglas.js';
+import { choquePlaca, validarMotivoBaja, bloqueoPorBaja, MENSAJES_VEHICULO } from '../services/vehiculosReglas.js';
+
+// RN-10: el vehiculo VIGENTE (no dado de baja) con esa placa, en todo SISVIA.
+// A proposito sin filtro de empresa: la placa es unica entre todas.
+const vigenteConPlaca = async (placa, excepto = null) => {
+    let query = supabase.from("vehiculos").select("id, empresa_id").eq("placa", placa).eq("dado_de_baja", false);
+    if (excepto) query = query.neq("id", excepto);
+    const { data } = await query.limit(1);
+    return data?.[0] || null;
+};
+// Dos altas a la vez con la misma placa: la segunda la frena el indice unico.
+const esPlacaRepetida = (error) => error?.code === "23505";
 
 // Verifica que el vehiculo exista Y que el admin tenga la sede del vehiculo
 // dentro de su scope territorial (Tarea #102). Recibe el usuario completo.
 const verificarAccesoVehiculo = async (vehiculoId, usuario) => {
     const { data: existente } = await supabase
         .from("vehiculos")
-        .select("sede_id, runt_url, placa")
-        .eq("id", vehiculoId)
+        .select("sede_id, runt_url, placa, dado_de_baja")
+        .eq("id", vehiculoId).match(filtroEmpresa(usuario))
         .single();
 
     if (!existente) return { error: "Vehiculo no encontrado", status: 404 };
@@ -24,6 +40,8 @@ const verificarAccesoVehiculo = async (vehiculoId, usuario) => {
     if (!permitido) {
         return { error: "No tienes acceso a este vehiculo", status: 403 };
     }
+    const baja = bloqueoPorBaja(existente);
+    if (baja) return { error: baja, status: 400 };
 
     return { vehiculo: existente };
 };
@@ -77,7 +95,7 @@ export const listarVehiculos = async (req, res) => {
 export const obtenerVehiculo = async (req, res) => {
     try {
         const { id } = req.params;
-        const vehiculo = await obtenerVehiculoCompleto(id);
+        const vehiculo = await obtenerVehiculoCompleto(id, req.usuario);
 
         if (!vehiculo) {
             return res.status(404).json({ error: "Vehiculo no encontrado" });
@@ -128,18 +146,6 @@ export const crearVehiculo = async (req, res) => {
             return res.status(400).json({ error: errorPlaca });
         }
 
-        const { data: existente } = await supabase
-            .from("vehiculos")
-            .select("id")
-            .eq("placa", placa)
-            .maybeSingle();
-
-        if (existente) {
-            return res.status(400).json({
-                error: "Ya existe un vehiculo con esa placa",
-            });
-        }
-
         // Sede del vehiculo (multinivel #102/#116): el Coordinador de sede
         // hereda SU sede; el Director Regional/Nacional lo elige y debe estar
         // dentro de su scope. (El alias 'admin' con sede tambien hereda el suyo.)
@@ -155,9 +161,20 @@ export const crearVehiculo = async (req, res) => {
             });
         }
 
+        const empresaVehiculo = await empresaDeSede(sedeFinal);
+
+        // HU-17.1 · RN-10: la placa no puede estar vigente en ninguna empresa.
+        const choque = choquePlaca(await vigenteConPlaca(placa), empresaVehiculo);
+        if (choque) return res.status(400).json(choque);
+
+        // HU-02.3 · RN-03: el vehiculo nuevo no puede pasar el limite de la empresa.
+        const limite = await verificarLimite(empresaVehiculo, "vehiculos");
+        if (limite) return res.status(403).json({ error: limite, codigo: CODIGO_LIMITE });
+
         const { data: nuevoVehiculo, error: errInsert } = await supabase
             .from("vehiculos")
             .insert({
+                empresa_id: empresaVehiculo,
                 placa,
                 vin,
                 marca,
@@ -176,13 +193,16 @@ export const crearVehiculo = async (req, res) => {
                 sede_id: sedeFinal,
                 // Vehiculo VIP / de direccion (Pool, ver docs/diseno-pool-vip.md):
                 // solo lo pueden marcar los Directores (Regional / Nacional).
-                es_vip: ["superadmin", "admin_departamental"].includes(req.usuario.rol)
+                es_vip: ["superadmin", "admin_empresa", "admin_departamental"].includes(req.usuario.rol)
                     ? req.body.es_vip === true
                     : false,
             })
             .select()
             .single();
 
+        if (esPlacaRepetida(errInsert)) {
+            return res.status(400).json(choquePlaca(await vigenteConPlaca(placa), empresaVehiculo) || { error: MENSAJES_VEHICULO.placaEnSisvia });
+        }
         if (errInsert) {
             return res.status(500).json({ error: errInsert.message });
         }
@@ -207,8 +227,8 @@ export const actualizarVehiculo = async (req, res) => {
 
         const { data: existente } = await supabase
             .from("vehiculos")
-            .select("sede_id, placa, tipo")
-            .eq("id", id)
+            .select("sede_id, placa, tipo, empresa_id, dado_de_baja")
+            .eq("id", id).match(filtroEmpresa(req.usuario))
             .single();
 
         if (!existente) {
@@ -221,12 +241,21 @@ export const actualizarVehiculo = async (req, res) => {
             });
         }
 
-        const { sede_id: _, id: __, created_at: ___, es_vip, ...datos } = req.body;
+        const baja = bloqueoPorBaja(existente);
+        if (baja) return res.status(400).json({ error: baja });
+
+        // Fuera de la edicion: la empresa (RN-01), el estado activo (se cambia con
+        // desactivar/reactivar, que respetan el limite de RN-03) y la baja (HU-17).
+        const {
+            sede_id: _, id: __, created_at: ___, es_vip,
+            empresa_id: _e, activo: _a, dado_de_baja: _b, baja_motivo: _bm, baja_en: _be, baja_por: _bp,
+            ...datos
+        } = req.body;
 
         // El marcado VIP / de direccion solo lo cambian los Directores; para el
         // resto se ignora (no se toca el valor existente).
         if (es_vip !== undefined &&
-            ["superadmin", "admin_departamental"].includes(req.usuario.rol)) {
+            ["superadmin", "admin_empresa", "admin_departamental"].includes(req.usuario.rol)) {
             datos.es_vip = es_vip === true;
         }
 
@@ -240,6 +269,12 @@ export const actualizarVehiculo = async (req, res) => {
         const errorColor = validarColor(datos.color);
         if (errorColor) return res.status(400).json({ error: errorColor });
 
+        // HU-17.1 · RN-10: cambiar la placa a una vigente en SISVIA tampoco.
+        if (datos.placa !== undefined && datos.placa !== existente.placa) {
+            const choque = choquePlaca(await vigenteConPlaca(datos.placa, id), existente.empresa_id, id);
+            if (choque) return res.status(400).json(choque);
+        }
+
         const { data, error } = await supabase
             .from("vehiculos")
             .update(datos)
@@ -247,6 +282,7 @@ export const actualizarVehiculo = async (req, res) => {
             .select()
             .single();
 
+        if (esPlacaRepetida(error)) return res.status(400).json({ error: MENSAJES_VEHICULO.placaEnSisvia });
         if (error) throw error;
 
         await registrarAuditoriaVehiculo({
@@ -269,8 +305,8 @@ export const desactivarVehiculo = async (req, res) => {
 
         const { data: existente } = await supabase
             .from("vehiculos")
-            .select("sede_id, placa")
-            .eq("id", id)
+            .select("sede_id, placa, dado_de_baja")
+            .eq("id", id).match(filtroEmpresa(req.usuario))
             .single();
 
         if (!existente) {
@@ -282,6 +318,8 @@ export const desactivarVehiculo = async (req, res) => {
                 error: "No tienes acceso a este vehiculo",
             });
         }
+        const baja = bloqueoPorBaja(existente);
+        if (baja) return res.status(400).json({ error: baja });
 
         const { error } = await supabase
             .from("vehiculos")
@@ -313,9 +351,9 @@ export const reactivarVehiculo = async (req, res) => {
         // podria reactivar vehiculos de OTRA sede (IDOR).
         const { data: existente } = await supabase
             .from("vehiculos")
-            .select("sede_id, placa")
-            .eq("id", id)
-            .single();
+            .select("sede_id, placa, activo, empresa_id, dado_de_baja")
+            .eq("id", id).match(filtroEmpresa(req.usuario))
+            .maybeSingle();
 
         if (!existente) {
             return res.status(404).json({ error: "Vehiculo no encontrado" });
@@ -325,6 +363,16 @@ export const reactivarVehiculo = async (req, res) => {
             return res.status(403).json({
                 error: "No tienes acceso a este vehiculo",
             });
+        }
+
+        // HU-17.4: dado de baja por traspaso, no vuelve.
+        const baja = bloqueoPorBaja(existente);
+        if (baja) return res.status(400).json({ error: baja });
+
+        // HU-02.3 · RN-03: reactivar tambien cuenta para el limite.
+        if (!existente.activo) {
+            const limite = await verificarLimite(existente.empresa_id, "vehiculos");
+            if (limite) return res.status(403).json({ error: limite, codigo: CODIGO_LIMITE });
         }
 
         const { error } = await supabase
@@ -354,8 +402,8 @@ export const eliminarVehiculo = async (req, res) => {
 
         const { data: existente } = await supabase
             .from("vehiculos")
-            .select("sede_id, placa, runt_url")
-            .eq("id", id)
+            .select("sede_id, placa, runt_url, dado_de_baja")
+            .eq("id", id).match(filtroEmpresa(req.usuario))
             .single();
 
         if (!existente) {
@@ -367,6 +415,8 @@ export const eliminarVehiculo = async (req, res) => {
                 error: "No tienes acceso a este vehiculo",
             });
         }
+        const baja = bloqueoPorBaja(existente);
+        if (baja) return res.status(400).json({ error: baja });
 
         const { data: fotos } = await supabase
             .from("fotos_vehiculo")
@@ -410,6 +460,57 @@ export const eliminarVehiculo = async (req, res) => {
     } catch (err) {
         console.error("Error eliminando vehiculo:", err);
         res.status(500).json({ error: "Error al eliminar vehiculo" });
+    }
+};
+
+// PATCH /api/vehiculos/:id/baja  { motivo }
+// HU-17.2-3 · RN-11: solo el equipo SISVIA, dentro de la empresa. La contraseña y
+// el registro (quien y cuando) los pone el middleware (soporte.service.js); aca
+// se suma la placa y el motivo. El vehiculo sale de la flota (activo = false),
+// la empresa conserva sus chequeos y la placa queda libre (RN-10).
+export const darDeBajaVehiculo = async (req, res) => {
+    try {
+        if (req.usuario.rol !== "superadmin") {
+            return res.status(403).json({ error: MENSAJES_VEHICULO.soloSisvia });
+        }
+        const errorMotivo = validarMotivoBaja(req.body?.motivo);
+        if (errorMotivo) return res.status(400).json({ error: errorMotivo });
+        const motivo = req.body.motivo.trim();
+
+        const { id } = req.params;
+        const { data: existente } = await supabase
+            .from("vehiculos")
+            .select("placa, dado_de_baja")
+            .eq("id", id).match(filtroEmpresa(req.usuario))
+            .maybeSingle();
+        if (!existente) return res.status(404).json({ error: "Vehiculo no encontrado" });
+        const baja = bloqueoPorBaja(existente);
+        if (baja) return res.status(400).json({ error: baja });
+
+        const { error } = await supabase
+            .from("vehiculos")
+            .update({
+                dado_de_baja: true,
+                activo: false,
+                baja_motivo: motivo,
+                baja_en: new Date().toISOString(),
+                baja_por: req.usuario.id,
+            })
+            .eq("id", id);
+        if (error) throw error;
+
+        await registrarAuditoriaVehiculo({
+            vehiculoId: id,
+            accionPorId: req.usuario.id,
+            accion: "baja_traspaso",
+            detalles: { placa: existente.placa, motivo },
+        });
+        res.locals.auditoria = { elemento: `${existente.placa} · Motivo: ${motivo}` };
+
+        res.json({ mensaje: `Vehículo ${existente.placa} dado de baja por traspaso` });
+    } catch (err) {
+        console.error("Error dando de baja el vehiculo:", err);
+        res.status(500).json({ error: "Error al dar de baja el vehículo" });
     }
 };
 
@@ -488,7 +589,7 @@ export const eliminarFoto = async (req, res) => {
         const { data: foto } = await supabase
             .from("fotos_vehiculo")
             .select("url, es_principal")
-            .eq("id", foto_id)
+            .eq("id", foto_id).match(filtroEmpresa(req.usuario))
             .eq("vehiculo_id", id)
             .single();
 
@@ -598,7 +699,7 @@ export const subirRunt = async (req, res) => {
         const { error } = await supabase
             .from("vehiculos")
             .update({ runt_url: resultado.secure_url })
-            .eq("id", id);
+            .eq("id", id).match(filtroEmpresa(req.usuario));
 
         if (error) throw error;
 
@@ -634,7 +735,7 @@ export const eliminarRunt = async (req, res) => {
         const { error } = await supabase
             .from("vehiculos")
             .update({ runt_url: null })
-            .eq("id", id);
+            .eq("id", id).match(filtroEmpresa(req.usuario));
 
         if (error) throw error;
 

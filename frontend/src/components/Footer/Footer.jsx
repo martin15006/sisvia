@@ -1,10 +1,13 @@
-import { MARCA, ORGANIZACION } from '../../lib/marca.js';
+import { MARCA } from '../../lib/marca.js';
+import { useAuth } from '../../hooks/useAuth.js';
+import { nombreOrganizacion } from '../../lib/organizacion.js';
 import './Footer.css';
 
 // Pie de pagina neutro: la marca del PRODUCTO a la izquierda y el nombre de la
-// ORGANIZACION que lo usa a la derecha. Sin logos de terceros: si un cliente
-// quiere el suyo, se cambia ORGANIZACION y se sube su logo a /public.
+// ORGANIZACION que lo usa a la derecha: la empresa del usuario (HU-08.1).
 function Footer() {
+    const { usuario, empresaActiva } = useAuth();
+    const organizacion = nombreOrganizacion(usuario, empresaActiva);
     return (
         <footer className='footer'>
             <div className='footer-marca'>
@@ -12,7 +15,7 @@ function Footer() {
                 <span className='footer-nombre'>{MARCA.nombre}</span>
             </div>
             <p className='footer-texto'>
-                {MARCA.lema} · {ORGANIZACION}
+                {MARCA.lema}{organizacion ? ` · ${organizacion}` : ''}
             </p>
         </footer>
     );

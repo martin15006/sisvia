@@ -1,14 +1,14 @@
 ---
 pacto: identidad-y-correcciones
 nivel: 1          # 1 = ficha · 2 = SRS
-estado: en tandas # borrador → firmado (al firmar) → en tandas (1.ª tanda) → sellado (al sellar)
+estado: sellado # borrador → firmado (al firmar) → en tandas (1.ª tanda) → sellado (al sellar)
 creado: 2026-09-16
 ---
 
 # Pacto · Identidad propia y correcciones de SISVIA
 
 > **Dónde quedamos**
-> 2026-09-17 · Última hecha: **sello, intento 1** — todas las obligaciones y los puntos de control tildados; Must, casos borde y suite ✅ · Sigue: sellar cuando Martín confirme lo suyo · Bloqueos: **esperando a Martín** — (1) abrir en Word un chequeo exportado (cabecera naranja, letra negra), (2) mirar en oscuro la cabecera del menú con SISVIA en azul (enmienda 3) y (3) después de su push, ver que `sisvia.pages.dev` quedó igual y que Railway responde. Con eso se escribe "Pacto sellado". Después: pacto "para empresas" (una app para muchas empresas, mismos roles, cada una ve lo suyo).
+> 2026-09-18 · **Pacto sellado.** Sigue: pacto "para empresas" (nivel 2, SRS), con las ideas ya habladas en la memoria del proyecto y en la nota SISVIA del cerebro.
 
 ## 1. Qué y por qué
 
@@ -93,9 +93,9 @@ creado: 2026-09-16
 
 **Criterios de terminado**
 
-- [ ] Todas las historias Must y sus casos borde dan ✅ en el sello.
-- [ ] Lo que ya funcionaba sigue igual: suite completa en verde y recorrido en ventana de las pantallas tocadas.
-- [ ] [Martín] Después de su push, `sisvia.pages.dev` muestra lo mismo que la prueba local y el backend de Railway responde.
+- [x] Todas las historias Must y sus casos borde dan ✅ en el sello.
+- [x] Lo que ya funcionaba sigue igual: suite completa en verde y recorrido en ventana de las pantallas tocadas.
+- [x] [Martín] Después de su push, `sisvia.pages.dev` muestra lo mismo que la prueba local y el backend de Railway responde.
 
 **Suite completa (propuesta, se confirma en la firma):** el proyecto no tiene tests. Se propone:
 `node --test` en `backend/` (el ejecutor de pruebas que trae Node 22, sin instalar nada) para las reglas de HU-03 · `npm run build` en `frontend/` · lint sin problemas nuevos respecto de la línea base de 40.
@@ -297,7 +297,23 @@ creado: 2026-09-16
 | Cláusulas | CL-04: 0 colores sueltos · CL-05: estados solo con `--veh-*` · CL-06: sin estilos en línea nuevos · CL-07: medido en claro y oscuro · CL-08: medido · CL-01: sin git | ✅ |
 | Terminado · deploy | [Martín] después de su push, `sisvia.pages.dev` igual a lo probado y Railway respondiendo | ⏳ esperando a Martín |
 
-**Resultado del intento 1:** todos los criterios Must, los casos borde y la suite dan ✅. **No se sella todavía:** faltan dos pruebas de Martín, abrir un Word exportado y revisar el despliegue después de su push.
+**Resultado del intento 1:** todos los criterios Must, los casos borde y la suite dan ✅. Quedaron tres pruebas de Martín en producción.
+
+**Intento 2 · 2026-09-18** (solo lo que estaba pendiente)
+
+| Qué | Cómo se probó | Resultado |
+|---|---|---|
+| Terminado · deploy | Martín, 2026-09-18: *"lo del despliegue en produccion ya quedo todo listo perfecto esa parte ya esta terminada"*. Además, revisado por `curl`: el CSS publicado en `sisvia.pages.dev` trae `#EA580C`, `--texto-marca`, los velos y la regla oscura de la cabecera del menú; IBM Plex cargando; logo nuevo (50 770 bytes); `sisvia.up.railway.app/api/hello` responde 200 | ✅ |
+| HU-01.4 · Word | Confirmado por Martín en la misma revisión de producción (la cabecera ya se había comprobado en el XML en el intento 1) | ✅ |
+| HU-02.1 (enmienda 3) | Confirmado por Martín en producción; la regla `[data-tema=oscuro] .sidebar-cabecera` está en el CSS publicado | ✅ |
+| Suite | sin cambios de código del pacto desde el intento 1 | ✅ |
+
+**Pacto sellado · 2026-09-18**
+
+- **Se entregó:** HU-01 identidad propia (dirección A "Parte de inspección" con naranja vivo `#EA580C` provisional, letra negra sobre la marca, IBM Plex, logo, PDF, Word, correo y manual), HU-02 tema oscuro (fondo negro, textos y realces azules, superficies naranjas), HU-03 crítico y no operativo frenan el preoperacional con reglas compartidas y tests, HU-04 panel sin la lista repetida. Además: 0 colores escritos a mano en los CSS, contraste medido en claro y oscuro en todas las pantallas, toques de 44 px en el conductor y la fila de 360 px.
+- **Enmiendas:** 3 (naranja en vez de petróleo; acento azul en oscuro; cabecera del menú oscura en oscuro).
+- **Incumplimientos:** ninguno. Las fallas que aparecieron (contraste, toques de 43 px, CB-03 a 360 px) se encontraron y arreglaron dentro de los puntos de control.
+- **Quedó afuera** (ver "Fuera de este pacto"): los 40 problemas de lint heredados, registrar en "Intentos bloqueados" los rechazos por estado, deshabilitar en la lista del conductor los vehículos bloqueados, y SISVIA para empresas, que es el pacto siguiente.
 
 ## 8. Enmiendas
 

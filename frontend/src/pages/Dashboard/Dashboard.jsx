@@ -8,12 +8,13 @@
 // actualizados sin tener que recargar manualmente.
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.js";
 import { api } from "../../lib/api.js";
 import AdminLayout from "../../components/AdminLayout/AdminLayout.jsx";
 import Toast from "../../components/Toast/Toast.jsx";
 import ModalInformeSuperior from "./ModalInformeSuperior.jsx";
+import UsoLimite from "../../components/UsoLimite/UsoLimite.jsx";
 import "./Dashboard.css";
 
 // Los cinco estados en orden de severidad. El mismo orden manda en la franja
@@ -66,8 +67,11 @@ const textoLicencia = (dias) => {
 };
 
 function Dashboard() {
-    const { usuario } = useAuth();
+    const { usuario, empresaActiva } = useAuth();
     const navigate = useNavigate();
+    // HU-16: el superadmin ve el panel de una empresa entrando a ella; afuera, su
+    // inicio es el modulo Empresas.
+    const superadminAfuera = usuario?.rol === "superadmin" && !empresaActiva;
 
     const [stats, setStats] = useState(null);
     const [cargando, setCargando] = useState(true);
@@ -88,19 +92,20 @@ function Dashboard() {
     };
 
     useEffect(() => {
-        if (usuario) cargarStats();
+        if (usuario && !superadminAfuera) cargarStats();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [usuario]);
 
     // Auto-refresh cada 60s para mantener los numeros del dia actualizados
     useEffect(() => {
-        if (!usuario) return;
+        if (!usuario || superadminAfuera) return;
         const interval = setInterval(cargarStats, 60000);
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [usuario]);
 
     if (!usuario) return null;
+    if (superadminAfuera) return <Navigate to="/admin/empresas" replace />;
 
     // Conteo total de alertas para mostrar al usuario en el header de la seccion.
     // chequeos_abandonados puede no venir en backends viejos -> uso optional chaining.
@@ -129,8 +134,8 @@ function Dashboard() {
                         </p>
                     )}
                 </div>
-                {/* El administrador general no tiene superior a quién escalar -> no se le muestra */}
-                {usuario.rol !== "superadmin" && (
+                {/* El superadmin y el Administrador de empresa no tienen superior a quién escalar -> no se les muestra */}
+                {usuario.rol !== "superadmin" && usuario.rol !== "admin_empresa" && (
                     <button
                         className="dashboard-boton-informe"
                         onClick={() => setModalInforme(true)}
@@ -140,6 +145,15 @@ function Dashboard() {
                     </button>
                 )}
             </div>
+
+            {/* ===== Plan de la empresa (HU-02.5, solo el Administrador de empresa) ===== */}
+            {stats?.limites && (
+                <section className="dashboard-plan animar-fade-in" aria-label="Uso del plan de tu empresa">
+                    <UsoLimite etiqueta="Sedes" usados={stats.limites.sedes.usadas} limite={stats.limites.sedes.limite} />
+                    <UsoLimite etiqueta="Vehículos" usados={stats.limites.vehiculos.usados} limite={stats.limites.vehiculos.limite} />
+                    <p className="dashboard-plan-nota">Para ampliar tu plan, comunícate con SISVIA.</p>
+                </section>
+            )}
 
             {/* ===== Estado de error ===== */}
             {error && (

@@ -5,14 +5,46 @@
 // ocultarse en el futuro — por ahora mostramos todos porque todos los modulos
 // que tenemos pertenecen al ambito del admin.
 
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { ETIQUETA_ROL, enSuplencia, cubreVariasSedes } from "../../lib/roles.js";
-import { MARCA, ORGANIZACION } from "../../lib/marca.js";
+import { MARCA } from "../../lib/marca.js";
+import { nombreOrganizacion } from "../../lib/organizacion.js";
+import { useAuth } from "../../hooks/useAuth.js";
+import { api } from "../../lib/api.js";
+import { escucharCambioBuzon } from "../../lib/buzon.js";
 import "./Sidebar.css";
 
 // SVGs inline para iconos del menu — todos siguen el mismo estilo "stroke" para
 // que se vean coherentes entre si y con el resto del proyecto.
 const Icono = {
+    actividad: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <polyline points="12 7 12 12 15.5 14" />
+        </svg>
+    ),
+    registroEquipo: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="8" cy="15" r="4" />
+            <path d="M11 12l9-9" />
+            <path d="M17 6l3 3" />
+            <path d="M15 8l2 2" />
+        </svg>
+    ),
+    soporte: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+    ),
+    empresas: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 21h18" />
+            <path d="M5 21V7l7-4v18" />
+            <path d="M19 21V11l-7-4" />
+            <path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
+        </svg>
+    ),
     dashboard: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="3" y="3" width="7" height="9" />
@@ -99,16 +131,28 @@ const Icono = {
 //     rutas siguen accesibles; solo se ocultan del menu).
 //   - La geografia (ciudades/sedes) es exclusiva del superadmin.
 // `roles` ausente = visible para todos los admins.
-const SOLO_SEDE = ["admin", "admin_sede"];
+// El Administrador de empresa tambien ve la operacion de toda su empresa (HU-09.1).
+const SOLO_SEDE = ["admin", "admin_sede", "admin_empresa"];
 
 const ITEMS = [
-    { ruta: "/dashboard", etiqueta: "Dashboard", icono: Icono.dashboard, end: true },
-    { ruta: "/admin/vehiculos", etiqueta: "Gestión de vehículos", icono: Icono.vehiculos },
+    // soloDentro: el superadmin los ve solo cuando entro a una empresa (HU-16).
+    { ruta: "/dashboard", etiqueta: "Dashboard", icono: Icono.dashboard, end: true, soloDentro: true },
+    // Modulo Empresas (pacto para-empresas, HU-01): solo el equipo SISVIA.
+    { ruta: "/admin/empresas", etiqueta: "Empresas", icono: Icono.empresas, roles: ["superadmin"] },
+    { ruta: "/admin/vehiculos", etiqueta: "Gestión de vehículos", icono: Icono.vehiculos, soloDentro: true },
     { ruta: "/admin/usuarios", etiqueta: "Gestión de usuarios", icono: Icono.usuarios },
-    { ruta: "/admin/geografia", etiqueta: "Gestión de geografía", icono: Icono.geografia, roles: ["superadmin", "admin_departamental"] },
-    { ruta: "/admin/catalogo", etiqueta: "Catálogo del chequeo", icono: Icono.catalogo, roles: SOLO_SEDE },
+    { ruta: "/admin/geografia", etiqueta: "Gestión de geografía", icono: Icono.geografia, roles: ["superadmin", "admin_empresa"] },
+    // Catalogo (HU-12 a HU-14): todos los admins. El superadmin afuera maneja el base;
+    // el Director Regional y el Coordinador solo lo miran (HU-13.5).
+    { ruta: "/admin/catalogo", etiqueta: "Catálogo del chequeo", icono: Icono.catalogo },
     { ruta: "/admin/chequeos", etiqueta: "Chequeos realizados", icono: Icono.chequeos, end: true, roles: SOLO_SEDE },
     { ruta: "/admin/chequeos/intentos-bloqueados", etiqueta: "Intentos bloqueados", icono: Icono.bloqueados, roles: SOLO_SEDE },
+    // HU-19: la Actividad de la empresa, solo su Administrador (y el equipo SISVIA adentro).
+    { ruta: "/admin/actividad", etiqueta: "Actividad", icono: Icono.actividad, roles: ["admin_empresa"] },
+    // HU-20.1: el Registro del equipo, solo el dueño de SISVIA.
+    { ruta: "/admin/registro-equipo", etiqueta: "Registro del equipo", icono: Icono.registroEquipo, roles: ["superadmin"], soloAfuera: true, soloDueno: true },
+    // HU-18: los mensajes a SISVIA. El equipo SISVIA los ve afuera de las empresas.
+    { ruta: "/admin/soporte", etiqueta: "Soporte", icono: Icono.soporte, roles: ["superadmin", "admin_empresa"], soloAfuera: true },
     { ruta: "/admin/notificaciones", etiqueta: "Notificaciones", icono: Icono.notificaciones },
     { ruta: "/admin/ajustes", etiqueta: "Ajustes", icono: Icono.ajustes },
     { ruta: "/admin/mi-perfil", etiqueta: "Mi perfil", icono: Icono.miPerfil },
@@ -119,7 +163,20 @@ function Sidebar({ abierto, onCerrar, usuario, onLogout }) {
     // El suplente (conductor del pool con suplencia vigente) ve el menú de un
     // Coordinador de sede (admin_sede) de su sede.
     const suplente = enSuplencia(usuario);
-    const rolUI = suplente ? "admin_sede" : usuario.rol;
+    // El superadmin dentro de una empresa ve el menu de su Administrador (HU-16.1);
+    // afuera, lo del equipo SISVIA: Empresas, usuarios, geografia y lo propio.
+    const { empresaActiva } = useAuth();
+    const dentro = usuario.rol === "superadmin" && !!empresaActiva;
+    const rolUI = suplente ? "admin_sede" : dentro ? "admin_empresa" : usuario.rol;
+    const afueraSuperadmin = usuario.rol === "superadmin" && !dentro;
+    // HU-18.4: cuantos mensajes nuevos esperan al equipo SISVIA.
+    const [nuevos, setNuevos] = useState(0);
+    useEffect(() => {
+        if (!afueraSuperadmin) return undefined;
+        const contar = () => api("/buzon/nuevos").then((r) => setNuevos(r.nuevos || 0)).catch(() => {});
+        contar();
+        return escucharCambioBuzon(contar);
+    }, [afueraSuperadmin]);
     const variosSedes = cubreVariasSedes(usuario);
     // Nombre de la sede que está gestionando ahora (sede activa del selector).
     const sedeActivaNombre = suplente
@@ -138,7 +195,10 @@ function Sidebar({ abierto, onCerrar, usuario, onLogout }) {
                 />
                 <div className="sidebar-cabecera-texto">
                     <div className="sidebar-cabecera-titulo">{MARCA.nombre}</div>
-                    <div className="sidebar-cabecera-org">{ORGANIZACION}</div>
+                    {/* HU-08.1,4: la empresa del usuario (o la que entro el superadmin); CB-16: largo -> "…" */}
+                    <div className="sidebar-cabecera-org" title={nombreOrganizacion(usuario, empresaActiva)}>
+                        {nombreOrganizacion(usuario, empresaActiva)}
+                    </div>
                 </div>
             </div>
 
@@ -146,7 +206,7 @@ function Sidebar({ abierto, onCerrar, usuario, onLogout }) {
             <nav className="sidebar-nav">
                 <ul className="sidebar-lista">
                     {ITEMS.filter(
-                        (item) => !item.roles || item.roles.includes(rolUI)
+                        (item) => (!item.roles || item.roles.includes(rolUI)) && !(item.soloDentro && afueraSuperadmin) && !(item.soloAfuera && dentro) && !(item.soloDueno && usuario.es_dueno !== true)
                     ).map((item) => (
                         <li key={item.ruta}>
                             <NavLink
@@ -162,6 +222,9 @@ function Sidebar({ abierto, onCerrar, usuario, onLogout }) {
                             >
                                 <span className="sidebar-item-icono">{item.icono}</span>
                                 <span className="sidebar-item-etiqueta">{item.etiqueta}</span>
+                                {item.ruta === "/admin/soporte" && afueraSuperadmin && nuevos > 0 && (
+                                    <span className="sidebar-item-insignia" aria-label={`${nuevos} ${nuevos === 1 ? "nuevo" : "nuevos"}`}>{nuevos}</span>
+                                )}
                             </NavLink>
                         </li>
                     ))}

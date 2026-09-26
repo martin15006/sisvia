@@ -1,7 +1,9 @@
 import { supabase } from '../../config/supabase.js';
-import { ORGANIZACION, LOGO_PATH } from '../../config/marca.js';
+import { LOGO_PATH } from '../../config/marca.js';
+import { organizacionDeUsuario, lineaOrigen } from '../organizacionReglas.js';
 
-export { LOGO_PATH };
+// Las reglas del nombre (puras, con tests) viven en organizacionReglas.js.
+export { LOGO_PATH, organizacionDeUsuario, lineaOrigen };
 
 // Paleta del producto para los documentos (misma marca que la app:
 // naranja vivo con letra negra encima; el blanco sobre naranja no se lee).
@@ -18,28 +20,23 @@ export const COLORES = {
     critico: '#A32D2D',
 };
 
-// Resuelve la sede de un documento a { sedeNombre, departamentoNombre } para el
-// header dinamico "{Organizacion} · Regional {departamento} · {Sede}".
+// Resuelve la sede de un documento a { organizacion, sedeNombre, departamentoNombre }
+// para el header "{Empresa} · Regional {departamento} · {Sede}" (HU-08.2): la
+// organizacion es la empresa DUENA de la sede, no un nombre fijo del servidor.
 export const cabeceraDeSede = async (sedeId) => {
-    if (!sedeId) return { sedeNombre: '', departamentoNombre: '' };
+    if (!sedeId) return { organizacion: '', sedeNombre: '', departamentoNombre: '' };
     const { data } = await supabase
         .from('sedes')
-        .select('nombre, ciudad:ciudad_id ( departamento:departamento_id ( nombre ) )')
+        .select('nombre, ciudad:ciudad_id ( departamento:departamento_id ( nombre ) ), empresa:empresa_id ( nombre )')
         .eq('id', sedeId)
         .maybeSingle();
     return {
+        organizacion: data?.empresa?.nombre || '',
         sedeNombre: data?.nombre || '',
         departamentoNombre: data?.ciudad?.departamento?.nombre || '',
     };
 };
 
-// "Mi organizacion · Regional Tolima · Sede Ibague"
-export const lineaOrigen = ({ sedeNombre, departamentoNombre }) => {
-    const partes = [ORGANIZACION];
-    if (departamentoNombre) partes.push(`Regional ${departamentoNombre}`);
-    if (sedeNombre) partes.push(sedeNombre);
-    return partes.join(' · ');
-};
 
 export const fechaLarga = (iso) => {
     if (!iso) return '—';
@@ -65,22 +62,23 @@ export const etiquetaEstado = (e) => ESTADOS_VEHICULO[e] || e || '—';
 // sede): admin de sede -> su sede; Director Regional -> su departamento;
 // superadmin -> solo el nombre de la organizacion. El suplente usa la sede que cubre.
 export const origenDeUsuario = async (usuario) => {
+    const organizacion = organizacionDeUsuario(usuario);
     const sedeId = usuario.sedeActiva || usuario.sede_id;
-    if (sedeId) return cabeceraDeSede(sedeId);
+    if (sedeId) return { ...(await cabeceraDeSede(sedeId)), organizacion };
     if (usuario.departamento_id) {
         const { data } = await supabase
             .from('departamentos')
             .select('nombre')
             .eq('id', usuario.departamento_id)
             .maybeSingle();
-        return { sedeNombre: '', departamentoNombre: data?.nombre || '' };
+        return { organizacion, sedeNombre: '', departamentoNombre: data?.nombre || '' };
     }
-    return { sedeNombre: '', departamentoNombre: '' };
+    return { organizacion, sedeNombre: '', departamentoNombre: '' };
 };
 
 // Cargo legible (espejo de frontend/src/lib/roles.js). Un conductor del pool se
 // muestra como "Pool de transporte".
-const ETIQUETA_ROL = { superadmin: 'Administrador general', admin_departamental: 'Director Regional', admin_sede: 'Coordinador de sede', admin: 'Coordinador de sede', conductor: 'Conductor' };
+const ETIQUETA_ROL = { superadmin: 'Administrador general', admin_empresa: 'Administrador de empresa', admin_departamental: 'Director Regional', admin_sede: 'Coordinador de sede', admin: 'Coordinador de sede', conductor: 'Conductor' };
 export const etiquetaCargo = (rol, esPool) =>
     rol === 'conductor' && esPool ? 'Pool de transporte' : (ETIQUETA_ROL[rol] || rol || '—');
 

@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.js";
 import { etiquetaCargoCorta } from "../../lib/roles.js";
 import { MARCA } from "../../lib/marca.js";
+import { nombreOrganizacion } from "../../lib/organizacion.js";
 import Footer from "../Footer/Footer.jsx";
 import ToggleTema from "../ToggleTema/ToggleTema.jsx";
 import "./ConductorLayout.css";
@@ -37,10 +38,14 @@ function ConductorLayout({ children }) {
                 <div className="cond-layout-logo-wrapper">
                     <img
                         src="/logo.png"
-                        alt="SISVIA"
+                        alt={MARCA.nombre}
                         className="cond-layout-logo"
                     />
-                    <div className="cond-layout-titulo-app">{MARCA.nombre}</div>
+                    {/* HU-08.1: debajo de la marca, la empresa del conductor */}
+                    <div className="cond-layout-marca-texto">
+                        <div className="cond-layout-titulo-app">{MARCA.nombre}</div>
+                        <div className="cond-layout-org" title={nombreOrganizacion(usuario)}>{nombreOrganizacion(usuario)}</div>
+                    </div>
                 </div>
 
                 <div className="cond-layout-acciones">

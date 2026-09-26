@@ -24,11 +24,8 @@ export const MARCA = {
     prefijoStorage: "sisvia",
 };
 
-// Nombre de la ORGANIZACION que usa el sistema (el cliente, no el producto).
-// Sale en la cabecera de los PDF/Word y en el sidebar. Se configura por
-// entorno para que el mismo build sirva a varios clientes.
-export const ORGANIZACION =
-    import.meta.env.VITE_ORG_NOMBRE || "Mi organización";
+// El nombre de la ORGANIZACION (el cliente) ya no va aca: es la empresa de cada
+// usuario (pacto para-empresas, HU-08). Ver lib/organizacion.js.
 
 // Helper para armar claves de storage sin repetir el prefijo.
 export const claveStorage = (nombre) => `${MARCA.prefijoStorage}_${nombre}`;

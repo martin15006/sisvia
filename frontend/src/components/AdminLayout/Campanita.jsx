@@ -49,7 +49,7 @@ function Campanita() {
 
     const tieneNotificaciones = contadorNoLeidas > 0;
     const titulo = tieneNotificaciones
-        ? `Tienes ${contadorNoLeidas} notificación${contadorNoLeidas === 1 ? "" : "es"} sin leer`
+        ? `Tienes ${contadorNoLeidas} ${contadorNoLeidas === 1 ? "notificación" : "notificaciones"} sin leer`
         : "No tienes notificaciones nuevas";
 
     return (

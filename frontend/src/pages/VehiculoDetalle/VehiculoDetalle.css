@@ -158,7 +158,8 @@
 }
 
 .vehiculo-detalle-hero-foto-placeholder {
-    color: var(--color-gris-500);
+    /* gris-700: con gris-500 daba 3.47:1 en claro (CL-07 pide 4.5) */
+    color: var(--color-gris-700);
     font-size: var(--tamano-md);
     font-weight: var(--peso-medio);
 }
@@ -208,6 +209,28 @@
 .vehiculo-detalle-badge-amarillo { background: var(--veh-alerta); color: var(--veh-tinta); }
 .vehiculo-detalle-badge-rojo { background: var(--veh-critico); color: var(--veh-tinta); animation: pulse 2s infinite; }
 .vehiculo-detalle-badge-oscuro { background: var(--veh-no-operativo); color: var(--veh-tinta); }
+
+/* HU-17.3: la baja por traspaso, con quien, cuando y el motivo */
+.vehiculo-detalle-baja {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+    padding: var(--espacio-md);
+    border: 2px dashed var(--color-gris-300);
+    border-radius: var(--radio-md);
+}
+
+.vehiculo-detalle-baja-texto {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-900);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.vehiculo-detalle-baja .vehiculo-detalle-badge-inactivo {
+    align-self: flex-start;
+}
 
 .vehiculo-detalle-badge-inactivo {
     display: inline-block;

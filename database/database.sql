@@ -318,6 +318,10 @@ CREATE TABLE IF NOT EXISTS chequeos_preoperacionales (
 
     notas_generales         TEXT,
 
+    -- Items que le tocaron al iniciar (RN-07 del pacto para-empresas): el cierre
+    -- espera esas respuestas y un cambio del catalogo no lo afecta (CB-04).
+    catalogo_items          INTEGER[],
+
     -- Timestamps
     created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -661,3 +665,456 @@ ALTER TABLE intentos_login              ENABLE ROW LEVEL SECURITY;
 --   seeds/03_preguntas_aptitud.sql
 --   seeds/04_regiones.sql
 --   seeds/05_departamentos.sql
+
+-- ==========================================================================
+-- EMPRESAS (2026-09-18, pacto para-empresas)
+-- Igual a migrations/2026-09-18_empresas.sql. Crea la empresa "SISVIA" y deja
+-- todo lo que se cargue sin empresa_id dentro de ella.
+-- ==========================================================================
+
+BEGIN;
+
+-- ---------------------------------------------------------------------------
+-- 1. Empresas
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS empresas (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre              TEXT NOT NULL,
+    nit                 TEXT,
+    ciudad_id           UUID REFERENCES ciudades(id) ON DELETE SET NULL,
+    telefono            TEXT,
+    correo              TEXT,
+    limite_sedes        INTEGER NOT NULL CHECK (limite_sedes >= 1),
+    limite_vehiculos    INTEGER NOT NULL CHECK (limite_vehiculos >= 1),
+    activa              BOOLEAN NOT NULL DEFAULT true,
+    desactivada_en      TIMESTAMPTZ,
+    ultimo_respaldo_en  TIMESTAMPTZ,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Nombre unico sin importar mayusculas (CB-14).
+CREATE UNIQUE INDEX IF NOT EXISTS empresas_nombre_unico ON empresas (lower(nombre));
+ALTER TABLE empresas ENABLE ROW LEVEL SECURITY;
+
+-- Empresa inicial: todo lo que existe hoy es de ella (HU-07).
+INSERT INTO empresas (nombre, limite_sedes, limite_vehiculos)
+SELECT 'SISVIA',
+       GREATEST(1, (SELECT count(*) FROM sedes WHERE activo)),
+       GREATEST(1, (SELECT count(*) FROM vehiculos WHERE activo))
+WHERE NOT EXISTS (SELECT 1 FROM empresas WHERE lower(nombre) = 'sisvia');
+
+-- ---------------------------------------------------------------------------
+-- 2. empresa_id en los datos de cada empresa
+--    Valor por defecto = "SISVIA": el codigo viejo no la conoce y sigue andando.
+--    El codigo nuevo siempre la manda explicita.
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE
+    v_sisvia UUID := (SELECT id FROM empresas WHERE lower(nombre) = 'sisvia');
+    v_tabla  TEXT;
+BEGIN
+    FOREACH v_tabla IN ARRAY ARRAY['sedes', 'vehiculos', 'chequeos_preoperacionales', 'intentos_chequeo_bloqueado', 'suplencias'] LOOP
+        EXECUTE format('ALTER TABLE %I ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE', v_tabla);
+        EXECUTE format('UPDATE %I SET empresa_id = %L WHERE empresa_id IS NULL', v_tabla, v_sisvia);
+        EXECUTE format('ALTER TABLE %I ALTER COLUMN empresa_id SET DEFAULT %L', v_tabla, v_sisvia);
+        EXECUTE format('ALTER TABLE %I ALTER COLUMN empresa_id SET NOT NULL', v_tabla);
+        EXECUTE format('CREATE INDEX IF NOT EXISTS idx_%s_empresa ON %I (empresa_id)', v_tabla, v_tabla);
+    END LOOP;
+
+    -- Usuarios: el superadmin (equipo SISVIA) no tiene empresa; todos los demas si.
+    ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE;
+    UPDATE usuarios SET empresa_id = v_sisvia WHERE empresa_id IS NULL AND rol <> 'superadmin';
+    EXECUTE format('ALTER TABLE usuarios ALTER COLUMN empresa_id SET DEFAULT %L', v_sisvia);
+    CREATE INDEX IF NOT EXISTS idx_usuarios_empresa ON usuarios (empresa_id);
+END $$;
+
+-- El default de usuarios pondria empresa a un superadmin nuevo: se la saca el
+-- trigger, y la regla asegura que nadie mas quede sin empresa.
+CREATE OR REPLACE FUNCTION usuarios_superadmin_sin_empresa() RETURNS trigger AS $$
+BEGIN
+    IF NEW.rol = 'superadmin' THEN
+        NEW.empresa_id := NULL;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_usuarios_superadmin_sin_empresa ON usuarios;
+CREATE TRIGGER trg_usuarios_superadmin_sin_empresa
+    BEFORE INSERT OR UPDATE OF rol, empresa_id ON usuarios
+    FOR EACH ROW EXECUTE FUNCTION usuarios_superadmin_sin_empresa();
+
+ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_empresa_segun_rol;
+ALTER TABLE usuarios ADD CONSTRAINT usuarios_empresa_segun_rol
+    CHECK (rol = 'superadmin' OR empresa_id IS NOT NULL);
+
+-- ---------------------------------------------------------------------------
+-- 3. Rol nuevo: Administrador de empresa
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE v_nombre TEXT;
+BEGIN
+    SELECT conname INTO v_nombre
+    FROM pg_constraint
+    WHERE conrelid = 'usuarios'::regclass AND contype = 'c'
+      AND pg_get_constraintdef(oid) LIKE '%superadmin%' AND pg_get_constraintdef(oid) LIKE '%conductor%';
+    IF v_nombre IS NOT NULL THEN
+        EXECUTE format('ALTER TABLE usuarios DROP CONSTRAINT %I', v_nombre);
+    END IF;
+END $$;
+ALTER TABLE usuarios ADD CONSTRAINT usuarios_rol_check CHECK (rol IN (
+    'superadmin', 'admin_empresa', 'admin_departamental', 'admin_sede',
+    'admin',  -- alias historico = admin_sede
+    'conductor'
+));
+
+-- ---------------------------------------------------------------------------
+-- 4. Catalogo: base (empresa_id vacio) y propio de cada empresa
+-- ---------------------------------------------------------------------------
+ALTER TABLE categorias_chequeo ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE items_chequeo      ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE;
+ALTER TABLE preguntas_aptitud  ADD COLUMN IF NOT EXISTS empresa_id UUID REFERENCES empresas(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_categorias_empresa ON categorias_chequeo (empresa_id);
+CREATE INDEX IF NOT EXISTS idx_items_empresa      ON items_chequeo (empresa_id);
+CREATE INDEX IF NOT EXISTS idx_preguntas_empresa  ON preguntas_aptitud (empresa_id);
+
+-- El nombre de categoria era unico en todo el sistema; ahora es unico dentro
+-- del catalogo base y dentro de cada empresa. (Que una propia no repita el
+-- nombre de una base lo controla la app: CB-08.)
+ALTER TABLE categorias_chequeo DROP CONSTRAINT IF EXISTS categorias_chequeo_nombre_key;
+CREATE UNIQUE INDEX IF NOT EXISTS categorias_nombre_por_catalogo
+    ON categorias_chequeo (COALESCE(empresa_id, '00000000-0000-0000-0000-000000000000'::uuid), lower(nombre));
+
+CREATE TABLE IF NOT EXISTS bloqueos_catalogo (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id      UUID NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+    tipo            TEXT NOT NULL CHECK (tipo IN ('categoria', 'item', 'pregunta')),
+    elemento_id     INTEGER NOT NULL,       -- id del elemento BASE bloqueado
+    bloqueado_por   UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (empresa_id, tipo, elemento_id)
+);
+ALTER TABLE bloqueos_catalogo ENABLE ROW LEVEL SECURITY;
+
+-- ---------------------------------------------------------------------------
+-- 5. Baja por traspaso y placa unica entre los vehiculos no dados de baja
+-- ---------------------------------------------------------------------------
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS dado_de_baja BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS baja_motivo  TEXT;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS baja_en      TIMESTAMPTZ;
+ALTER TABLE vehiculos ADD COLUMN IF NOT EXISTS baja_por     UUID REFERENCES usuarios(id) ON DELETE SET NULL;
+ALTER TABLE vehiculos DROP CONSTRAINT IF EXISTS vehiculos_placa_key;
+CREATE UNIQUE INDEX IF NOT EXISTS vehiculos_placa_unica_vigente ON vehiculos (placa) WHERE NOT dado_de_baja;
+
+-- ---------------------------------------------------------------------------
+-- 6. Registro de las acciones sobre empresas (RNF-05, RN-11)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS auditoria_empresas (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id      UUID REFERENCES empresas(id) ON DELETE SET NULL,
+    empresa_nombre  TEXT NOT NULL,          -- queda aunque la empresa se elimine
+    actor_id        UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    accion          TEXT NOT NULL,          -- 'creada', 'limites', 'desactivada', 'baja_vehiculo', ...
+    detalles        JSONB,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_auditoria_empresas_empresa ON auditoria_empresas (empresa_id, created_at DESC);
+ALTER TABLE auditoria_empresas ENABLE ROW LEVEL SECURITY;
+
+-- ---------------------------------------------------------------------------
+-- 7. Escribir a SISVIA (HU-18): el mensaje de una empresa y su hilo
+--    (migracion 2026-09-19_buzon.sql). Se borran con la empresa (CB-21).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS buzon_mensajes (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    empresa_id        UUID NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+    autor_id          UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    autor_nombre      TEXT NOT NULL,          -- queda aunque el usuario ya no este
+    autor_cargo       TEXT,
+    tipo              TEXT NOT NULL CHECK (tipo IN ('falla', 'duda', 'cupo', 'traspaso', 'idea')),
+    mensaje           TEXT NOT NULL CHECK (char_length(btrim(mensaje)) BETWEEN 1 AND 2000),
+    estado            TEXT NOT NULL DEFAULT 'nuevo' CHECK (estado IN ('nuevo', 'en_revision', 'resuelto')),
+    pantalla          TEXT CHECK (char_length(pantalla) <= 300),   -- desde donde escribio (HU-18.3)
+    navegador         TEXT CHECK (char_length(navegador) <= 300),
+    adjunto_id        TEXT,                   -- public_id en Cloudinary (privado)
+    adjunto_recurso   TEXT CHECK (adjunto_recurso IN ('image', 'raw')),
+    adjunto_formato   TEXT,                   -- image/png, image/jpeg, application/pdf
+    adjunto_nombre    TEXT,
+    adjunto_bytes     INTEGER CHECK (adjunto_bytes BETWEEN 1 AND 5242880),
+    resuelto_en       TIMESTAMPTZ,
+    resuelto_por      UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    actualizado_en    TIMESTAMPTZ NOT NULL DEFAULT NOW()   -- ultima respuesta o cambio de estado
+);
+CREATE INDEX IF NOT EXISTS idx_buzon_mensajes_empresa ON buzon_mensajes (empresa_id, actualizado_en DESC);
+CREATE INDEX IF NOT EXISTS idx_buzon_mensajes_estado  ON buzon_mensajes (estado, created_at DESC);
+ALTER TABLE buzon_mensajes ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS buzon_respuestas (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    mensaje_id        UUID NOT NULL REFERENCES buzon_mensajes(id) ON DELETE CASCADE,
+    empresa_id        UUID NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+    autor_id          UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    autor_nombre      TEXT NOT NULL,
+    de_sisvia         BOOLEAN NOT NULL,       -- true = la escribio el equipo SISVIA
+    texto             TEXT NOT NULL CHECK (char_length(btrim(texto)) BETWEEN 1 AND 2000),
+    adjunto_id        TEXT,
+    adjunto_recurso   TEXT CHECK (adjunto_recurso IN ('image', 'raw')),
+    adjunto_formato   TEXT,
+    adjunto_nombre    TEXT,
+    adjunto_bytes     INTEGER CHECK (adjunto_bytes BETWEEN 1 AND 5242880),
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_buzon_respuestas_mensaje ON buzon_respuestas (mensaje_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_buzon_respuestas_empresa ON buzon_respuestas (empresa_id);
+ALTER TABLE buzon_respuestas ENABLE ROW LEVEL SECURITY;
+
+-- ---------------------------------------------------------------------------
+-- 8. Actividad de la empresa y Dueño de SISVIA (HU-19 · HU-20 · RN-14 · RN-15)
+--    (migracion 2026-09-21_actividad_y_dueno.sql). Cada registro de vehiculos,
+--    usuarios y empresas se copia solo a la actividad; las sedes y el catalogo
+--    propio los escribe el backend. La marca de dueño va a lo sumo en una cuenta.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS actividad (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- NULL: lo del equipo SISVIA sin empresa (sus cuentas) o de una empresa ya eliminada
+    empresa_id      UUID REFERENCES empresas(id) ON DELETE SET NULL,
+    empresa_nombre  TEXT,
+    actor_id        UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+    actor_nombre    TEXT NOT NULL,                  -- queda aunque la persona se elimine (CB-24)
+    actor_cargo     TEXT,
+    de_sisvia       BOOLEAN NOT NULL DEFAULT false, -- lo hizo alguien del equipo SISVIA
+    tipo            TEXT NOT NULL CHECK (tipo IN ('vehiculo', 'usuario', 'sede', 'catalogo', 'empresa', 'equipo')),
+    accion          TEXT NOT NULL,
+    objeto_id       TEXT,                           -- id de lo que se toco (texto: el catalogo usa enteros)
+    objeto          TEXT,                           -- su nombre: placa, persona, sede, item...
+    detalles        JSONB,
+    origen          TEXT UNIQUE,                    -- de que registro se copio (evita duplicar)
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_actividad_empresa ON actividad (empresa_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_actividad_equipo  ON actividad (created_at DESC) WHERE de_sisvia;
+ALTER TABLE actividad ENABLE ROW LEVEL SECURITY;
+
+-- El cargo con el que se muestra a quien hizo algo (mismas etiquetas que la app).
+CREATE OR REPLACE FUNCTION actividad_cargo(p_rol TEXT, p_pool BOOLEAN) RETURNS TEXT LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE p_rol
+        WHEN 'superadmin' THEN 'Administrador general'
+        WHEN 'admin_empresa' THEN 'Administrador de empresa'
+        WHEN 'admin_departamental' THEN 'Director Regional'
+        WHEN 'admin_sede' THEN 'Coordinador de sede'
+        WHEN 'admin' THEN 'Coordinador de sede'
+        WHEN 'conductor' THEN CASE WHEN p_pool THEN 'Pool de transporte' ELSE 'Conductor' END
+        ELSE NULL END
+$$;
+
+-- ---------------------------------------------------------------------------
+-- 2. Copiar cada registro a la actividad (los viejos y los que vengan)
+-- ---------------------------------------------------------------------------
+
+-- Vehiculos: van a la empresa del vehiculo.
+CREATE OR REPLACE FUNCTION actividad_copiar_vehiculo(p auditoria_vehiculos) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+    INSERT INTO actividad (empresa_id, empresa_nombre, actor_id, actor_nombre, actor_cargo, de_sisvia, tipo, accion, objeto_id, objeto, detalles, origen, created_at)
+    SELECT v.empresa_id, e.nombre, p.accion_por_id, COALESCE(u.nombre_completo, 'Alguien que ya no está'), actividad_cargo(u.rol, u.es_pool),
+           COALESCE(u.rol = 'superadmin', false), 'vehiculo', p.accion, v.id::text, COALESCE(p.detalles->>'placa', v.placa), p.detalles,
+           'auditoria_vehiculos:' || p.id, p.created_at
+    FROM vehiculos v
+    JOIN empresas e ON e.id = v.empresa_id
+    LEFT JOIN usuarios u ON u.id = p.accion_por_id
+    WHERE v.id = p.vehiculo_id
+    ON CONFLICT (origen) DO NOTHING;
+END;
+$$;
+
+-- Usuarios: los de una empresa van a su actividad; los del equipo SISVIA, al
+-- registro del equipo (sin empresa).
+CREATE OR REPLACE FUNCTION actividad_copiar_usuario(p auditoria_usuarios) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+    INSERT INTO actividad (empresa_id, empresa_nombre, actor_id, actor_nombre, actor_cargo, de_sisvia, tipo, accion, objeto_id, objeto, detalles, origen, created_at)
+    SELECT e.id, e.nombre, p.accion_por_id, COALESCE(u.nombre_completo, 'Alguien que ya no está'), actividad_cargo(u.rol, u.es_pool),
+           COALESCE(u.rol = 'superadmin', false), CASE WHEN af.rol = 'superadmin' THEN 'equipo' ELSE 'usuario' END,
+           p.accion, af.id::text, COALESCE(p.detalles->>'nombre', af.nombre_completo), p.detalles,
+           'auditoria_usuarios:' || p.id, p.created_at
+    FROM usuarios af
+    LEFT JOIN empresas e ON e.id = af.empresa_id AND af.rol <> 'superadmin'
+    LEFT JOIN usuarios u ON u.id = p.accion_por_id
+    WHERE af.id = p.usuario_afectado_id
+    ON CONFLICT (origen) DO NOTHING;
+END;
+$$;
+
+-- Lo que hizo el equipo SISVIA con las empresas y adentro de ellas. Los cambios
+-- en vehiculos y usuarios ya se copian arriba con su detalle: su copia
+-- "soporte" no se repite.
+CREATE OR REPLACE FUNCTION actividad_copiar_empresa(p auditoria_empresas) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    v_ruta TEXT := COALESCE(p.detalles->>'ruta', '');
+BEGIN
+    IF p.accion = 'soporte' AND (v_ruta LIKE '/api/vehiculos%' OR v_ruta LIKE '/api/usuarios%') THEN
+        RETURN;
+    END IF;
+    INSERT INTO actividad (empresa_id, empresa_nombre, actor_id, actor_nombre, actor_cargo, de_sisvia, tipo, accion, objeto_id, objeto, detalles, origen, created_at)
+    SELECT p.empresa_id, p.empresa_nombre, p.actor_id, COALESCE(u.nombre_completo, 'Alguien del equipo SISVIA'),
+           COALESCE(actividad_cargo(u.rol, u.es_pool), 'Administrador general'), true,
+           CASE WHEN v_ruta LIKE '/api/geo/sedes%' THEN 'sede'
+                WHEN v_ruta LIKE '/api/catalogo-admin%' THEN 'catalogo'
+                ELSE 'empresa' END,
+           p.accion, CASE WHEN p.accion = 'soporte' THEN NULL ELSE p.empresa_id::text END,
+           CASE WHEN p.accion = 'soporte' THEN p.detalles->>'elemento' ELSE p.empresa_nombre END, p.detalles,
+           'auditoria_empresas:' || p.id, p.created_at
+    FROM (SELECT 1) uno
+    LEFT JOIN usuarios u ON u.id = p.actor_id
+    ON CONFLICT (origen) DO NOTHING;
+END;
+$$;
+
+-- Los que vengan: al escribirse. Si la copia falla, el registro de siempre se
+-- guarda igual (solo queda un aviso en el log de la base).
+CREATE OR REPLACE FUNCTION actividad_al_registrar() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    BEGIN
+        CASE TG_TABLE_NAME
+            WHEN 'auditoria_vehiculos' THEN PERFORM actividad_copiar_vehiculo(NEW);
+            WHEN 'auditoria_usuarios'  THEN PERFORM actividad_copiar_usuario(NEW);
+            WHEN 'auditoria_empresas'  THEN PERFORM actividad_copiar_empresa(NEW);
+        END CASE;
+    EXCEPTION WHEN OTHERS THEN
+        RAISE WARNING 'actividad: no se copio % %: %', TG_TABLE_NAME, NEW.id, SQLERRM;
+    END;
+    RETURN NULL;
+END;
+$$;
+DROP TRIGGER IF EXISTS actividad_vehiculos ON auditoria_vehiculos;
+CREATE TRIGGER actividad_vehiculos AFTER INSERT ON auditoria_vehiculos FOR EACH ROW EXECUTE FUNCTION actividad_al_registrar();
+DROP TRIGGER IF EXISTS actividad_usuarios ON auditoria_usuarios;
+CREATE TRIGGER actividad_usuarios AFTER INSERT ON auditoria_usuarios FOR EACH ROW EXECUTE FUNCTION actividad_al_registrar();
+DROP TRIGGER IF EXISTS actividad_empresas ON auditoria_empresas;
+CREATE TRIGGER actividad_empresas AFTER INSERT ON auditoria_empresas FOR EACH ROW EXECUTE FUNCTION actividad_al_registrar();
+
+-- Los que ya estan (HU-19.2)
+DO $$ BEGIN
+    PERFORM actividad_copiar_vehiculo(a) FROM auditoria_vehiculos a;
+    PERFORM actividad_copiar_usuario(a)  FROM auditoria_usuarios a;
+    PERFORM actividad_copiar_empresa(a)  FROM auditoria_empresas a;
+END $$;
+
+-- ---------------------------------------------------------------------------
+-- 3. La marca de dueño (RN-15)
+-- ---------------------------------------------------------------------------
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS es_dueno BOOLEAN NOT NULL DEFAULT false;
+-- Puede haber varios dueños (enmienda 7): la marca no es unica.
+-- Cada dueño es siempre un Administrador general activo: ni un error ni una
+-- llamada directa pueden desactivarlo o cambiarle el rol (HU-20.4).
+ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_dueno_superadmin_activo;
+ALTER TABLE usuarios ADD CONSTRAINT usuarios_dueno_superadmin_activo CHECK (NOT es_dueno OR (rol = 'superadmin' AND activo));
+-- ...y su cuenta no se borra (tampoco desde el panel de Supabase: primero se quita la marca)
+CREATE OR REPLACE FUNCTION impedir_borrar_dueno() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF OLD.es_dueno THEN
+        RAISE EXCEPTION 'La cuenta del dueño de SISVIA no se puede eliminar: primero quítate la marca.' USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN OLD;
+END;
+$$;
+DROP TRIGGER IF EXISTS usuarios_impedir_borrar_dueno ON usuarios;
+CREATE TRIGGER usuarios_impedir_borrar_dueno BEFORE DELETE ON usuarios FOR EACH ROW EXECUTE FUNCTION impedir_borrar_dueno();
+
+-- ---------------------------------------------------------------------------
+-- 4. Dar, pasar y quitarse la marca, cada una en una sola operacion
+--    (HU-20.5-7 · RN-15 · CB-22 · CB-23)
+-- ---------------------------------------------------------------------------
+-- Deja anotado en el registro del equipo quien hizo el cambio y sobre quien.
+CREATE OR REPLACE FUNCTION actividad_marca_dueno(p_quien usuarios, p_sobre usuarios, p_accion TEXT) RETURNS void LANGUAGE sql AS $$
+    INSERT INTO actividad (actor_id, actor_nombre, actor_cargo, de_sisvia, tipo, accion, objeto_id, objeto)
+    VALUES (p_quien.id, p_quien.nombre_completo, 'Administrador general', true, 'equipo', p_accion,
+            CASE WHEN p_sobre IS NULL THEN NULL ELSE p_sobre.id::text END,
+            CASE WHEN p_sobre IS NULL THEN p_quien.nombre_completo ELSE p_sobre.nombre_completo END);
+$$;
+
+-- El destino sirve si es otro Administrador general activo que todavia no es dueño (CB-22).
+CREATE OR REPLACE FUNCTION marca_destino_valido(p_de UUID, p_a UUID) RETURNS usuarios LANGUAGE plpgsql AS $$
+DECLARE
+    v_destino usuarios%ROWTYPE;
+BEGIN
+    SELECT * INTO v_destino FROM usuarios
+    WHERE id = p_a AND id <> p_de AND rol = 'superadmin' AND activo AND NOT es_dueno;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'destino_invalido';
+    END IF;
+    RETURN v_destino;
+END;
+$$;
+
+-- HU-20.5: dar la marca. Los dos quedan dueños.
+CREATE OR REPLACE FUNCTION dar_marca_dueno(p_de UUID, p_a UUID) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    v_de      usuarios%ROWTYPE;
+    v_destino usuarios%ROWTYPE;
+BEGIN
+    SELECT * INTO v_de FROM usuarios WHERE id = p_de AND es_dueno FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'ya_cambio';   -- quien la da ya no es dueño
+    END IF;
+    v_destino := marca_destino_valido(p_de, p_a);
+    UPDATE usuarios SET es_dueno = true WHERE id = v_destino.id;
+    PERFORM actividad_marca_dueno(v_de, v_destino, 'dio_marca');
+END;
+$$;
+
+-- HU-20.6: pasarle la mia. El otro queda dueño y quien la pasa deja de serlo.
+CREATE OR REPLACE FUNCTION pasar_marca_dueno(p_de UUID, p_a UUID) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    v_de      usuarios%ROWTYPE;
+    v_destino usuarios%ROWTYPE;
+BEGIN
+    SELECT * INTO v_de FROM usuarios WHERE id = p_de AND es_dueno FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'ya_cambio';
+    END IF;
+    v_destino := marca_destino_valido(p_de, p_a);
+    UPDATE usuarios SET es_dueno = true  WHERE id = v_destino.id;
+    UPDATE usuarios SET es_dueno = false WHERE id = p_de;
+    PERFORM actividad_marca_dueno(v_de, v_destino, 'traspaso_dueno');
+END;
+$$;
+
+-- HU-20.7: quitarse la propia. El ultimo dueño no puede: la app nunca queda sin
+-- ninguno (CB-23). El FOR UPDATE de todos los dueños hace esperar al otro que
+-- este haciendo lo mismo al mismo tiempo.
+CREATE OR REPLACE FUNCTION quitarme_marca_dueno(p_quien UUID) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    v_yo      usuarios%ROWTYPE;
+    v_cuantos INTEGER;
+BEGIN
+    PERFORM id FROM usuarios WHERE es_dueno ORDER BY id FOR UPDATE;
+    SELECT count(*) INTO v_cuantos FROM usuarios WHERE es_dueno;
+    SELECT * INTO v_yo FROM usuarios WHERE id = p_quien AND es_dueno;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'ya_cambio';
+    END IF;
+    IF v_cuantos <= 1 THEN
+        RAISE EXCEPTION 'ultimo_dueno';
+    END IF;
+    UPDATE usuarios SET es_dueno = false WHERE id = p_quien;
+    PERFORM actividad_marca_dueno(v_yo, NULL, 'dejo_marca');
+END;
+$$;
+
+-- Solo el backend: con la llave publica nadie las puede llamar por la API.
+DO $$
+DECLARE
+    v_funcion TEXT;
+BEGIN
+    FOREACH v_funcion IN ARRAY ARRAY['dar_marca_dueno(uuid, uuid)', 'pasar_marca_dueno(uuid, uuid)', 'quitarme_marca_dueno(uuid)',
+                                     'marca_destino_valido(uuid, uuid)', 'actividad_marca_dueno(usuarios, usuarios, text)',
+                                     'actividad_copiar_vehiculo(auditoria_vehiculos)',
+                                     'actividad_copiar_usuario(auditoria_usuarios)', 'actividad_copiar_empresa(auditoria_empresas)'] LOOP
+        EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC', v_funcion);
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN EXECUTE format('REVOKE ALL ON FUNCTION %s FROM anon', v_funcion); END IF;
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN EXECUTE format('REVOKE ALL ON FUNCTION %s FROM authenticated', v_funcion); END IF;
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO service_role', v_funcion); END IF;
+    END LOOP;
+END $$;
+
+COMMIT;

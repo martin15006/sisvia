@@ -4,6 +4,10 @@ import { crearNotificacion } from "../services/notificaciones.service.js";
 import { suplenciaVigenteDePool, sedesCubiertosDeSuplencia } from "../services/suplencias.service.js";
 import { estadoBloqueo, registrarFallo, limpiarIntentos } from "../services/loginIntentos.service.js";
 import { normalizarTelefono, validarTelefono } from '../utils/telefono.js';
+import { empresaDesactivada } from '../services/empresas.service.js';
+import { MENSAJES_EMPRESA, CODIGO_EMPRESA_DESACTIVADA } from '../services/empresasReglas.js';
+import { MENSAJES_PERFIL, cambiosDePerfil } from '../services/perfilReglas.js';
+import { verificarContrasena } from '../services/soporte.service.js';
 
 // Helper: ¿la fecha de vencimiento (YYYY-MM-DD) ya paso? Compara solo fechas.
 const licenciaEstaVencida = (fechaVencimiento) => {
@@ -75,6 +79,11 @@ export const login = async (req, res) => {
             });
         }
 
+        // HU-03.2: la empresa desactivada no entra (el superadmin no tiene empresa).
+        if (await empresaDesactivada(perfil.empresa_id)) {
+            return res.status(403).json({ error: MENSAJES_EMPRESA.desactivada, codigo: CODIGO_EMPRESA_DESACTIVADA });
+        }
+
         // Pool · Paso 2: adjuntar la suplencia VIGENTE para que el front sepa de una
         // (sin esperar a /auth/me) que este conductor esta supliendo al Coordinador.
         perfil.suplencia = null;
@@ -106,6 +115,7 @@ export const login = async (req, res) => {
                 mensaje: `Su licencia venció el ${fechaLegible}. Necesita renovarla para poder operar vehículos.`,
                 url_destino: `/admin/usuarios/${perfil.id}`,
                 sede_id: perfil.sede_id,
+                empresa_id: perfil.empresa_id,
                 conductor_id: perfil.id,
                 dedupeHoras: 24,
                 maxPorVentana: 5,
@@ -130,7 +140,9 @@ export const login = async (req, res) => {
                 foto_url: perfil.foto_url,
                 sede_id: perfil.sede_id,
                 sede_nombre: perfil.sede_nombre,
+                empresa_nombre: perfil.empresa_nombre, // HU-08
                 es_pool: perfil.es_pool === true,
+                es_dueno: perfil.es_dueno === true, // HU-20: el dueño de SISVIA
                 suplencia: perfil.suplencia || null,
                 suplencia_sedes: perfil.suplenciaSedes || [],
                 sede_activa: perfil.sedeActiva || null,
@@ -161,7 +173,9 @@ export const obtenerActual = (req, res) => {
             licencia_vencimiento: req.usuario.licencia_vencimiento,
             sede_id: req.usuario.sede_id,
             sede_nombre: req.usuario.sede_nombre,
+            empresa_nombre: req.usuario.empresa_nombre, // HU-08
             es_pool: req.usuario.es_pool === true,
+            es_dueno: req.usuario.es_dueno === true, // HU-20: el dueño de SISVIA
             suplencia: req.usuario.suplencia || null,
             suplencia_sedes: req.usuario.suplenciaSedes || [],
             sede_activa: req.usuario.sedeActiva || null,
@@ -178,9 +192,13 @@ export const obtenerActual = (req, res) => {
 //   - un admin de rango superior (cedula/correo via ModalVerificacionAdmin)
 //   - el sistema (debe_cambiar_password al cambiar la contraseña)
 //   - el admin de la sede (datos del conductor desde UsuariosAdmin)
+//
+// Cualquier cambio pide la contraseña de la persona (pedido de Martín,
+// 2026-09-23): así nadie que agarre una sesión abierta le cambia los datos.
+// Sin cambios de verdad no se guarda nada ni se gasta un intento de contraseña.
 export const actualizarMiPerfil = async (req, res) => {
     try {
-        const { nombre_completo, telefono, foto_url } = req.body;
+        const { nombre_completo, telefono, foto_url, password } = req.body;
 
         // Construir solo con campos seguros que vinieron en el body.
         // Asi un PATCH parcial es valido (solo cambiar la foto, por ejemplo).
@@ -201,15 +219,27 @@ export const actualizarMiPerfil = async (req, res) => {
             cambios.foto_url = foto_url || null;
         }
 
-        if (Object.keys(cambios).length === 0) {
-            return res.status(400).json({ error: 'No hay nada que actualizar' });
+        // Solo lo que de verdad cambia respecto de la cuenta
+        const reales = cambiosDePerfil(req.usuario, cambios);
+        if (Object.keys(reales).length === 0) {
+            return res.status(400).json({ error: MENSAJES_PERFIL.sinCambios, codigo: 'perfil_sin_cambios' });
         }
 
-        cambios.updated_at = new Date().toISOString();
+        // La contraseña de la persona. Códigos propios: los de soporte harían que
+        // el navegador abra el modal de "confirma con tu contraseña" de HU-16.
+        if (!password) {
+            return res.status(400).json({ error: MENSAJES_PERFIL.escribeContrasena, codigo: 'perfil_sin_contrasena' });
+        }
+        const fallo = await verificarContrasena(req.usuario.email, String(password));
+        if (fallo) {
+            return res.status(403).json({ error: fallo.error, codigo: fallo.bloqueada ? 'perfil_bloqueado' : 'perfil_contrasena' });
+        }
+
+        reales.updated_at = new Date().toISOString();
 
         const { data, error } = await supabase
             .from('usuarios')
-            .update(cambios)
+            .update(reales)
             .eq('id', req.usuario.id)
             .select()
             .single();
@@ -235,6 +265,14 @@ export const actualizarMiPerfil = async (req, res) => {
                 licencia_vencimiento: data.licencia_vencimiento,
                 sede_id: data.sede_id,
                 sede_nombre: req.usuario.sede_nombre,
+                empresa_nombre: req.usuario.empresa_nombre, // HU-08
+                // Lo que no se edita acá pero la app necesita para saber quién es:
+                // sin esto, guardar el perfil borraba la marca de dueño de la pantalla.
+                es_pool: data.es_pool === true,
+                es_dueno: data.es_dueno === true, // HU-20
+                suplencia: req.usuario.suplencia || null,
+                suplencia_sedes: req.usuario.suplenciaSedes || [],
+                sede_activa: req.usuario.sedeActiva || null,
             },
         });
     } catch (err) {

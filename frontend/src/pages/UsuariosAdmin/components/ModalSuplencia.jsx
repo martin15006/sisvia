@@ -190,7 +190,7 @@ function ModalSuplencia({ abierto, onCerrar, usuario, onHecho }) {
                         <input type="date" className="modal-suplencia-input"
                             value={hasta} onChange={(e) => setHasta(e.target.value)} disabled={cargando} />
                         <small className="modal-suplencia-ayuda">
-                            Si la dejás vacía, queda activa hasta que la finalices a mano.
+                            Si la dejas vacía, queda activa hasta que la finalices a mano.
                         </small>
                         <label className="modal-suplencia-label">Motivo (opcional)</label>
                         <input type="text" className="modal-suplencia-input" placeholder="Ej: vacaciones del coordinador"

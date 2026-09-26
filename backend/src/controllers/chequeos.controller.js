@@ -20,7 +20,8 @@ const ESTADOS_RESPUESTA_VALIDOS = ["cumple", "no_cumple", "no_aplica"];
 // Devuelve categorias + items + preguntas de aptitud en una sola respuesta
 export const getCatalogo = async (req, res) => {
     try {
-        const catalogo = await obtenerCatalogoCompleto();
+        // El de la empresa del usuario; con ?chequeo_id, el que le toco a ese chequeo (HU-15 · CB-04).
+        const catalogo = await obtenerCatalogoCompleto(req.usuario, req.query.chequeo_id || null);
         res.json(catalogo);
     } catch (err) {
         console.error("Error obteniendo catalogo:", err);
@@ -61,8 +62,9 @@ export const postIniciarChequeo = async (req, res) => {
         if (typeof kilometraje !== "number" || kilometraje < 0) {
             return res.status(400).json({ error: "kilometraje debe ser un numero positivo" });
         }
-        if (!Array.isArray(respuestas_aptitud) || respuestas_aptitud.length !== 5) {
-            return res.status(400).json({ error: "Se requieren las 5 respuestas de aptitud" });
+        // Cuantas: las preguntas de su empresa (HU-15.1); lo verifica el servicio.
+        if (!Array.isArray(respuestas_aptitud) || respuestas_aptitud.length === 0) {
+            return res.status(400).json({ error: "Se requieren las respuestas de aptitud" });
         }
         for (const r of respuestas_aptitud) {
             if (!r.pregunta_id || !["si", "no"].includes(r.respuesta)) {
@@ -350,14 +352,16 @@ export const postAptitudNoApta = async (req, res) => {
     try {
         const { respuestas_aptitud } = req.body;
 
-        if (!Array.isArray(respuestas_aptitud) || respuestas_aptitud.length !== 5) {
-            return res.status(400).json({ error: "Se requieren las 5 respuestas de aptitud" });
+        // Cuantas: las preguntas de su empresa (HU-15.1); lo verifica el servicio.
+        if (!Array.isArray(respuestas_aptitud) || respuestas_aptitud.length === 0) {
+            return res.status(400).json({ error: "Se requieren las respuestas de aptitud" });
         }
 
         const resultado = await registrarIntentoNoApto({
             conductor: req.usuario,
             respuestasAptitud: respuestas_aptitud,
         });
+        if (resultado.error) return res.status(400).json({ error: resultado.error });
 
         if (resultado.apto) {
             return res.status(400).json({

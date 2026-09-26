@@ -1,5 +1,8 @@
 import { supabase } from "../config/supabase.js";
 import { rolEfectivo } from "../services/jerarquia.service.js";
+import { MENSAJES_EMPRESA, CODIGO_EMPRESA_DESACTIVADA } from "../services/empresasReglas.js";
+import { empresaActivaDelPedido, controlarSuperadmin } from "../services/soporte.service.js";
+import { MENSAJES_SOPORTE, CODIGOS_SOPORTE } from "../services/soporteReglas.js";
 import { suplenciaVigenteDePool, sedesCubiertosDeSuplencia } from "../services/suplencias.service.js";
 
 export const verificarToken = async (req, res, next) => {
@@ -37,6 +40,10 @@ export const verificarToken = async (req, res, next) => {
                 sedes:sede_id (
                     id,
                     nombre
+                ),
+                empresa:empresa_id (
+                    nombre,
+                    activa
                 )
             `)
             .eq('id', data.user.id)
@@ -50,11 +57,19 @@ export const verificarToken = async (req, res, next) => {
             return res.status(403).json({ error: 'Cuenta desactivada' });
         }
 
+        // HU-03.3 · CB-11: si su empresa se desactivo con la sesion abierta, sale al login.
+        if (perfil.empresa && perfil.empresa.activa === false) {
+            return res.status(403).json({ error: MENSAJES_EMPRESA.desactivada, codigo: CODIGO_EMPRESA_DESACTIVADA });
+        }
+
         perfil.email = data.user.email;
         // Aplanar el join: el join devuelve la sede como objeto anidado, pero
         // es mas comodo exponer solo el nombre como campo plano.
         perfil.sede_nombre = perfil.sedes?.nombre || null;
         delete perfil.sedes;
+        // HU-08: el nombre de su empresa (cabecera, pie y documentos). El superadmin no tiene.
+        perfil.empresa_nombre = perfil.empresa?.nombre || null;
+        delete perfil.empresa;
 
         // Pool · Paso 2: si es un conductor del pool, adjuntar su suplencia VIGENTE
         // (si la tiene) para que rolEfectivo() lo trate como admin_sede de su sede.
@@ -79,8 +94,30 @@ export const verificarToken = async (req, res, next) => {
             }
         }
 
+        // HU-16: el superadmin "entra" a una empresa (header X-Empresa-Activa) y
+        // adentro la ve como su Administrador (ver alcanceDe en scopeReglas.js).
+        perfil.empresaActiva = null;
+        perfil.empresaActivaNombre = null;
+        if (perfil.rol === 'superadmin') {
+            const empresa = await empresaActivaDelPedido(req);
+            if (empresa === false) {
+                return res.status(404).json({
+                    error: MENSAJES_SOPORTE.empresaNoEncontrada,
+                    codigo: CODIGOS_SOPORTE.empresaNoEncontrada,
+                });
+            }
+            if (empresa) {
+                perfil.empresaActiva = empresa.id;
+                perfil.empresaActivaNombre = empresa.nombre;
+            }
+        }
+
         req.usuario = perfil;
         req.token = token;
+
+        // HU-16.2 · RN-11 · HU-06.6: afuera no cambia datos de empresas; adentro,
+        // cada cambio pide su contraseña y queda registrado.
+        if (await controlarSuperadmin(req, res)) return;
         next();
     } catch (err) {
         console.error('Error verificando token:', err);
@@ -93,6 +130,7 @@ const ROLES_ADMIN = [
     'admin',
     'admin_sede',
     'admin_departamental',
+    'admin_empresa',
     'superadmin',
 ];
 

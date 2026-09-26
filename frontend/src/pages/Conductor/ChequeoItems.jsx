@@ -1,4 +1,4 @@
-// Pantalla del checklist (39 items en 5 categorias).
+// Pantalla del checklist (los items de su empresa y su vehiculo, por categoria).
 // Las categorias e items se administran desde Panel Admin -> Catalogo del chequeo.
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -138,10 +138,12 @@ function ChequeoItems() {
         }
     }, [navigate]);
 
-    // === Cargar el catalogo (solo categorias + items, ignoramos aptitud) ===
+    // === Cargar el catalogo de ESTE chequeo (solo categorias + items) ===
+    // Son los items que le tocaron al iniciar (su empresa y su tipo de vehiculo);
+    // si el catalogo cambia mientras responde, este chequeo no cambia (CB-04).
     useEffect(() => {
         if (!chequeoEnCurso) return;
-        api("/chequeos/catalogo")
+        api(`/chequeos/catalogo?chequeo_id=${chequeoEnCurso.chequeo_id}`)
             .then((data) => {
                 const cats = (data.categorias || []).sort((a, b) => a.orden - b.orden);
                 // Ordenar items dentro de cada categoria

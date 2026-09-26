@@ -21,7 +21,7 @@ const router = Router();
 
 router.use(verificarToken);
 
-const PUEDEN_GESTIONAR = ['superadmin', 'admin_departamental', 'admin_sede', 'admin'];
+const PUEDEN_GESTIONAR = ['superadmin', 'admin_empresa', 'admin_departamental', 'admin_sede', 'admin'];
 
 router.get('/', requiereRol(...PUEDEN_GESTIONAR), getSuplencias);
 router.post('/', requiereRol(...PUEDEN_GESTIONAR), postSuplencia);

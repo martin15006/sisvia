@@ -542,3 +542,7 @@
     color: var(--estado-error-texto);
     border-left-color: var(--estado-error-texto);
 }
+/* HU-20.3: la marca del dueño de SISVIA junto al nombre */
+.usuarios-admin-marca-dueno {
+    margin-left: var(--espacio-sm);
+}

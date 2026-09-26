@@ -1,0 +1,99 @@
+/* HU-20.5-7: dar, pasar o quitarse la marca de dueño. Mismo vocabulario que la
+   confirmacion de "Eliminar empresa": nota, campos apilados y dos botones al pie. */
+.marca-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-lg);
+}
+
+.marca-nota {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    color: var(--color-gris-900);
+    text-wrap: pretty;
+}
+
+.marca-campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+}
+
+.marca-label {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-900);
+}
+
+.marca-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--espacio-md);
+    border: 2px solid var(--color-input-borde);
+    border-radius: var(--radio-md);
+    background: var(--color-input-bg);
+    color: var(--texto);
+    font-family: inherit;
+    font-size: var(--tamano-md);
+}
+
+.marca-input:focus-visible {
+    outline: 3px solid var(--marca-anillo);
+    outline-offset: 2px;
+}
+
+.marca-error {
+    margin: 0;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 1px solid var(--estado-error-borde);
+    border-radius: var(--radio-md);
+    background: var(--estado-error-fondo);
+    color: var(--estado-error-texto);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+}
+
+.marca-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--espacio-sm);
+}
+
+.marca-boton {
+    min-height: 44px;
+    padding: 0 var(--espacio-lg);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+}
+
+.marca-boton:hover:not(:disabled) {
+    border-color: var(--color-primario-oscuro);
+}
+
+.marca-boton--principal {
+    border-color: var(--color-primario-oscuro);
+    background: var(--color-primario);
+    color: var(--texto-sobre-marca);
+}
+
+.marca-boton--principal:hover:not(:disabled) {
+    background: var(--color-primario-hover);
+}
+
+.marca-boton:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.marca-boton:focus-visible {
+    outline: 3px solid var(--marca-anillo);
+    outline-offset: 2px;
+}

@@ -34,10 +34,10 @@ function SelectorSedeSuplencia() {
         <div className="selsede-pagina">
             <div className="selsede-card animar-fade-in-up">
                 <img src="/logo.png" alt="SISVIA" className="selsede-logo" />
-                <h1 className="selsede-titulo">Elegí la sede a gestionar</h1>
+                <h1 className="selsede-titulo">Elige la sede que vas a gestionar</h1>
                 <p className="selsede-sub">
-                    Estás supliendo{deptoNombre ? ` la Regional ${deptoNombre}` : ""}. Entrá a un
-                    sede para gestionarlo; podés volver acá cuando quieras para cambiar.
+                    Estás supliendo{deptoNombre ? ` la Regional ${deptoNombre}` : ""}. Entra a una
+                    sede para gestionarla; puedes volver aquí cuando quieras para cambiar.
                 </p>
 
                 <div className="selsede-lista">

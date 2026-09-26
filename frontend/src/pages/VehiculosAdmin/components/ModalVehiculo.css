@@ -192,7 +192,8 @@
 
 .form-vehiculo-archivo-limite {
     font-size: var(--tamano-xs);
-    color: var(--color-gris-500);
+    /* gris-700: con gris-500 daba 3.47:1 en claro (CL-07 pide 4.5) */
+    color: var(--color-gris-700);
     font-weight: var(--peso-medio);
     text-transform: none;
     letter-spacing: 0;

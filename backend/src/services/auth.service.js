@@ -47,6 +47,9 @@ export const obtenerPerfil = async (userId) => {
             sedes:sede_id (
                 id,
                 nombre
+            ),
+            empresa:empresa_id (
+                nombre
             )
         `)
         .eq('id', userId)
@@ -57,6 +60,8 @@ export const obtenerPerfil = async (userId) => {
     if (data) {
         data.sede_nombre = data.sedes?.nombre || null;
         delete data.sedes;
+        data.empresa_nombre = data.empresa?.nombre || null; // HU-08
+        delete data.empresa;
     }
     return data;
 };

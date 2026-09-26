@@ -68,8 +68,8 @@ export const ejecutarRevisionVencimientos = async () => {
             if (!email) { sinEmail++; continue; }
             const susItems = items.filter((it) => it.sede_id === admin.sede_id);
             if (susItems.length === 0) continue;
-            const sedeNombre = (await cabeceraDeSede(admin.sede_id)).sedeNombre;
-            const html = plantillaDigestVencimientos({ items: susItems, sedeNombre });
+            const { sedeNombre, organizacion } = await cabeceraDeSede(admin.sede_id);
+            const html = plantillaDigestVencimientos({ items: susItems, sedeNombre, organizacion });
             const r = await enviarCorreo({
                 para: email,
                 asunto: `Documentos por vencer (${susItems.length})`,

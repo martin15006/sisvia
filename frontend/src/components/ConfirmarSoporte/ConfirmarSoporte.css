@@ -1,0 +1,93 @@
+/* Contraseña del superadmin para cambios dentro de una empresa (HU-16). */
+
+.confirmar-soporte {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-sm);
+}
+
+.confirmar-soporte-texto {
+    margin: 0 0 var(--espacio-sm);
+    font-size: var(--tamano-sm);
+    line-height: 1.5;
+    color: var(--color-gris-900);
+}
+
+.confirmar-soporte-label {
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-900);
+}
+
+.confirmar-soporte-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--espacio-md);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+}
+
+.confirmar-soporte-input:focus {
+    outline: none;
+    border-color: var(--color-primario);
+}
+
+.confirmar-soporte-input[aria-invalid="true"] {
+    border-color: var(--estado-error-texto);
+}
+
+.confirmar-soporte-error {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-semibold);
+    color: var(--estado-error-texto);
+}
+
+.confirmar-soporte-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--espacio-md);
+    margin-top: var(--espacio-md);
+}
+
+.confirmar-soporte-boton {
+    min-height: 44px;
+    padding: 0 var(--espacio-lg);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+}
+
+.confirmar-soporte-boton:hover:not(:disabled) {
+    background: var(--acento-suave);
+    border-color: var(--color-primario-oscuro);
+}
+
+.confirmar-soporte-boton--primario {
+    background: var(--color-primario);
+    border-color: var(--color-primario-oscuro);
+    color: var(--texto-sobre-marca);
+}
+
+.confirmar-soporte-boton--primario:hover:not(:disabled) {
+    background: var(--color-primario-hover);
+}
+
+.confirmar-soporte-boton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.confirmar-soporte-input:disabled {
+    background: var(--color-gris-100);
+    cursor: not-allowed;
+}

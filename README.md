@@ -113,7 +113,7 @@ Todo el branding está centralizado. Para renombrar el producto no hay que tocar
 | Qué | Dónde |
 |---|---|
 | Nombre, lema y logo del producto | `frontend/src/lib/marca.js` y `backend/src/config/marca.js` |
-| Nombre de la organización cliente | `ORG_NOMBRE` y `VITE_ORG_NOMBRE` en los `.env` |
+| Nombre de la organización cliente | El registro de cada empresa, en el módulo Empresas |
 | Colores, tipografía y espacios | `frontend/src/styles/variables.css` |
 | Imagen del logo | `frontend/public/logo.png` y `backend/src/services/export/assets/logo.png` |
 

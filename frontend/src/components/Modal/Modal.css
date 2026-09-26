@@ -15,6 +15,11 @@
   animation: fadeIn 0.2s ease-out;
 }
 
+/* Un modal que se abre sobre otro (la contraseña del superadmin, HU-16). */
+.modal-overlay--encima {
+  z-index: calc(var(--z-modal) + 1);
+}
+
 .modal-contenedor {
   background: var(--superficie);
   border-radius: var(--radio-lg);

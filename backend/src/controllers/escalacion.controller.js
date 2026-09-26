@@ -1,4 +1,5 @@
 import { resolverSuperior, enviarInforme } from '../services/escalacion.service.js';
+import { ofreceResumen } from '../services/informeReglas.js';
 
 // GET /api/escalacion/superior — para que el frontend sepa si mostrar el botón y a quién.
 export const getSuperior = async (req, res) => {
@@ -7,6 +8,7 @@ export const getSuperior = async (req, res) => {
         res.json({
             tieneSuperior: !superior.sinSuperior,
             etiqueta: superior.etiqueta, // ej. "el Director Regional de Tolima"
+            ofreceResumen: ofreceResumen(superior), // HU-18.10: al equipo SISVIA, sin resumen
         });
     } catch (err) {
         console.error('Error resolviendo superior:', err);

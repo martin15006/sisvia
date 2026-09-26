@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../lib/api.js";
-import { useAuth } from "../../hooks/useAuth.js";
+import CabeceraDetalle from "../../components/CabeceraDetalle/CabeceraDetalle.jsx";
 import Toast from "../../components/Toast/Toast.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import BotonVolver from "../../components/BotonVolver/BotonVolver.jsx";
@@ -36,7 +36,6 @@ const formatearFecha = (iso) => {
 function ChequeoDetalle() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { usuario, cerrarSesion } = useAuth();
 
     const [chequeo, setChequeo] = useState(null);
     const [cargando, setCargando] = useState(true);
@@ -44,11 +43,6 @@ function ChequeoDetalle() {
     const [toast, setToast] = useState(null);
     // Estado por foto para mostrar "Guardando..." mientras se actualiza preservar_siempre
     const [preservando, setPreservando] = useState({});
-
-    const manejarLogout = () => {
-        cerrarSesion();
-        navigate("/login");
-    };
 
     // Marca/desmarca una foto como preservar_siempre. Actualiza el estado local
     // sin volver a pedir todo el chequeo al backend (más rápido y mantiene la posición).
@@ -148,21 +142,7 @@ function ChequeoDetalle() {
     return (
         <div className="cheqdet-pagina">
             {/* Header de marca */}
-            <header className="cheqdet-header-marca">
-                <div className="cheqdet-logo-wrapper">
-                    <img src="/logo.png" alt="SISVIA" className="cheqdet-logo-img" />
-                    <div className="cheqdet-titulo-app">Gestión de Flota</div>
-                </div>
-                <div className="cheqdet-usuario">
-                    <div className="cheqdet-usuario-info">
-                        <div className="cheqdet-usuario-nombre">{usuario?.nombre_completo}</div>
-                        <div className="cheqdet-usuario-rol">{usuario?.rol}</div>
-                    </div>
-                    <button className="cheqdet-logout" onClick={manejarLogout}>
-                        Cerrar sesión
-                    </button>
-                </div>
-            </header>
+            <CabeceraDetalle />
 
             {/* Barra de página */}
             <section className="cheqdet-barra-pagina">

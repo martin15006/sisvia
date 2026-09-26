@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.js";
+import CabeceraDetalle from "../../components/CabeceraDetalle/CabeceraDetalle.jsx";
 import { api } from "../../lib/api.js";
 import Footer from "../../components/Footer/Footer.jsx";
 import Lightbox from "../../components/Lightbox/Lightbox.jsx";
@@ -47,8 +48,7 @@ const formatearNumero = (valor) => {
 
 function VehiculoDetalle() {
     const { id } = useParams();
-    const { usuario, cerrarSesion } = useAuth();
-    const navigate = useNavigate();
+    const { usuario } = useAuth();
     const [vehiculo, setVehiculo] = useState(null);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
@@ -81,11 +81,6 @@ function VehiculoDetalle() {
     const abrirLightbox = (i) => {
         setLightboxIndice(i);
         setLightboxAbierto(true);
-    };
-
-    const cerrar = () => {
-        cerrarSesion();
-        navigate("/login");
     };
 
     if (cargando) {
@@ -125,26 +120,13 @@ function VehiculoDetalle() {
 
     return (
         <div className="vehiculo-detalle">
-            <header className="vehiculo-detalle-header">
-                <div className="vehiculo-detalle-logo-wrapper">
-                    <img src="/logo.png" alt="SISVIA" className="vehiculo-detalle-logo-img" />
-                    <div className="vehiculo-detalle-titulo-pagina">Gestión de Flota</div>
-                </div>
-                <div className="vehiculo-detalle-usuario">
-                    <div className="vehiculo-detalle-usuario-info">
-                        <div className="vehiculo-detalle-usuario-nombre">{usuario.nombre_completo}</div>
-                        <div className="vehiculo-detalle-usuario-rol">{usuario.rol}</div>
-                    </div>
-                    <button className="vehiculo-detalle-logout" onClick={cerrar}>
-                        Cerrar sesión
-                    </button>
-                </div>
-            </header>
+            <CabeceraDetalle />
 
             <main className="vehiculo-detalle-main">
                 <BotonVolver a="/admin/vehiculos" texto="Volver al listado" />
 
-                <section className={`vehiculo-detalle-hero vehiculo-detalle-hero-${estadoInfo.color} ${!vehiculo.activo ? "vehiculo-detalle-hero-inactivo" : ""}`}>
+                {/* Dado de baja: sin opacidad, el aviso de la baja tiene que leerse (RNF-07) */}
+                <section className={`vehiculo-detalle-hero vehiculo-detalle-hero-${estadoInfo.color} ${!vehiculo.activo && !vehiculo.dado_de_baja ? "vehiculo-detalle-hero-inactivo" : ""}`}>
                     <div className="vehiculo-detalle-hero-foto">
                         {fotoPrincipal ? (
                             <img
@@ -169,21 +151,34 @@ function VehiculoDetalle() {
                             {vehiculo.modelo_anio && <span>· Modelo {vehiculo.modelo_anio}</span>}
                             {vehiculo.color && <span>· {vehiculo.color}</span>}
                         </div>
-                        <div className={`vehiculo-detalle-badge vehiculo-detalle-badge-${estadoInfo.color}`}>
-                            {estadoInfo.texto} · {vehiculo.nivel_criticidad}%
-                        </div>
-                        {!vehiculo.activo && (
+                        {!vehiculo.dado_de_baja && (
+                            <div className={`vehiculo-detalle-badge vehiculo-detalle-badge-${estadoInfo.color}`}>
+                                {estadoInfo.texto} · {vehiculo.nivel_criticidad}%
+                            </div>
+                        )}
+                        {vehiculo.dado_de_baja ? (
+                            <div className="vehiculo-detalle-baja" role="note">
+                                <div className="vehiculo-detalle-badge-inactivo">Dado de baja por traspaso</div>
+                                <p className="vehiculo-detalle-baja-texto">
+                                    {new Date(vehiculo.baja_en).toLocaleString("es-CO", { day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" })}
+                                    {" · por "}{vehiculo.baja_usuario?.nombre_completo || "el equipo SISVIA"} (equipo SISVIA)
+                                </p>
+                                <p className="vehiculo-detalle-baja-texto"><b>Motivo:</b> {vehiculo.baja_motivo}</p>
+                            </div>
+                        ) : !vehiculo.activo && (
                             <div className="vehiculo-detalle-badge-inactivo">
                                 Vehículo inactivo
                             </div>
                         )}
                         <div className="vehiculo-detalle-acciones">
-                            <button
-                                className="vehiculo-detalle-boton vehiculo-detalle-boton-primario"
-                                onClick={() => setModalEditarAbierto(true)}
-                            >
-                                Editar
-                            </button>
+                            {!vehiculo.dado_de_baja && (
+                                <button
+                                    className="vehiculo-detalle-boton vehiculo-detalle-boton-primario"
+                                    onClick={() => setModalEditarAbierto(true)}
+                                >
+                                    Editar
+                                </button>
+                            )}
                             {vehiculo.runt_url && (
                                 <a
                                     href={vehiculo.runt_url}

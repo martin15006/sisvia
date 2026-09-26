@@ -6,12 +6,23 @@ import {
     contarNoLeidas,
     marcarLeida,
     marcarTodasLeidas,
+    listarNotificacionesDeEmpresa,
 } from '../services/notificaciones.service.js';
 
 // GET /api/notificaciones?pagina=1&limite=20&solo_no_leidas=true
 export const getMisNotificaciones = async (req, res) => {
     try {
-        const { pagina, limite, solo_no_leidas } = req.query;
+        const { pagina, limite, solo_no_leidas, de } = req.query;
+        // HU-16.1: el superadmin dentro de una empresa ve los avisos de esa empresa
+        // (la pagina los pide con ?de=empresa; la campanita sigue con los suyos).
+        if (de === 'empresa' && req.usuario.rol === 'superadmin' && req.usuario.empresaActiva) {
+            return res.json(await listarNotificacionesDeEmpresa({
+                empresaId: req.usuario.empresaActiva,
+                pagina: pagina ? parseInt(pagina, 10) : 1,
+                limite: limite ? parseInt(limite, 10) : 20,
+                soloNoLeidas: solo_no_leidas === 'true',
+            }));
+        }
         const resultado = await listarMisNotificaciones({
             destinatarioId: req.usuario.id,
             pagina: pagina ? parseInt(pagina, 10) : 1,

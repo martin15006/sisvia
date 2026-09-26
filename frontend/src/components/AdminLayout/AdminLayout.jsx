@@ -18,7 +18,9 @@ import { api } from "../../lib/api.js";
 import { ETIQUETA_ROL, enSuplencia, esAdminEfectivo, necesitaElegirSede, cubreVariasSedes } from "../../lib/roles.js";
 import Sidebar from "./Sidebar.jsx";
 import Campanita from "./Campanita.jsx";
+import EscribirSisvia from "../EscribirSisvia/EscribirSisvia.jsx";
 import Footer from "../Footer/Footer.jsx";
+import FranjaSoporte from "../FranjaSoporte/FranjaSoporte.jsx";
 import "./AdminLayout.css";
 
 // Clave de localStorage para recordar si el sidebar quedo colapsado/expandido
@@ -167,6 +169,8 @@ function AdminLayout({ titulo, children }) {
                         {/* La campanita maneja su propio estado global (polling cada 30s).
                             Por eso ya no necesita prop tieneNotificaciones — funciona igual
                             en todas las paginas del admin, no solo en dashboard. */}
+                        {/* HU-18.1: solo el Administrador de empresa le escribe a SISVIA */}
+                        {usuario.rol === "admin_empresa" && <EscribirSisvia />}
                         <Campanita />
                         {/* Bloque del usuario es un boton: clic lleva a "Mi perfil" */}
                         <button
@@ -192,6 +196,9 @@ function AdminLayout({ titulo, children }) {
                         </button>
                     </div>
                 </header>
+
+                {/* HU-16.1,4: el superadmin dentro de una empresa */}
+                <FranjaSoporte />
 
                 {/* Barra de suplencia: BIEN VISIBLE en qué sede está trabajando el pool */}
                 {suplente && (

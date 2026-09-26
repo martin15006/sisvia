@@ -272,8 +272,11 @@
     box-shadow: var(--sombra-md);
 }
 
+/* Apagado: fondo y borde distintos, sin bajar la opacidad (con 0.55 el texto y
+   los botones de la fila quedaban por debajo de 4.5:1, CL-07). */
 .catadmin-fila-inactiva {
-    opacity: 0.55;
+    background: var(--superficie-sutil);
+    border-style: dashed;
     border-left-color: var(--color-gris-300);
 }
 
@@ -735,4 +738,50 @@
     .catadmin-fila-acciones button {
         flex: 1;
     }
+}
+
+/* ===== Catalogo por empresa (pacto para-empresas, HU-12 a HU-14) ===== */
+.catadmin-badge-origen,
+.catadmin-badge-bloqueado {
+    display: inline-block;
+    margin-left: var(--espacio-xs);
+    padding: 2px 8px;
+    border-radius: var(--radio-xl);
+    font-size: 10px;
+    font-weight: var(--peso-bold);
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+}
+
+.catadmin-badge-origen--base {
+    background: var(--estado-neutro-fondo);
+    color: var(--estado-neutro-texto);
+}
+
+.catadmin-badge-origen--propio {
+    background: var(--acento-suave);
+    color: var(--texto-marca);
+}
+
+.catadmin-badge-bloqueado {
+    background: var(--estado-adv-fondo);
+    color: var(--estado-adv-texto);
+}
+
+.catadmin-boton-bloquear {
+    padding: 6px 12px;
+    border-radius: var(--radio-md);
+    border: 1px solid var(--color-gris-700);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    font-family: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all var(--velocidad-rapida) var(--suavizado);
+}
+
+.catadmin-boton-bloquear:hover {
+    background: var(--color-gris-100);
 }

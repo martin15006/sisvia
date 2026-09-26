@@ -14,6 +14,12 @@ import { Router } from "express";
 import { supabase } from "../config/supabase.js";
 import { verificarToken, soloAdmin, requiereRol } from "../middlewares/auth.middleware.js";
 import { obtenerScope } from "../services/scope.service.js";
+import { empresaDelUsuario } from "../services/scope.service.js";
+import { filtroEmpresa } from "../services/scopeReglas.js";
+import { empresaDeSede } from "../services/scope.service.js";
+import { verificarLimite } from "../services/empresas.service.js";
+import { CODIGO_LIMITE } from "../services/limitesReglas.js";
+import { registrarActividad } from "../services/actividad.service.js";
 
 const router = Router();
 
@@ -24,8 +30,11 @@ router.use(soloAdmin);
 const UUID_IMPOSIBLE = "00000000-0000-0000-0000-000000000000";
 
 // Aplica .in('id', ids) salvo que el scope sea global (superadmin ve todo).
-const filtrarPorScope = (query, scope, ids) => {
+const filtrarPorScope = (query, scope, ids, { geografiaCompartida = false } = {}) => {
     if (scope.tipo === "global") return query;
+    // Regiones, departamentos y ciudades son de todos (RN-02): el Administrador de
+    // empresa los ve completos para poder abrir una sede en cualquier ciudad.
+    if (geografiaCompartida && scope.todaLaEmpresa) return query;
     return query.in("id", ids.length > 0 ? ids : [UUID_IMPOSIBLE]);
 };
 
@@ -36,7 +45,7 @@ router.get("/regiones", async (req, res) => {
     try {
         const scope = await obtenerScope(req.usuario);
         let q = supabase.from("regiones").select("id, nombre").order("nombre", { ascending: true });
-        q = filtrarPorScope(q, scope, scope.regionIds || []);
+        q = filtrarPorScope(q, scope, scope.regionIds || [], { geografiaCompartida: true });
         const { data, error } = await q;
         if (error) throw error;
         res.json({ regiones: data || [] });
@@ -56,7 +65,7 @@ router.get("/departamentos", async (req, res) => {
             .select("id, nombre, region_id")
             .order("nombre", { ascending: true });
         if (region_id) q = q.eq("region_id", region_id);
-        q = filtrarPorScope(q, scope, scope.departamentoIds || []);
+        q = filtrarPorScope(q, scope, scope.departamentoIds || [], { geografiaCompartida: true });
         const { data, error } = await q;
         if (error) throw error;
         res.json({ departamentos: data || [] });
@@ -67,19 +76,33 @@ router.get("/departamentos", async (req, res) => {
 });
 
 // GET /api/geo/ciudades?departamento_id=...
+// Supabase devuelve como maximo 1.000 filas por consulta y Colombia tiene 1.122
+// municipios: la lista completa se pide por paginas.
+const PAGINA = 1000;
+const traerTodas = async (armar) => {
+    const filas = [];
+    for (let desde = 0; ; desde += PAGINA) {
+        const { data, error } = await armar().range(desde, desde + PAGINA - 1);
+        if (error) throw error;
+        filas.push(...(data || []));
+        if (!data || data.length < PAGINA) return filas;
+    }
+};
+
 router.get("/ciudades", async (req, res) => {
     try {
         const { departamento_id } = req.query;
         const scope = await obtenerScope(req.usuario);
-        let q = supabase
-            .from("ciudades")
-            .select("id, nombre, departamento_id")
-            .order("nombre", { ascending: true });
-        if (departamento_id) q = q.eq("departamento_id", departamento_id);
-        q = filtrarPorScope(q, scope, scope.ciudadIds || []);
-        const { data, error } = await q;
-        if (error) throw error;
-        res.json({ ciudades: data || [] });
+        const armar = () => {
+            let q = supabase
+                .from("ciudades")
+                .select("id, nombre, departamento_id")
+                .order("nombre", { ascending: true })
+                .order("id", { ascending: true }); // orden estable entre paginas
+            if (departamento_id) q = q.eq("departamento_id", departamento_id);
+            return filtrarPorScope(q, scope, scope.ciudadIds || [], { geografiaCompartida: true });
+        };
+        res.json({ ciudades: await traerTodas(armar) });
     } catch (err) {
         console.error("Error listando ciudades:", err);
         res.status(500).json({ error: err.message || "Error al listar ciudades" });
@@ -145,7 +168,7 @@ router.get("/sedes", async (req, res) => {
 //     departamento (su Regional). Se valida con el scope en cada endpoint.
 
 // POST /api/geo/ciudades  { nombre, departamento_id }
-router.post("/ciudades", requiereRol("superadmin", "admin_departamental"), async (req, res) => {
+router.post("/ciudades", requiereRol("superadmin"), async (req, res) => {
     try {
         const { nombre, departamento_id } = req.body;
         const nombreLimpio = (nombre || "").trim();
@@ -185,7 +208,7 @@ router.post("/ciudades", requiereRol("superadmin", "admin_departamental"), async
 });
 
 // POST /api/geo/sedes  { nombre, ciudad_id, direccion? }
-router.post("/sedes", requiereRol("superadmin", "admin_departamental"), async (req, res) => {
+router.post("/sedes", requiereRol("superadmin", "admin_empresa"), async (req, res) => {
     try {
         const { nombre, ciudad_id, direccion } = req.body;
         const nombreLimpio = (nombre || "").trim();
@@ -195,24 +218,33 @@ router.post("/sedes", requiereRol("superadmin", "admin_departamental"), async (r
 
         // Scope: un Director Regional solo crea sedes en una ciudad de su depto.
         const scope = await obtenerScope(req.usuario);
-        if (scope.tipo !== "global" && !(scope.ciudadIds || []).includes(ciudad_id)) {
-            return res.status(403).json({ error: "Solo puedes crear sedes en una ciudad de tu regional." });
+        if (scope.tipo !== "global" && !scope.todaLaEmpresa) {
+            return res.status(403).json({ error: "Las sedes las crea el Administrador de empresa." });
         }
 
-        // La tabla no tiene UNIQUE(nombre, ciudad_id): verificar duplicado a mano
+        // La sede es de la empresa de quien la crea (el superadmin, de la empresa
+        // a la que entro: HU-16; afuera no crea sedes).
+        const empresaNueva = empresaDelUsuario(req.usuario);
+
+        // La tabla no tiene UNIQUE(nombre, ciudad_id): verificar duplicado a mano (dentro de la empresa)
         const { data: existente } = await supabase
             .from("sedes")
             .select("id")
             .eq("ciudad_id", ciudad_id)
             .ilike("nombre", nombreLimpio)
+            .match(filtroEmpresa(req.usuario))
             .maybeSingle();
         if (existente) {
             return res.status(400).json({ error: "Ya existe una sede con ese nombre en esa ciudad" });
         }
 
+        // HU-02.2 · RN-03: la sede nueva no puede pasar el limite de la empresa.
+        const limite = await verificarLimite(empresaNueva, "sedes");
+        if (limite) return res.status(403).json({ error: limite, codigo: CODIGO_LIMITE });
+
         const { data, error } = await supabase
             .from("sedes")
-            .insert({ nombre: nombreLimpio, ciudad_id, direccion: (direccion || "").trim() || null })
+            .insert({ nombre: nombreLimpio, ciudad_id, direccion: (direccion || "").trim() || null, ...(empresaNueva ? { empresa_id: empresaNueva } : {}) })
             .select("id, nombre, ciudad_id, direccion, activo")
             .single();
 
@@ -223,6 +255,8 @@ router.post("/sedes", requiereRol("superadmin", "admin_departamental"), async (r
             throw error;
         }
 
+        // HU-19.2: queda en la actividad de la empresa.
+        await registrarActividad({ usuario: req.usuario, res, tipo: "sede", accion: "creada", objetoId: data.id, objeto: data.nombre });
         res.status(201).json({ sede: data });
     } catch (err) {
         console.error("Error creando sede:", err);
@@ -231,15 +265,16 @@ router.post("/sedes", requiereRol("superadmin", "admin_departamental"), async (r
 });
 
 // PATCH /api/geo/sedes/:id  { nombre?, direccion?, activo? }
-router.patch("/sedes/:id", requiereRol("superadmin", "admin_departamental"), async (req, res) => {
+router.patch("/sedes/:id", requiereRol("superadmin", "admin_empresa"), async (req, res) => {
     try {
         const { id } = req.params;
         const { nombre, direccion, activo } = req.body;
 
         // Scope: un Director Regional solo edita sedes de su regional.
         const scope = await obtenerScope(req.usuario);
+        // Una sede de otra empresa responde como si no existiera (RN-01).
         if (scope.tipo !== "global" && !(scope.sedeIds || []).includes(id)) {
-            return res.status(403).json({ error: "Esa sede no pertenece a tu regional." });
+            return res.status(404).json({ error: "Sede no encontrada" });
         }
 
         const cambios = {};
@@ -252,6 +287,17 @@ router.patch("/sedes/:id", requiereRol("superadmin", "admin_departamental"), asy
         }
         if (direccion !== undefined) cambios.direccion = (direccion || "").trim() || null;
         if (activo !== undefined) cambios.activo = activo === true;
+
+        // Como estaba antes: para el limite y para contar el cambio en la actividad.
+        const { data: actual } = await supabase.from("sedes").select("activo").eq("id", id).maybeSingle();
+
+        // HU-02.2 · RN-03: reactivar una sede tambien cuenta para el limite.
+        if (cambios.activo === true) {
+            if (actual && !actual.activo) {
+                const limite = await verificarLimite(await empresaDeSede(id), "sedes");
+                if (limite) return res.status(403).json({ error: limite, codigo: CODIGO_LIMITE });
+            }
+        }
 
         if (Object.keys(cambios).length === 0) {
             return res.status(400).json({ error: "No hay cambios para aplicar" });
@@ -267,6 +313,10 @@ router.patch("/sedes/:id", requiereRol("superadmin", "admin_departamental"), asy
         if (error) throw error;
         if (!data) return res.status(404).json({ error: "Sede no encontrado" });
 
+        // HU-19.2: queda en la actividad de la empresa.
+        const accion = actual && cambios.activo === false && actual.activo ? "desactivada"
+            : actual && cambios.activo === true && !actual.activo ? "reactivada" : "editada";
+        await registrarActividad({ usuario: req.usuario, res, tipo: "sede", accion, objetoId: data.id, objeto: data.nombre });
         res.json({ sede: data });
     } catch (err) {
         console.error("Error actualizando sede:", err);

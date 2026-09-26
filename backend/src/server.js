@@ -17,6 +17,10 @@ import notificacionesRoutes from './routes/notificaciones.routes.js';
 import suplenciasRoutes from './routes/suplencias.routes.js';
 import exportRoutes from './routes/export.routes.js';
 import escalacionRoutes from './routes/escalacion.routes.js';
+import empresasRoutes from './routes/empresas.routes.js';
+import buzonRoutes from './routes/buzon.routes.js';
+import actividadRoutes from './routes/actividad.routes.js';
+import equipoRoutes from './routes/equipo.routes.js';
 import { iniciarKeepAlive, detenerKeepAlive } from './utils/keepAlive.js';
 import { iniciarCronVencimientos, detenerCronVencimientos } from './jobs/vencimientos.job.js';
 import { verificarCorreo } from './services/email.service.js';
@@ -76,6 +80,9 @@ app.use(cors({
 
         callback(new Error(`Origen no permitido en dev: ${origin}`));
     },
+    // El nombre de las descargas (por ejemplo el .zip de "Exportar todo", HU-04)
+    // viaja en Content-Disposition: sin esto el navegador no lo puede leer.
+    exposedHeaders: ['Content-Disposition'],
 }));
 
 app.use(express.json());
@@ -103,6 +110,10 @@ app.use('/api/notificaciones', notificacionesRoutes);
 app.use('/api/suplencias', suplenciasRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/escalacion', escalacionRoutes);
+app.use('/api/empresas', empresasRoutes);
+app.use('/api/buzon', buzonRoutes); // HU-18: Escribir a SISVIA (en pantalla, Soporte)
+app.use('/api/actividad', actividadRoutes); // HU-19: Actividad de la empresa
+app.use('/api/equipo', equipoRoutes); // HU-20: Registro del equipo y la marca de dueño
 
 app.use((req, res) => {
     res.status(404).json({ error: 'Ruta no encontrada' });

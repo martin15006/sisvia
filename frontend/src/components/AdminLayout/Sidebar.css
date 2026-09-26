@@ -58,6 +58,10 @@
     font-size: var(--tamano-xs);
     opacity: 0.9;
     color: var(--texto-sobre-marca);
+    /* CB-16: un nombre de empresa largo se corta con "…" (completo en el title) */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* En oscuro el nombre va en azul, como el del pie y el del header del
@@ -137,6 +141,20 @@
 .sidebar-item-etiqueta {
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* HU-18.4: los mensajes nuevos de Soporte */
+.sidebar-item-insignia {
+    margin-left: auto;
+    min-width: 22px;
+    padding: 0 6px;
+    border-radius: var(--radio-xl);
+    background: var(--estado-info-solido);
+    color: var(--texto-inverso);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    line-height: 22px;
+    text-align: center;
 }
 
 /* ===== Pie del sidebar: usuario + logout ===== */

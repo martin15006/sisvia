@@ -1,5 +1,10 @@
 // Pantalla admin del catalogo del chequeo: categorias, items y preguntas de aptitud.
 // Cualquier cambio se refleja inmediatamente en la app del conductor.
+//
+// Pacto para-empresas (HU-12 a HU-14): cada elemento es "Base" (lo maneja el
+// equipo SISVIA y lo ven todas las empresas) o "Propio" de la empresa. El
+// backend manda en cada elemento si es editable y si se puede bloquear; esta
+// pantalla solo muestra los botones que correspondan.
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,11 +22,51 @@ const EMOJIS_CATEGORIAS = [
     "🎚️", "🪞", "🔥", "💨", "🚨", "📍", "⚙️", "🧯",
 ];
 
-const TIPOS_VEHICULO = ["preoperacional", "postoperacional"];
+// Tipos de vehiculo a los que aplica un item (HU-15.3). Ninguno marcado = todos.
+const TIPOS_VEHICULO = [
+    ["automovil", "Automóvil"], ["motocicleta", "Motocicleta"], ["motocarro", "Motocarro"],
+    ["camion", "Camión"], ["camioneta", "Camioneta"], ["tractocamion", "Tractocamión"],
+    ["microbus", "Microbús"], ["buseta", "Buseta"], ["bus", "Bus"],
+];
+const nombreTipo = Object.fromEntries(TIPOS_VEHICULO);
+const aplicaA = (tipos) => (tipos && tipos.length ? tipos.map((t) => nombreTipo[t] || t).join(", ") : "todos los vehículos");
+
+const RUTAS = {
+    categoria: "/catalogo-admin/categorias",
+    item: "/catalogo-admin/items",
+    pregunta: "/catalogo-admin/preguntas-aptitud",
+};
+
+// Etiqueta de origen y estado de un elemento (solo tiene sentido dentro de una empresa).
+function Origen({ el, enEmpresa }) {
+    if (!enEmpresa) return null;
+    return (
+        <>
+            <span className={`catadmin-badge-origen catadmin-badge-origen--${el.origen}`}>
+                {el.origen === "base" ? "Base" : "Propio"}
+            </span>
+            {el.bloqueado && <span className="catadmin-badge-bloqueado">Bloqueado para esta empresa</span>}
+        </>
+    );
+}
 
 function CatalogoAdmin() {
     const navigate = useNavigate();
-    const { usuario } = useAuth();
+    const { usuario, empresaActiva } = useAuth();
+
+    // Quien mira: el superadmin afuera maneja el catalogo base; adentro de una
+    // empresa (o el Administrador de empresa) maneja lo propio; el resto solo mira.
+    const esSuperadmin = usuario?.rol === "superadmin";
+    const dentro = esSuperadmin && !!empresaActiva;
+    const enEmpresa = !esSuperadmin || dentro;
+    const puedeCrear = esSuperadmin || usuario?.rol === "admin_empresa";
+    const subtitulo = esSuperadmin && !dentro
+        ? "Catálogo base: lo ven todas las empresas, salvo lo que les bloquees desde adentro de cada una."
+        : dentro
+        ? `Catálogo de ${empresaActiva.nombre}: lo base se bloquea o desbloquea solo para esta empresa; lo propio se edita.`
+        : puedeCrear
+        ? "Lo base lo mantiene SISVIA. Agrega lo que tu operación necesite: solo lo ve tu empresa."
+        : "Solo lectura: los cambios los hace el Administrador de empresa.";
 
     // Tab activa
     const [tab, setTab] = useState("categorias");
@@ -79,10 +124,29 @@ function CatalogoAdmin() {
     const abrirCrear = (tipo) => {
         const plantillas = {
             categoria: { nombre: "", descripcion: "", icono: "•", orden: 99 },
-            item: { categoria_id: categorias[0]?.id || null, descripcion: "", descripcion_larga: "", orden: 99, es_critico: false, aplica_a_tipos: ["preoperacional", "postoperacional"] },
+            item: { categoria_id: categoriasElegibles[0]?.id || null, descripcion: "", descripcion_larga: "", orden: 99, es_critico: false, aplica_a_tipos: [] },
             pregunta: { pregunta: "", respuesta_apta: "si", orden: 99 },
         };
         setModal({ tipo, modo: "crear", datos: plantillas[tipo] });
+    };
+
+    // Categorias donde se puede poner un item: activas y no bloqueadas.
+    const categoriasElegibles = categorias.filter((c) => c.activo !== false && !c.bloqueado);
+
+    // HU-14: el superadmin, dentro de la empresa, bloquea o desbloquea algo base.
+    // Pide su contraseña como todo cambio adentro (lo maneja el helper api).
+    const cambiarBloqueo = async (tipo, el) => {
+        try {
+            const accion = el.bloqueado ? "desbloquear" : "bloquear";
+            await api(`/catalogo-admin/bloqueos/${accion}`, { method: "POST", body: { tipo, elemento_id: el.id } });
+            setToast({
+                mensaje: el.bloqueado ? "Desbloqueado: la empresa lo vuelve a ver" : "Bloqueado: la empresa ya no lo ve",
+                tipo: el.bloqueado ? "exito" : "advertencia",
+            });
+            cargarTab(tab);
+        } catch (err) {
+            if (!err.sesionExpirada) setToast({ mensaje: err.message, tipo: "error" });
+        }
     };
 
     const abrirEditar = (tipo, datos) => {
@@ -99,12 +163,7 @@ function CatalogoAdmin() {
         if (!modal) return;
         try {
             const { tipo, modo, datos } = modal;
-            const rutas = {
-                categoria: "/catalogo-admin/categorias",
-                item: "/catalogo-admin/items",
-                pregunta: "/catalogo-admin/preguntas-aptitud",
-            };
-            const ruta = rutas[tipo];
+            const ruta = RUTAS[tipo];
             const nombreEntidad =
                 tipo === "categoria" ? "Categoría" :
                 tipo === "item" ? "Ítem" : "Pregunta";
@@ -135,15 +194,10 @@ function CatalogoAdmin() {
     const ejecutarBorrado = async () => {
         if (!confirmacion) return;
         try {
-            const rutas = {
-                categoria: "/catalogo-admin/categorias",
-                item: "/catalogo-admin/items",
-                pregunta: "/catalogo-admin/preguntas-aptitud",
-            };
             const nombreEntidad =
                 confirmacion.tipo === "categoria" ? "Categoría" :
                 confirmacion.tipo === "item" ? "Ítem" : "Pregunta";
-            const resp = await api(`${rutas[confirmacion.tipo]}/${confirmacion.id}`, { method: "DELETE" });
+            const resp = await api(`${RUTAS[confirmacion.tipo]}/${confirmacion.id}`, { method: "DELETE" });
             // El backend devuelve tipo: 'hard' (borrado real) o 'soft' (desactivada por historial)
             if (resp.tipo === "hard") {
                 setToast({
@@ -176,7 +230,7 @@ function CatalogoAdmin() {
             <section className="catadmin-barra-pagina">
                 <div className="catadmin-barra-titulo">
                     <h1>Catálogo del chequeo</h1>
-                    <p>Gestiona categorías, ítems y preguntas de aptitud</p>
+                    <p>{subtitulo}</p>
                 </div>
             </section>
 
@@ -212,12 +266,14 @@ function CatalogoAdmin() {
                             <div className="catadmin-toolbar-info">
                                 {categorias.filter(c => c.activo).length} activas · {categorias.length} totales
                             </div>
-                            <button
-                                className="catadmin-boton-crear"
-                                onClick={() => abrirCrear("categoria")}
-                            >
-                                + Nueva categoría
-                            </button>
+                            {puedeCrear && (
+                                <button
+                                    className="catadmin-boton-crear"
+                                    onClick={() => abrirCrear("categoria")}
+                                >
+                                    + Nueva categoría
+                                </button>
+                            )}
                         </div>
 
                         <div className="catadmin-lista">
@@ -227,7 +283,7 @@ function CatalogoAdmin() {
                                         <div className="catadmin-fila-icono">{c.icono}</div>
                                     )}
                                     <div className="catadmin-fila-info">
-                                        <div className="catadmin-fila-titulo">{c.nombre}</div>
+                                        <div className="catadmin-fila-titulo">{c.nombre} <Origen el={c} enEmpresa={enEmpresa} /></div>
                                         {c.descripcion && <div className="catadmin-fila-desc">{c.descripcion}</div>}
                                         <div className="catadmin-fila-meta">
                                             Orden: {c.orden}
@@ -235,12 +291,19 @@ function CatalogoAdmin() {
                                         </div>
                                     </div>
                                     <div className="catadmin-fila-acciones">
-                                        <button className="catadmin-boton-editar" onClick={() => abrirEditar("categoria", c)}>
-                                            Editar
-                                        </button>
-                                        {c.activo && (
+                                        {c.editable && (
+                                            <button className="catadmin-boton-editar" onClick={() => abrirEditar("categoria", c)}>
+                                                Editar
+                                            </button>
+                                        )}
+                                        {c.editable && c.activo && (
                                             <button className="catadmin-boton-eliminar" onClick={() => pedirConfirmacion("categoria", c)}>
                                                 Eliminar
+                                            </button>
+                                        )}
+                                        {c.puede_bloquear && (
+                                            <button className="catadmin-boton-bloquear" onClick={() => cambiarBloqueo("categoria", c)}>
+                                                {c.bloqueado ? "Desbloquear" : "Bloquear"}
                                             </button>
                                         )}
                                     </div>
@@ -257,18 +320,23 @@ function CatalogoAdmin() {
                             <div className="catadmin-toolbar-info">
                                 {items.filter(i => i.activo).length} activos · {items.filter(i => i.es_critico && i.activo).length} críticos
                             </div>
-                            <button
-                                className="catadmin-boton-crear"
-                                onClick={() => abrirCrear("item")}
-                                disabled={categorias.length === 0}
-                            >
-                                + Nuevo ítem
-                            </button>
+                            {puedeCrear && (
+                                <button
+                                    className="catadmin-boton-crear"
+                                    onClick={() => abrirCrear("item")}
+                                    disabled={categoriasElegibles.length === 0}
+                                >
+                                    + Nuevo ítem
+                                </button>
+                            )}
                         </div>
 
-                        {/* Agrupar items por categoria */}
-                        {categorias.map((cat) => {
-                            const itemsCat = items.filter((i) => i.categoria_id === cat.id);
+                        {/* Agrupar items por categoria (y los que quedan en una categoria que no se lista) */}
+                        {[...categorias, ...(items.some((i) => !categorias.some((c) => c.id === i.categoria_id))
+                            ? [{ id: "otras", nombre: "Otras categorías", icono: "" }] : [])].map((cat) => {
+                            const itemsCat = cat.id === "otras"
+                                ? items.filter((i) => !categorias.some((c) => c.id === i.categoria_id))
+                                : items.filter((i) => i.categoria_id === cat.id);
                             if (itemsCat.length === 0) return null;
                             return (
                                 <div key={cat.id} className="catadmin-grupo">
@@ -283,22 +351,30 @@ function CatalogoAdmin() {
                                                     <div className="catadmin-fila-titulo">
                                                         {it.descripcion}
                                                         {it.es_critico && <span className="catadmin-badge-critico">CRÍTICO</span>}
+                                                        <Origen el={it} enEmpresa={enEmpresa} />
                                                     </div>
                                                     {it.descripcion_larga && (
                                                         <div className="catadmin-fila-desc">{it.descripcion_larga}</div>
                                                     )}
                                                     <div className="catadmin-fila-meta">
-                                                        Orden: {it.orden} · Aplica a: {(it.aplica_a_tipos || []).join(", ")}
+                                                        Orden: {it.orden} · Aplica a: {aplicaA(it.aplica_a_tipos)}
                                                         {!it.activo && <span className="catadmin-badge-inactivo">INACTIVO</span>}
                                                     </div>
                                                 </div>
                                                 <div className="catadmin-fila-acciones">
-                                                    <button className="catadmin-boton-editar" onClick={() => abrirEditar("item", it)}>
-                                                        Editar
-                                                    </button>
-                                                    {it.activo && (
+                                                    {it.editable && (
+                                                        <button className="catadmin-boton-editar" onClick={() => abrirEditar("item", it)}>
+                                                            Editar
+                                                        </button>
+                                                    )}
+                                                    {it.editable && it.activo && (
                                                         <button className="catadmin-boton-eliminar" onClick={() => pedirConfirmacion("item", it)}>
                                                             Desactivar
+                                                        </button>
+                                                    )}
+                                                    {it.puede_bloquear && (
+                                                        <button className="catadmin-boton-bloquear" onClick={() => cambiarBloqueo("item", it)}>
+                                                            {it.bloqueado ? "Desbloquear" : "Bloquear"}
                                                         </button>
                                                     )}
                                                 </div>
@@ -318,31 +394,40 @@ function CatalogoAdmin() {
                             <div className="catadmin-toolbar-info">
                                 {preguntas.filter(p => p.activo).length} activas · {preguntas.length} totales
                             </div>
-                            <button
-                                className="catadmin-boton-crear"
-                                onClick={() => abrirCrear("pregunta")}
-                            >
-                                + Nueva pregunta
-                            </button>
+                            {puedeCrear && (
+                                <button
+                                    className="catadmin-boton-crear"
+                                    onClick={() => abrirCrear("pregunta")}
+                                >
+                                    + Nueva pregunta
+                                </button>
+                            )}
                         </div>
 
                         <div className="catadmin-lista">
                             {preguntas.map((p) => (
                                 <div key={p.id} className={`catadmin-fila ${!p.activo ? "catadmin-fila-inactiva" : ""}`}>
                                     <div className="catadmin-fila-info">
-                                        <div className="catadmin-fila-titulo">{p.pregunta}</div>
+                                        <div className="catadmin-fila-titulo">{p.pregunta} <Origen el={p} enEmpresa={enEmpresa} /></div>
                                         <div className="catadmin-fila-meta">
                                             Orden: {p.orden} · Respuesta apta: <strong>{p.respuesta_apta.toUpperCase()}</strong>
                                             {!p.activo && <span className="catadmin-badge-inactivo">INACTIVA</span>}
                                         </div>
                                     </div>
                                     <div className="catadmin-fila-acciones">
-                                        <button className="catadmin-boton-editar" onClick={() => abrirEditar("pregunta", p)}>
-                                            Editar
-                                        </button>
-                                        {p.activo && (
+                                        {p.editable && (
+                                            <button className="catadmin-boton-editar" onClick={() => abrirEditar("pregunta", p)}>
+                                                Editar
+                                            </button>
+                                        )}
+                                        {p.editable && p.activo && (
                                             <button className="catadmin-boton-eliminar" onClick={() => pedirConfirmacion("pregunta", p)}>
                                                 Eliminar
+                                            </button>
+                                        )}
+                                        {p.puede_bloquear && (
+                                            <button className="catadmin-boton-bloquear" onClick={() => cambiarBloqueo("pregunta", p)}>
+                                                {p.bloqueado ? "Desbloquear" : "Bloquear"}
                                             </button>
                                         )}
                                     </div>
@@ -371,7 +456,7 @@ function CatalogoAdmin() {
                     <FormCategoria datos={modal.datos} onChange={handleChange} />
                 )}
                 {modal && modal.tipo === "item" && (
-                    <FormItem datos={modal.datos} onChange={handleChange} categorias={categorias} />
+                    <FormItem datos={modal.datos} onChange={handleChange} categorias={categoriasElegibles} />
                 )}
                 {modal && modal.tipo === "pregunta" && (
                     <FormPregunta datos={modal.datos} onChange={handleChange} />
@@ -543,7 +628,7 @@ function FormItem({ datos, onChange, categorias }) {
                     value={datos.categoria_id || ""}
                     onChange={(e) => onChange("categoria_id", parseInt(e.target.value, 10))}
                 >
-                    {categorias.filter(c => c.activo).map((c) => (
+                    {categorias.map((c) => (
                         <option key={c.id} value={c.id}>
                             {c.icono} {c.nombre}
                         </option>
@@ -597,18 +682,21 @@ function FormItem({ datos, onChange, categorias }) {
             </label>
 
             <div className="catadmin-form-label">
-                Aplica al tipo de chequeo
+                Aplica a estos vehículos
                 <div className="catadmin-checks-tipos">
-                    {TIPOS_VEHICULO.map((t) => (
+                    {TIPOS_VEHICULO.map(([t, etiqueta]) => (
                         <label key={t} className="catadmin-form-check">
                             <input
                                 type="checkbox"
                                 checked={(datos.aplica_a_tipos || []).includes(t)}
                                 onChange={() => togglearTipo(t)}
                             />
-                            {t === "preoperacional" ? "Preoperacional (antes)" : "Post-operacional (después)"}
+                            {etiqueta}
                         </label>
                     ))}
+                </div>
+                <div className="catadmin-form-ayuda">
+                    Si no marcas ninguno, aplica a todos los vehículos.
                 </div>
             </div>
 

@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import { api } from "../lib/api.js";
 import { clearSedeActiva } from "../lib/sedeActiva.js";
+import { getEmpresaActiva, setEmpresaActiva, clearEmpresaActiva, escucharEmpresaActiva } from "../lib/empresaActiva.js";
 
 export const AuthContext = createContext(null);
 
@@ -11,6 +12,11 @@ export const AuthProvider = ({ children }) => {
     // Mensaje a mostrar en el login cuando la salida fue forzada (sesion expirada
     // o cuenta desactivada). Lo consume el Login y se limpia.
     const [mensajeSalida, setMensajeSalida] = useState(null);
+    // Empresa a la que entro el superadmin (HU-16). Vive en localStorage (la lee
+    // el helper api) y aca, para que el menu y la franja se actualicen.
+    const [empresaActiva, setEmpresaActivaEstado] = useState(getEmpresaActiva);
+
+    useEffect(() => escucharEmpresaActiva(() => setEmpresaActivaEstado(getEmpresaActiva())), []);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -34,6 +40,7 @@ export const AuthProvider = ({ children }) => {
         const onForzarSalida = (e) => {
             localStorage.removeItem('token');
             clearSedeActiva();
+            clearEmpresaActiva();
             setUsuario(null);
             setSesionExpirada(true);
             setMensajeSalida(e.detail?.mensaje || 'Tu sesión expiró. Vuelve a iniciar sesión.');
@@ -52,6 +59,7 @@ export const AuthProvider = ({ children }) => {
             body: { identificador, password },
         });
         localStorage.setItem('token', data.token);
+        clearEmpresaActiva();
         setUsuario(data.usuario);
         setSesionExpirada(false);
         return data.usuario;
@@ -60,6 +68,7 @@ export const AuthProvider = ({ children }) => {
     const cerrarSesion = () => {
         localStorage.removeItem('token');
         clearSedeActiva();
+        clearEmpresaActiva();
         setUsuario(null);
     };
 
@@ -69,6 +78,10 @@ export const AuthProvider = ({ children }) => {
     const actualizarUsuario = (nuevoUsuario) => {
         setUsuario(nuevoUsuario);
     };
+
+    // HU-16: el superadmin entra a una empresa y sale de ella.
+    const entrarEmpresa = (empresa) => setEmpresaActiva(empresa);
+    const salirEmpresa = () => clearEmpresaActiva();
 
     const consumirSesionExpirada = () => {
         setSesionExpirada(false);
@@ -86,6 +99,9 @@ export const AuthProvider = ({ children }) => {
                 cerrarSesion,
                 actualizarUsuario,
                 consumirSesionExpirada,
+                empresaActiva,
+                entrarEmpresa,
+                salirEmpresa,
             }}>
             {children}
         </AuthContext.Provider>

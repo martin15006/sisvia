@@ -7,6 +7,7 @@ import {
     ETIQUETA_ROL,
     NIVEL_TERRITORIO,
     rolesQuePuedeCrear,
+    rolesSegunSedes,
     esDirector,
 } from "../../../lib/roles.js";
 import './ModalCrearUsuario.css';
@@ -114,7 +115,8 @@ function ModalEditarUsuario({ abierto, onCerrar, usuario, onEditado }) {
     // Roles asignables: los de rango inferior al admin en sesion (#111). Se incluye
     // el rol ACTUAL del editado de primero para que el select siempre diga la verdad.
     const rolesAsignables = (() => {
-        const inferiores = rolesQuePuedeCrear(usuarioSesion?.rol);
+        // HU-10: con una sola sede activa no se asignan roles de varias sedes (el actual se conserva: CB-12).
+        const inferiores = rolesSegunSedes(rolesQuePuedeCrear(usuarioSesion?.rol), sedes.length, usuarioSesion?.rol);
         if (!form.rol || inferiores.includes(form.rol)) return inferiores;
         return [form.rol, ...inferiores];
     })();

@@ -18,7 +18,8 @@
 // usa: una "Regional" equivale a un departamento (Director Regional).
 
 export const RANGO_ROL = {
-    superadmin: 3,
+    superadmin: 4,
+    admin_empresa: 3,       // Administrador de empresa (pacto para-empresas)
     admin_departamental: 2,
     admin_sede: 1,
     admin: 1, // alias historico de admin_sede
@@ -28,6 +29,7 @@ export const RANGO_ROL = {
 // Etiqueta legible de cada rol (cargos de la organizacion).
 export const ETIQUETA_ROL = {
     superadmin: 'Administrador general',
+    admin_empresa: 'Administrador de empresa',
     admin_departamental: 'Director Regional',
     admin_sede: 'Coordinador de sede',
     admin: 'Coordinador de sede',
@@ -68,6 +70,7 @@ export const rolesQuePuedeCrear = (rolActor) => {
     const nivel = rangoDe(rolActor);
     // Roles "canonicos" (sin el alias 'admin') ordenados de mayor a menor.
     const canonicos = [
+        'admin_empresa',
         'admin_departamental',
         'admin_sede',
         'conductor',
@@ -93,3 +96,12 @@ export const rolEfectivo = (usuario) => {
     }
     return usuario?.rol;
 };
+
+// RN-04 · HU-10 (pacto para-empresas): con menos de dos sedes activas, la empresa
+// solo crea Conductores; con dos o mas, tambien Director Regional y Coordinador.
+// Los que ya existen siguen funcionando (CB-12): esto solo mira lo que se crea.
+export const ROLES_DE_VARIAS_SEDES = ['admin_departamental', 'admin_sede', 'admin'];
+export const MENSAJE_ROLES_SEDES =
+    'Con una sola sede activa solo se pueden crear Conductores. Crea la segunda sede para habilitar Director Regional y Coordinador de sede.';
+export const rolPermitidoPorSedes = (rol, sedesActivas) =>
+    sedesActivas >= 2 || !ROLES_DE_VARIAS_SEDES.includes(rol);

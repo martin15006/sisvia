@@ -12,6 +12,8 @@
 import { supabase } from '../config/supabase.js';
 import { obtenerScope, aplicarScope } from '../services/scope.service.js';
 import { motivoBloqueo, GRAVEDAD_BLOQUEO } from '../services/bloqueoVehiculo.js';
+import { usoDeEmpresa } from '../services/empresas.service.js';
+import { rolEfectivo } from '../services/jerarquia.service.js';
 
 // Helper: devuelve el ISO string de la medianoche de hoy en hora local
 const inicioDelDiaISO = () => {
@@ -200,7 +202,8 @@ export const obtenerStatsDashboard = async (req, res) => {
                 id, placa, tipo, estado, activo,
                 soat_vencimiento, rtm_vencimiento, extintor_vencimiento,
                 sede:sede_id ( id, nombre )
-            `);
+            `)
+            .eq('dado_de_baja', false); // HU-17.2: salio de la flota
         bloqueadosQuery = aplicarScope(bloqueadosQuery, scope);
         const { data: candidatosRaw } = await bloqueadosQuery;
 
@@ -223,6 +226,21 @@ export const obtenerStatsDashboard = async (req, res) => {
             (GRAVEDAD_BLOQUEO[a.motivo] || 9) - (GRAVEDAD_BLOQUEO[b.motivo] || 9) || a.placa.localeCompare(b.placa)
         );
 
+        // HU-02.5: el Administrador de empresa ve cuanto usa de sus limites (y el
+        // superadmin, cuando entro a una empresa: HU-16).
+        let limites = null;
+        const rolPanel = rolEfectivo(usuario);
+        const empresaDelPlan = rolPanel === 'admin_empresa' ? usuario.empresa_id
+            : rolPanel === 'superadmin' ? usuario.empresaActiva : null;
+        if (empresaDelPlan) {
+            const { data: empresa } = await supabase
+                .from('empresas')
+                .select('id, limite_sedes, limite_vehiculos')
+                .eq('id', empresaDelPlan)
+                .maybeSingle();
+            if (empresa) limites = await usoDeEmpresa(empresa);
+        }
+
         // ====================================================================
         // 5) Respuesta
         // ====================================================================
@@ -244,6 +262,7 @@ export const obtenerStatsDashboard = async (req, res) => {
             },
             flota,
             no_pueden_salir: noPuedenSalir,
+            limites,
             alertas: {
                 licencias_por_vencer: licenciasPorVencer,
                 vehiculos_sin_runt: vehiculosSinRunt || [],

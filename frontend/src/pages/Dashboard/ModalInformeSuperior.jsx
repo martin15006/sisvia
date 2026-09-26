@@ -5,7 +5,7 @@ import { api } from "../../lib/api.js";
 import "./ModalInformeSuperior.css";
 
 function ModalInformeSuperior({ abierto, onCerrar, onEnviado }) {
-    const [superior, setSuperior] = useState(null); // { tieneSuperior, etiqueta }
+    const [superior, setSuperior] = useState(null); // { tieneSuperior, etiqueta, ofreceResumen }
     const [asunto, setAsunto] = useState("");
     const [mensaje, setMensaje] = useState("");
     const [incluirResumen, setIncluirResumen] = useState(true);
@@ -32,9 +32,11 @@ function ModalInformeSuperior({ abierto, onCerrar, onEnviado }) {
         try {
             const r = await api("/escalacion/informe", {
                 method: "POST",
-                body: { asunto, mensaje, incluir_resumen: incluirResumen },
+                // HU-18.10: al equipo SISVIA no se le manda el resumen del área.
+                body: { asunto, mensaje, incluir_resumen: incluirResumen && superior?.ofreceResumen !== false },
             });
-            onEnviado?.(`Informe enviado a ${r.superior || "tu superior"}.`);
+            // "a el Director..." -> "al Director..." (el superior llega como "el Director Regional de ...")
+            onEnviado?.(`Informe enviado a ${r.superior || "tu superior"}.`.replace(/ a el /, () => " al "));
             setAsunto("");
             setMensaje("");
             setIncluirResumen(true);
@@ -57,7 +59,9 @@ function ModalInformeSuperior({ abierto, onCerrar, onEnviado }) {
                 <form onSubmit={enviar} className="informe-body">
                     {superior?.etiqueta && (
                         <p className="informe-destino">
-                            Se enviará a <b>{superior.etiqueta}</b> (por correo y en su campanita).
+                            {/* "a el equipo..." -> "al equipo..." (la etiqueta llega como "el Director Regional de ...") */}
+                            Se enviará {superior.etiqueta.startsWith("el ") ? "al" : "a"}{" "}
+                            <b>{superior.etiqueta.replace(/^el /, "")}</b> (por correo y en su campanita).
                         </p>
                     )}
 
@@ -83,15 +87,17 @@ function ModalInformeSuperior({ abierto, onCerrar, onEnviado }) {
                         disabled={enviando}
                     />
 
-                    <label className="informe-check">
-                        <input
-                            type="checkbox"
-                            checked={incluirResumen}
-                            onChange={(e) => setIncluirResumen(e.target.checked)}
-                            disabled={enviando}
-                        />
-                        Incluir un resumen de mi área (vehículos, críticos, no operativos, chequeos de hoy)
-                    </label>
+                    {superior?.ofreceResumen !== false && (
+                        <label className="informe-check">
+                            <input
+                                type="checkbox"
+                                checked={incluirResumen}
+                                onChange={(e) => setIncluirResumen(e.target.checked)}
+                                disabled={enviando}
+                            />
+                            Incluir un resumen de mi área (vehículos, críticos, no operativos, chequeos de hoy)
+                        </label>
+                    )}
 
                     {error && <div className="informe-error animar-shake">⚠️ {error}</div>}
 
