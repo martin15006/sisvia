@@ -4,6 +4,7 @@
 // ("authenticated"): no hay un enlace publico, se sirven por la API con sesion.
 import { supabase } from '../config/supabase.js';
 import { cloudinary } from '../config/cloudinary.js';
+import { MARCA } from '../config/marca.js';
 import { deLaEmpresa } from './scopeReglas.js';
 import { etiquetaCargo } from './export/branding.js';
 import { crearNotificacionDirecta } from './notificaciones.service.js';
@@ -13,19 +14,22 @@ import {
     recursoDeAdjunto, estadoAlAbrir, puedeResponder, destinatariosDeRespuesta, ordenarBandeja,
     limpiarPantalla, describirNavegador,
 } from './buzonReglas.js';
+import {
+    VENTANA_MIRANDO, FRENO_VISTO_MS, MENSAJES_CORREOS, conCorreosPrendidos, destinatariosCorreoEquipo, reclamosALiberar,
+} from './correosSoporteReglas.js';
 
 const errorDe = (status, mensaje) => Object.assign(new Error(mensaje), { status });
 const esSisvia = (usuario) => usuario?.rol === 'superadmin';
 
 const CAMPOS = `id, empresa_id, autor_id, autor_nombre, autor_cargo, tipo, mensaje, estado, pantalla, navegador,
     adjunto_id, adjunto_recurso, adjunto_formato, adjunto_nombre, adjunto_bytes, resuelto_en, created_at, actualizado_en,
-    empresa:empresa_id ( nombre )`;
+    atiende_id, empresa:empresa_id ( nombre )`;
 const CAMPOS_RESPUESTA = 'id, mensaje_id, autor_nombre, de_sisvia, texto, adjunto_id, adjunto_recurso, adjunto_formato, adjunto_nombre, adjunto_bytes, created_at';
 
 // Lo que ve el navegador: sin el id interno de Cloudinary.
 const adjuntoPublico = (fila) => (fila.adjunto_id ? { nombre: fila.adjunto_nombre, formato: fila.adjunto_formato, bytes: fila.adjunto_bytes } : null);
 const paraCliente = (m) => {
-    const { adjunto_id: _i, adjunto_recurso: _r, adjunto_formato: _f, adjunto_nombre: _n, adjunto_bytes: _b, empresa, respuestas, ...resto } = m;
+    const { adjunto_id: _i, adjunto_recurso: _r, adjunto_formato: _f, adjunto_nombre: _n, adjunto_bytes: _b, atiende_id: _a, empresa, respuestas, ...resto } = m;
     return {
         ...resto,
         empresa_nombre: empresa?.nombre || null,
@@ -91,14 +95,61 @@ const equipoSisvia = () => idsActivos(supabase.from('usuarios').select('id').eq(
 const adminsDeEmpresa = (empresaId) => idsActivos(
     deLaEmpresa(supabase.from('usuarios').select('id').eq('rol', 'admin_empresa').eq('activo', true), empresaId));
 
-// Campanita siempre; el correo es una copia que sale en segundo plano: no hace
-// esperar a quien escribe, y si falla no frena nada.
-const avisar = async ({ ids, titulo, texto, encabezado, ruta, organizacion }) => {
+// ----- Correos: uno por conversacion hasta que la abras (pacto correos-de-soporte) -----
+
+// El equipo SISVIA con su interruptor (HU-02 · HU-03), y el interruptor de otras personas.
+const equipoParaCorreo = async () => {
+    const { data, error } = await supabase.from('usuarios').select('id, correos_soporte').eq('rol', 'superadmin').eq('activo', true);
+    if (error) throw error;
+    return data || [];
+};
+const conInterruptorPrendido = async (ids) => {
+    if (!ids.length) return [];
+    const { data, error } = await supabase.from('usuarios').select('id, correos_soporte').in('id', ids);
+    if (error) throw error;
+    return conCorreosPrendidos(data || []);
+};
+
+// RN-01: "la vio" al abrirla, responder o escribirla. Abierta en pantalla se pide cada
+// segundo: al abrir se anota a lo sumo cada 30 s por persona. Si falla, no frena nada.
+const vistoReciente = new Map();
+const marcarVisto = async (mensajeId, usuarioId, { frenar = false } = {}) => {
+    if (!usuarioId) return;
+    const clave = `${mensajeId}:${usuarioId}`;
+    const ahora = Date.now();
+    if (frenar && ahora - (vistoReciente.get(clave) || 0) < FRENO_VISTO_MS) return;
+    if (vistoReciente.size > 5000) vistoReciente.clear();
+    vistoReciente.set(clave, ahora);
+    const { error } = await supabase.rpc('marcar_visto_buzon', { p_mensaje: mensajeId, p_usuario: usuarioId });
+    if (error) console.error('[buzon] no se pudo anotar que la vio:', error.message);
+};
+
+// HU-01: la base decide y anota, en una sola operacion, a quien de correoIds le toca
+// (CB-01). Sale un solo correo a esos; si el envio falla, se liberan (CB-02).
+const mandarCorreo = async ({ mensajeId, correoIds, titulo, encabezado, texto, ruta, organizacion }) => {
+    if (!correoIds.length) return;
+    const { data: reclamos, error } = await supabase.rpc('reclamar_correo_buzon', {
+        p_mensaje: mensajeId, p_usuarios: correoIds, p_ventana: VENTANA_MIRANDO,
+    });
+    if (error) throw error;
+    if (!reclamos?.length) return;
+    const para = await emailsDeUsuarios(reclamos.map((r) => r.usuario_id));
+    const resultado = para.length
+        ? await enviarCorreo({ para, asunto: titulo, html: plantillaBuzon({ titulo, encabezado, texto, ruta, organizacion, pie: MENSAJES_CORREOS.pie }) })
+        : null;
+    for (const r of reclamosALiberar(resultado, reclamos)) {
+        await supabase.rpc('liberar_correo_buzon', { p_mensaje: mensajeId, p_usuario: r.usuario_id, p_anterior: r.correo_anterior, p_reclamado: r.correo_nuevo });
+    }
+};
+
+// La campanita, a todos los de `ids`, como siempre (RN-03). El correo, a los de
+// `correoIds` que les toque, en segundo plano: no hace esperar a quien escribe, y si
+// falla no frena nada.
+const avisar = async ({ mensajeId, ids, correoIds = [], titulo, texto, encabezado, ruta, organizacion }) => {
     if (!ids.length) return;
     await crearNotificacionDirecta({ destinatarioIds: ids, tipo: 'buzon', titulo, mensaje: texto.slice(0, 500), url_destino: ruta });
-    emailsDeUsuarios(ids)
-        .then((para) => (para.length ? enviarCorreo({ para, asunto: titulo, html: plantillaBuzon({ titulo, encabezado, texto, ruta, organizacion }) }) : null))
-        .catch((err) => console.error('[buzon] no salio la copia por correo:', err.message || err));
+    mandarCorreo({ mensajeId, correoIds, titulo, encabezado, texto, ruta, organizacion })
+        .catch((err) => console.error('[buzon] no salio el correo:', err.message || err));
 };
 
 // ----- Lo que usan las rutas -----
@@ -137,9 +188,13 @@ export const escribirASisvia = async (usuario, cuerpo, archivo, agente) => {
     }
 
     const empresa = fila.empresa?.nombre || usuario.empresa_nombre || 'Una empresa';
+    await marcarVisto(fila.id, usuario.id);   // RN-01: quien la escribe, la vio
     await avisar({
+        mensajeId: fila.id,
         ids: await equipoSisvia(),
-        titulo: `${empresa} escribió a SISVIA · ${TIPOS_BUZON[fila.tipo]}`,
+        // HU-01.1 · HU-02.1: conversacion nueva, nadie la atiende todavia
+        correoIds: destinatariosCorreoEquipo({ equipo: await equipoParaCorreo(), atiende: null }),
+        titulo: `${empresa} escribió a ${MARCA.nombre} · ${TIPOS_BUZON[fila.tipo]}`,
         encabezado: `${fila.autor_nombre} (${fila.autor_cargo}) · ${empresa}`,
         texto: fila.mensaje,
         ruta: `/admin/soporte/${fila.id}`,
@@ -169,6 +224,7 @@ export const contarNuevos = async () => {
 // HU-18.4-6: abrir un mensaje con su hilo. Si lo abre SISVIA y era Nuevo, pasa a En revision.
 export const abrirMensaje = async (usuario, id) => {
     const mensaje = await mensajeVisible(usuario, id);
+    await marcarVisto(id, usuario.id, { frenar: true });   // RN-01 · HU-01.3-4
     const nuevoEstado = estadoAlAbrir(mensaje.estado, usuario.rol);
     if (nuevoEstado !== mensaje.estado) {
         const ahora = new Date().toISOString();
@@ -210,8 +266,14 @@ export const responderMensaje = async (usuario, id, cuerpo, archivo) => {
         await borrarAdjunto(adjunto);
         throw error;
     }
-    const cambios = { actualizado_en: respuesta.created_at, ...(deSisvia && mensaje.estado === 'nuevo' ? { estado: 'en_revision' } : {}) };
+    // HU-02.2 · CB-05: quien del equipo responde se queda con la conversacion.
+    const cambios = {
+        actualizado_en: respuesta.created_at,
+        ...(deSisvia && mensaje.estado === 'nuevo' ? { estado: 'en_revision' } : {}),
+        ...(deSisvia ? { atiende_id: usuario.id } : {}),
+    };
     await supabase.from('buzon_mensajes').update(cambios).eq('id', id);
+    await marcarVisto(id, usuario.id);   // RN-01: responder cuenta como abrirla
 
     const empresa = mensaje.empresa?.nombre || '';
     let autor = null;
@@ -219,15 +281,21 @@ export const responderMensaje = async (usuario, id, cuerpo, archivo) => {
         const { data } = await supabase.from('usuarios').select('id, activo').eq('id', mensaje.autor_id).maybeSingle();
         autor = data;
     }
+    const ids = destinatariosDeRespuesta({
+        deSisvia,
+        autor,
+        adminsActivos: deSisvia ? await adminsDeEmpresa(mensaje.empresa_id) : [],
+        equipoSisvia: deSisvia ? [] : await equipoSisvia(),
+    });
     await avisar({
-        ids: destinatariosDeRespuesta({
-            deSisvia,
-            autor,
-            adminsActivos: deSisvia ? await adminsDeEmpresa(mensaje.empresa_id) : [],
-            equipoSisvia: deSisvia ? [] : await equipoSisvia(),
-        }),
-        titulo: deSisvia ? `SISVIA respondió: ${TIPOS_BUZON[mensaje.tipo]}` : `${empresa} respondió en Soporte`,
-        encabezado: `${respuesta.autor_nombre}${deSisvia ? ' · equipo SISVIA' : ` · ${empresa}`}`,
+        mensajeId: id,
+        ids,
+        // HU-01.5 · HU-03.3: a la empresa, con su interruptor. HU-02: al equipo, segun quien la atiende.
+        correoIds: deSisvia
+            ? await conInterruptorPrendido(ids)
+            : destinatariosCorreoEquipo({ equipo: await equipoParaCorreo(), atiende: mensaje.atiende_id }),
+        titulo: deSisvia ? `${MARCA.nombre} respondió: ${TIPOS_BUZON[mensaje.tipo]}` : `${empresa} respondió en Soporte`,
+        encabezado: `${respuesta.autor_nombre}${deSisvia ? ` · equipo ${MARCA.nombre}` : ` · ${empresa}`}`,
         texto: respuesta.texto,
         ruta: `/admin/soporte/${id}`,
         organizacion: empresa,
@@ -249,10 +317,14 @@ export const resolverMensaje = async (usuario, id) => {
             const { data } = await supabase.from('usuarios').select('id, activo').eq('id', mensaje.autor_id).maybeSingle();
             autor = data;
         }
+        await marcarVisto(id, usuario.id);   // RN-01
+        const ids = destinatariosDeRespuesta({ deSisvia: true, autor, adminsActivos: await adminsDeEmpresa(mensaje.empresa_id) });
         await avisar({
-            ids: destinatariosDeRespuesta({ deSisvia: true, autor, adminsActivos: await adminsDeEmpresa(mensaje.empresa_id) }),
-            titulo: `SISVIA marcó como resuelto: ${TIPOS_BUZON[mensaje.tipo]}`,
-            encabezado: 'Equipo SISVIA',
+            mensajeId: id,
+            ids,
+            correoIds: await conInterruptorPrendido(ids),   // HU-01.5 · HU-03.3
+            titulo: `${MARCA.nombre} marcó como resuelto: ${TIPOS_BUZON[mensaje.tipo]}`,
+            encabezado: `Equipo ${MARCA.nombre}`,
             texto: MENSAJES_BUZON.resuelto,
             ruta: `/admin/soporte/${id}`,
             organizacion: mensaje.empresa?.nombre || '',

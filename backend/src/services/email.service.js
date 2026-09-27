@@ -185,12 +185,14 @@ const escapar = (texto) => String(texto ?? '')
 
 // Copia por correo de "Escribir a SISVIA" (HU-18.3 y 18.5): el mensaje nuevo o la
 // respuesta. `ruta` es la pantalla de Soporte en la app.
-export const plantillaBuzon = ({ titulo, encabezado, texto, ruta, organizacion }) => {
+// pie: la linea que explica por que no llegan mas correos (pacto correos-de-soporte, HU-01.1).
+export const plantillaBuzon = ({ titulo, encabezado, texto, ruta, organizacion, pie }) => {
     const url = ruta && APP_URL ? `${APP_URL}${ruta}` : '';
     const cuerpo = `
     <div style="font-size:13px;color:#5f5e5a;">${escapar(encabezado)}</div>
     <div style="margin-top:10px;font-size:14px;white-space:pre-line;">${escapar(texto)}</div>
-    ${boton('Abrir en Soporte', url)}`;
+    ${boton('Abrir en Soporte', url)}
+    ${pie ? `<div style="margin-top:16px;font-size:12px;color:#5f5e5a;">${escapar(pie)}</div>` : ''}`;
     return layout(escapar(titulo), cuerpo, organizacion);
 };
 

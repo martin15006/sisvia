@@ -407,3 +407,85 @@
     font-size: var(--tamano-sm);
     color: var(--color-gris-700);
 }
+
+/* ===== Correos de Soporte (pacto correos-de-soporte, HU-03) ===== */
+.mi-perfil-correos {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+}
+
+/* Toda la fila es el interruptor: el texto también se toca, y mide al menos 44 px de alto. */
+.mi-perfil-interruptor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+    width: 100%;
+    min-height: 44px;
+    padding: var(--espacio-sm) var(--espacio-md);
+    border: 2px solid var(--color-gris-200);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-family: inherit;
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--velocidad-rapida) var(--suavizado);
+}
+
+.mi-perfil-interruptor:hover:not(:disabled) {
+    border-color: var(--color-primario);
+}
+
+.mi-perfil-interruptor:disabled {
+    cursor: wait;
+}
+
+/* La pista y la bolita, con las medidas del interruptor del tema (ToggleTema) */
+.mi-perfil-interruptor-pista {
+    position: relative;
+    flex-shrink: 0;
+    width: 52px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid var(--borde);
+    background: var(--superficie-alta);
+    transition: background var(--velocidad-rapida) var(--suavizado), border-color var(--velocidad-rapida) var(--suavizado);
+}
+
+.mi-perfil-interruptor-bolita {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-gris-500);
+    transition: left var(--velocidad-media) var(--suavizado), background var(--velocidad-rapida) var(--suavizado);
+}
+
+.mi-perfil-interruptor[aria-checked="true"] .mi-perfil-interruptor-pista {
+    background: var(--color-primario);
+    border-color: var(--color-primario);
+}
+
+.mi-perfil-interruptor[aria-checked="true"] .mi-perfil-interruptor-bolita {
+    left: 26px;
+    background: var(--superficie);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mi-perfil-interruptor-pista,
+    .mi-perfil-interruptor-bolita {
+        transition: none;
+    }
+}
+
+.mi-perfil-correos-ayuda {
+    margin: 0;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-700);
+}

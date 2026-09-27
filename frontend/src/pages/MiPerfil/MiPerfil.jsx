@@ -49,6 +49,12 @@ function MiPerfil() {
     const [versionDuenos, setVersionDuenos] = useState(0);
     const esDueno = usuario?.rol === "superadmin" && usuario?.es_dueno === true;
 
+    // Pacto correos-de-soporte, HU-03: el interruptor de los correos de Soporte.
+    // Solo para quienes los reciben; se guarda al tocarlo, sin contraseña.
+    const recibeSoporte = usuario?.rol === "superadmin" || usuario?.rol === "admin_empresa";
+    const correosPrendidos = usuario?.correos_soporte !== false;
+    const [guardandoCorreos, setGuardandoCorreos] = useState(false);
+
     // Avisos contextuales debajo de cada campo (mismo patron que ModalCrear/Editar).
     // Se muestran al tipear un caracter no permitido y se borran a los 2.5s.
     const [avisos, setAvisos] = useState({});
@@ -58,6 +64,23 @@ function MiPerfil() {
     const fileInputRef = useRef(null);
 
     const mostrarToast = (mensaje, tipo = "exito") => setToast({ mensaje, tipo });
+
+    const cambiarCorreos = async () => {
+        if (guardandoCorreos) return;
+        setGuardandoCorreos(true);
+        try {
+            const resp = await api("/auth/mi-perfil/correos-soporte", {
+                method: "PATCH",
+                body: { activo: !correosPrendidos },
+            });
+            if (actualizarUsuario) actualizarUsuario({ ...usuario, correos_soporte: resp.correos_soporte });
+            mostrarToast(resp.mensaje, "exito");
+        } catch (err) {
+            mostrarToast(err.message || "No se pudo guardar. Intenta de nuevo.", "error");
+        } finally {
+            setGuardandoCorreos(false);
+        }
+    };
     const otrosDuenos = duenos.filter((d) => d.id !== usuario?.id);
 
     // HU-20.3: quiénes más tienen la marca
@@ -403,6 +426,30 @@ function MiPerfil() {
                             : "Listo para guardar."}
                     </p>
                 </form>
+
+                {/* Pacto correos-de-soporte, HU-03.1-2: se guarda al tocarlo */}
+                {recibeSoporte && (
+                    <section className="mi-perfil-correos" aria-labelledby="mi-perfil-correos-titulo">
+                        <h3 className="mi-perfil-seccion-titulo" id="mi-perfil-correos-titulo">Correos de Soporte</h3>
+                        <button
+                            type="button"
+                            className="mi-perfil-interruptor"
+                            role="switch"
+                            aria-checked={correosPrendidos}
+                            aria-describedby="mi-perfil-correos-ayuda"
+                            onClick={cambiarCorreos}
+                            disabled={guardandoCorreos}
+                        >
+                            <span className="mi-perfil-interruptor-texto">Recibir correos de Soporte</span>
+                            <span className="mi-perfil-interruptor-pista" aria-hidden="true">
+                                <span className="mi-perfil-interruptor-bolita" />
+                            </span>
+                        </button>
+                        <p className="mi-perfil-correos-ayuda" id="mi-perfil-correos-ayuda">
+                            La campanita te sigue avisando de todo; esto solo apaga los correos.
+                        </p>
+                    </section>
+                )}
 
                 {/* HU-20.3-5: lo que significa ser el dueño, y como dejar de serlo */}
                 {esDueno && (

@@ -8,6 +8,7 @@ import { empresaDesactivada } from '../services/empresas.service.js';
 import { MENSAJES_EMPRESA, CODIGO_EMPRESA_DESACTIVADA } from '../services/empresasReglas.js';
 import { MENSAJES_PERFIL, cambiosDePerfil } from '../services/perfilReglas.js';
 import { verificarContrasena } from '../services/soporte.service.js';
+import { MENSAJES_CORREOS, puedeElegirCorreosSoporte, leerInterruptor } from '../services/correosSoporteReglas.js';
 
 // Helper: ¿la fecha de vencimiento (YYYY-MM-DD) ya paso? Compara solo fechas.
 const licenciaEstaVencida = (fechaVencimiento) => {
@@ -143,6 +144,7 @@ export const login = async (req, res) => {
                 empresa_nombre: perfil.empresa_nombre, // HU-08
                 es_pool: perfil.es_pool === true,
                 es_dueno: perfil.es_dueno === true, // HU-20: el dueño de SISVIA
+                correos_soporte: perfil.correos_soporte !== false, // correos-de-soporte/HU-03
                 suplencia: perfil.suplencia || null,
                 suplencia_sedes: perfil.suplenciaSedes || [],
                 sede_activa: perfil.sedeActiva || null,
@@ -176,6 +178,7 @@ export const obtenerActual = (req, res) => {
             empresa_nombre: req.usuario.empresa_nombre, // HU-08
             es_pool: req.usuario.es_pool === true,
             es_dueno: req.usuario.es_dueno === true, // HU-20: el dueño de SISVIA
+            correos_soporte: req.usuario.correos_soporte !== false, // correos-de-soporte/HU-03
             suplencia: req.usuario.suplencia || null,
             suplencia_sedes: req.usuario.suplenciaSedes || [],
             sede_activa: req.usuario.sedeActiva || null,
@@ -270,6 +273,7 @@ export const actualizarMiPerfil = async (req, res) => {
                 // sin esto, guardar el perfil borraba la marca de dueño de la pantalla.
                 es_pool: data.es_pool === true,
                 es_dueno: data.es_dueno === true, // HU-20
+                correos_soporte: data.correos_soporte !== false, // correos-de-soporte/HU-03
                 suplencia: req.usuario.suplencia || null,
                 suplencia_sedes: req.usuario.suplenciaSedes || [],
                 sede_activa: req.usuario.sedeActiva || null,
@@ -277,6 +281,25 @@ export const actualizarMiPerfil = async (req, res) => {
         });
     } catch (err) {
         console.error('Error en actualizarMiPerfil:', err);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+// Pacto correos-de-soporte, HU-03: el interruptor "Recibir correos de Soporte" de Mi perfil.
+// Se guarda al tocarlo, sin contraseña (firmado 2026-09-27): no es un dato de la cuenta
+// ni da acceso a nada. Solo para quienes reciben esos correos.
+export const cambiarCorreosSoporte = async (req, res) => {
+    try {
+        if (!puedeElegirCorreosSoporte(req.usuario.rol)) {
+            return res.status(403).json({ error: MENSAJES_CORREOS.soloAdministradores, codigo: 'correos_solo_administradores' });
+        }
+        const activo = leerInterruptor(req.body);
+        if (activo === null) return res.status(400).json({ error: MENSAJES_CORREOS.valorInvalido });
+        const { error } = await supabase.from('usuarios').update({ correos_soporte: activo }).eq('id', req.usuario.id);
+        if (error) throw error;
+        res.json({ correos_soporte: activo, mensaje: activo ? MENSAJES_CORREOS.prendidos : MENSAJES_CORREOS.apagados });
+    } catch (err) {
+        console.error('Error en cambiarCorreosSoporte:', err);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
