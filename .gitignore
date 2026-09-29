@@ -42,6 +42,10 @@ build/
 *.sql.gz
 backups/
 
+# Limpieza total de la base (borra todo menos el equipo SISVIA): solo en el
+# computador de Martín, nunca en el repo ni en produccion.
+database/LIMPIEZA_TOTAL.sql
+
 # Documentacion: SI va al repo (es parte del producto).
 
 
