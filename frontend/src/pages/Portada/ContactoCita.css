@@ -1,0 +1,283 @@
+/* "Reservemos una cita": seccion oscura de la portada. Colores --portada-noche-*
+   (CL-04); todo lo que se toca mide 44 px o mas (CL-08). */
+
+.cita {
+  padding: clamp(var(--espacio-xxxl), 9vw, 112px) 0;
+  background: var(--portada-noche);
+  color: var(--color-blanco);
+  scroll-margin-top: 64px;
+}
+
+/* Sobre el fondo oscuro, el anillo de foco va en naranja. */
+.cita :focus-visible {
+  outline-color: var(--color-primario);
+}
+
+.cita-rejilla {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: clamp(var(--espacio-xl), 5vw, 72px);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .cita-rejilla {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cita h2 {
+  color: var(--color-blanco);
+  font-size: clamp(2rem, 4.2vw, 3.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.cita-lead {
+  max-width: 52ch;
+  margin-top: var(--espacio-md);
+  color: var(--portada-noche-texto-2);
+  font-size: 1.08rem;
+}
+
+/* ---------- Formulario ---------- */
+.cita-formulario {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 20px;
+  margin-top: var(--espacio-xl);
+}
+
+@media (max-width: 560px) {
+  .cita-formulario {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cita-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cita-campo-ancho,
+.cita-autorizo,
+.cita-nota {
+  grid-column: 1 / -1;
+}
+
+.cita-campo label {
+  color: var(--portada-noche-texto);
+  font-size: 0.9rem;
+  font-weight: var(--peso-semibold);
+}
+
+.cita-campo label small {
+  color: var(--portada-noche-texto-3);
+  font-weight: var(--peso-normal);
+}
+
+.cita-campo input,
+.cita-campo textarea {
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--portada-noche-borde-fuerte);
+  border-radius: var(--radio-md);
+  background: var(--portada-noche-campo);
+  color: var(--color-blanco);
+  font-size: var(--tamano-md);
+  transition: border-color var(--velocidad-rapida) var(--suavizado);
+}
+
+.cita-campo textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.cita-campo input::placeholder,
+.cita-campo textarea::placeholder {
+  color: var(--portada-noche-texto-3);
+}
+
+.cita-campo input:hover,
+.cita-campo textarea:hover {
+  border-color: var(--portada-noche-borde-hover);
+}
+
+.cita-campo input:focus-visible,
+.cita-campo textarea:focus-visible {
+  border-color: var(--color-primario);
+}
+
+/* ---------- Errores y exito (HU-02.2-7) ---------- */
+.cita-campo input[aria-invalid="true"],
+.cita-campo textarea[aria-invalid="true"] {
+  border-color: var(--portada-noche-error);
+}
+
+.cita-error {
+  color: var(--portada-noche-error);
+  font-size: 0.88rem;
+  font-weight: var(--peso-semibold);
+}
+
+.cita-error-general {
+  grid-column: 1 / -1;
+  padding: 12px 14px;
+  border: 1.5px solid var(--portada-noche-error);
+  border-radius: var(--radio-md);
+  background: var(--portada-noche-campo);
+  color: var(--portada-noche-texto);
+}
+
+.cita-listo {
+  margin-top: var(--espacio-xl);
+  padding: var(--espacio-md) 18px;
+  border: 1.5px solid var(--portada-listo-borde);
+  border-radius: var(--radio-md);
+  background: color-mix(in srgb, var(--veh-operativo) 22%, var(--portada-noche-campo));
+  color: var(--portada-listo-texto);
+  font-size: 1.05rem;
+}
+
+.cita-listo:focus-visible {
+  outline-color: var(--portada-listo-borde);
+}
+
+/* Campo trampa: fuera de la vista y de los lectores de pantalla. */
+.cita-trampa {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.cita-autorizo label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 0;
+  color: var(--portada-noche-texto);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.cita-autorizo input {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--color-primario);
+  cursor: pointer;
+}
+
+.cita-formulario .portada-boton-marca {
+  justify-self: start;
+}
+
+.cita-nota {
+  color: var(--portada-noche-texto-3);
+  font-size: 0.88rem;
+}
+
+/* Enlace dentro del texto: el relleno lo hace tocable a 44 px sin mover el renglon (CL-08). */
+.cita .cita-nota a {
+  display: inline-block;
+  padding-block: 13px;
+  margin-block: -13px;
+  color: var(--portada-noche-texto);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cita .cita-nota a:hover {
+  color: var(--color-primario-hover);
+}
+
+/* ---------- Contacto directo ---------- */
+.cita-directo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cita-directo h3 {
+  color: var(--color-blanco);
+  font-size: 1.15rem;
+  letter-spacing: 0;
+}
+
+.cita-canales {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.cita-canal {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 14px var(--espacio-md);
+  border: 1.5px solid var(--portada-noche-borde);
+  border-radius: var(--radio-lg);
+  color: var(--color-blanco);
+  transition: border-color var(--velocidad-rapida) var(--suavizado), background-color var(--velocidad-rapida) var(--suavizado);
+}
+
+.cita-canal:hover {
+  border-color: var(--color-primario);
+  background: var(--portada-noche-campo);
+  color: var(--color-blanco);
+}
+
+.cita-canal-icono {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--color-primario);
+  color: var(--texto-sobre-marca);
+}
+
+.cita-canal-icono svg {
+  width: 22px;
+  height: 22px;
+}
+
+.cita-canal strong {
+  display: block;
+  font-size: var(--tamano-md);
+}
+
+.cita-canal span span {
+  display: block;
+  color: var(--portada-noche-texto-2);
+  font-family: var(--fuente-monospace);
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.cita-copiar {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 var(--espacio-xs);
+  color: var(--portada-noche-texto);
+  font-size: 0.95rem;
+  font-weight: var(--peso-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cita-copiar:hover {
+  color: var(--color-primario-hover);
+}
+
+.cita-ciudad {
+  color: var(--portada-noche-texto-3);
+  font-size: 0.95rem;
+}

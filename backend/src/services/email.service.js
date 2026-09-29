@@ -196,6 +196,29 @@ export const plantillaBuzon = ({ titulo, encabezado, texto, ruta, organizacion, 
     return layout(escapar(titulo), cuerpo, organizacion);
 };
 
+// Solicitud de cita desde la portada (pacto portada-publica, HU-03.2): todos los
+// datos, un enlace a WhatsApp del numero que dejo y "Ver en SISVIA". Todo escapado (CB-02).
+export const plantillaSolicitud = ({ empresa, ciudad, vehiculos, nombre, telefono, correo, mensaje, whatsapp }) => {
+    const url = APP_URL ? `${APP_URL}/admin/solicitudes` : '';
+    const fila = (etiqueta, valor) => (valor || valor === 0
+        ? `<tr><td style="padding:6px 12px 6px 0;color:#5f5e5a;font-size:13px;vertical-align:top;white-space:nowrap;">${etiqueta}</td><td style="padding:6px 0;font-size:14px;">${valor}</td></tr>`
+        : '');
+    const enlace = (href, texto) => `<a href="${escapar(href)}" style="color:${COLORES.primarioOscuro};">${escapar(texto)}</a>`;
+    const cuerpo = `
+    <div style="font-size:14px;">Una empresa quiere conocer ${MARCA.nombre}. Escríbele para acordar la cita.</div>
+    <table style="margin-top:14px;border-collapse:collapse;">
+      ${fila('Empresa', escapar(empresa))}
+      ${fila('Ciudad', escapar(ciudad))}
+      ${fila('Vehículos', vehiculos ? escapar(vehiculos) : '')}
+      ${fila('Nombre', escapar(nombre))}
+      ${fila('Teléfono', whatsapp ? `${escapar(telefono)} · ${enlace(whatsapp, 'Escribir por WhatsApp')}` : escapar(telefono))}
+      ${fila('Correo', correo ? enlace(`mailto:${correo}`, correo) : '')}
+    </table>
+    ${mensaje ? `<div style="margin-top:14px;padding:12px 14px;background:#fafafa;border:1px solid #e5e5e5;border-radius:6px;font-size:14px;white-space:pre-line;">${escapar(mensaje)}</div>` : ''}
+    ${boton(`Ver en ${MARCA.nombre}`, url)}`;
+    return layout(escapar(`Nueva solicitud de cita: ${empresa}`), cuerpo);
+};
+
 // ---- Orquestadores (resuelven destinatarios + arman el correo) ----
 
 // Correo inmediato de falla critica a los admins de la sede afectada.

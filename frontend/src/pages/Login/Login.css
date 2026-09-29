@@ -66,6 +66,31 @@
   max-width: 440px;
 }
 
+/* HU-01.8: "Volver al inicio", arriba a la izquierda de la tarjeta (44 px de alto, CL-08) */
+.login-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  min-height: 44px;
+  margin: calc(var(--espacio-md) * -1) 0 var(--espacio-sm) calc(var(--espacio-sm) * -1);
+  padding: 0 var(--espacio-sm);
+  border-radius: var(--radio-md);
+  color: var(--texto-marca);
+  font-size: var(--tamano-sm);
+  font-weight: var(--peso-semibold);
+  text-decoration: none;
+}
+
+.login-volver:hover {
+  background: var(--acento-suave);
+  color: var(--texto-marca);
+}
+
+.login-volver svg {
+  width: 18px;
+  height: 18px;
+}
+
 .login-cabecera {
   text-align: center;
   margin-bottom: var(--espacio-xl);

@@ -47,3 +47,5 @@ backups/
 
 # carpetas no subidas
 .vscode/
+# Estado local de impeccable (herramienta de diseño): nunca se sube
+.impeccable/

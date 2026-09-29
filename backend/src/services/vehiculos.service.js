@@ -1,6 +1,7 @@
 import { supabase } from "../config/supabase.js";
 import { cloudinary } from "../config/cloudinary.js";
 import { filtroEmpresa } from './scopeReglas.js';
+import { insertarConRespaldo } from './respaldo.service.js';
 
 export const registrarAuditoriaVehiculo = async ({
     vehiculoId,
@@ -8,7 +9,8 @@ export const registrarAuditoriaVehiculo = async ({
     accion,
     detalles = {},
 }) => {
-    await supabase.from("auditoria_vehiculos").insert({
+    // Con la IP y el navegador si lo hace el equipo SISVIA (enmienda 1 de portada-publica, HU-07).
+    await insertarConRespaldo("auditoria_vehiculos", {
         vehiculo_id: vehiculoId,
         accion_por_id: accionPorId,
         accion,

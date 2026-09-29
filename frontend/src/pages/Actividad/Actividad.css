@@ -233,6 +233,15 @@
 }
 
 /* Quién lo hizo: primero y en negrita (enmienda 7) */
+/* HU-07: la IP y el navegador debajo de lo que hizo (solo en el Registro del equipo) */
+.actividad-respaldo {
+    margin: 2px 0 0;
+    font-family: var(--fuente-monospace);
+    font-size: var(--tamano-xs);
+    color: var(--texto-suave);
+    overflow-wrap: anywhere;
+}
+
 .actividad-quien {
     display: flex;
     flex-wrap: wrap;

@@ -14,6 +14,14 @@ export const MARCA = {
     nombre: "SISVIA",
     nombreLargo: "SISVIA · Control de vehículos",
     lema: "Chequeo preoperacional y control de vehículos",
+    // Contacto publico del equipo: a este correo llegan las solicitudes de cita
+    // de la portada. La copia personal va en la variable SOLICITUDES_COPIA.
+    contacto: {
+        correo: "sisviacontacto@gmail.com",
+        whatsapp: "573332540815",
+        whatsappVisible: "333 254 0815",
+        ciudad: "Ibagué, Tolima",
+    },
 };
 
 // El nombre de la ORGANIZACION (el cliente) ya no va aca: sale de la empresa de

@@ -18,6 +18,7 @@ export const ICONOS_TIPO = {
     extintor_proximo_vencer: "⏱",
     vehiculo_sin_runt: "📋",
     informe_escalado: "📤",
+    solicitud_cita: "✉",
     sistema: "•",
 };
 
@@ -39,7 +40,18 @@ export const COLOR_TIPO = {
     extintor_proximo_vencer: "naranja",
     vehiculo_sin_runt: "naranja",
     informe_escalado: "azul",
+    solicitud_cita: "naranja",
     sistema: "verde",
+};
+
+// Aviso entre pantallas: algo cambio avisos del usuario por fuera de la campanita
+// (ej. contactar una solicitud deja leido su aviso, pacto portada-publica enmienda 2).
+// La campanita lo escucha y se pone al dia sin esperar su minuto.
+const EVENTO_CAMBIO = "sisvia:notificaciones-cambio";
+export const avisarCambioNotificaciones = () => window.dispatchEvent(new Event(EVENTO_CAMBIO));
+export const escucharCambioNotificaciones = (fn) => {
+    window.addEventListener(EVENTO_CAMBIO, fn);
+    return () => window.removeEventListener(EVENTO_CAMBIO, fn);
 };
 
 export const iconoDe = (tipo) => ICONOS_TIPO[tipo] || "•";

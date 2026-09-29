@@ -22,6 +22,7 @@ estado: aprobado   # borrador → aprobado. Un borrador no es ley: ningún chat 
 | **CL-11** | El backend corre en **Node 22 o superior** (`engines` en `backend/package.json`). | `supabase-js` necesita WebSocket nativo: con Node 20 el backend no arranca en Railway. | código + memoria |
 | **CL-12** | Textos de la interfaz, identificadores y comentarios en español; tablas y columnas en `snake_case`. | Todo lo existente ya está así; mezclar idiomas hace que no se encuentre nada. | README de `database/` + código |
 | **CL-13** | Toda consulta del backend a datos de una empresa pasa por el filtro de empresa del `scope`; ninguna ruta arma ese filtro a mano. | Un solo filtro olvidado deja ver los datos de otra empresa. | SRS §4.2 (RNF-03) · nueva 2026-09-18 |
+| **CL-14** | Todo lo que se escribe en el Registro del equipo o en la Actividad (`auditoria_*`, `actividad`, y las funciones de la base que escriben ahí) pasa por `insertarConRespaldo` o `rpcConRespaldo` (`backend/src/services/respaldo.service.js`). | Así lo que hace el equipo SISVIA guarda la IP y el navegador desde donde se hizo; un registro nuevo escrito a mano quedaría sin ese respaldo. | pacto portada-publica (enmienda 1, HU-07 · RN-07) · nueva 2026-09-28 |
 
 ## Stack fijo
 
@@ -44,3 +45,4 @@ estado: aprobado   # borrador → aprobado. Un borrador no es ley: ningún chat 
 | 2026-09-16 | Primera versión (borrador) | Primer pacto del proyecto: identidad y correcciones |
 | 2026-09-16 | Aprobada por Martín, sin cambios | Letra chica del pacto `identidad-y-correcciones` |
 | 2026-09-18 | CL-02 enmendada (el nombre de la organización sale de la empresa del usuario) y CL-13 nueva (filtro único de empresa). Aprobadas por Martín en la ronda del pacto `para-empresas`. |
+| 2026-09-28 | CL-14 nueva (todo registro del equipo o de la actividad pasa por `respaldo.service.js`, para guardar IP y navegador). Aprobada por Martín en la enmienda 2 del pacto `portada-publica`. |

@@ -1,0 +1,348 @@
+/* Panel recreado de la portada (HU-01.4). Colores solo por tokens (CL-04);
+   estados con --veh-* (CL-05). */
+
+.panel-vivo {
+  position: relative;
+  margin-top: clamp(var(--espacio-xl), 5vw, 56px);
+}
+
+.panel-vivo-etiqueta {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--espacio-sm);
+}
+
+.panel-vivo-etiqueta .portada-ejemplo {
+  color: var(--color-negro);
+}
+
+.panel-vivo-marco {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--superficie);
+  color: var(--texto);
+  border: 1.5px solid var(--color-negro);
+  border-bottom: 0;
+  border-radius: var(--radio-lg) var(--radio-lg) 0 0;
+  box-shadow: 0 -10px 50px var(--velo-20);
+}
+
+/* ---------- Barra de arriba ---------- */
+.panel-vivo-barra {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.panel-vivo-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  padding: 5px 10px 5px 6px;
+  border-radius: var(--radio-md);
+  background: var(--color-primario);
+  color: var(--texto-sobre-marca);
+  font-weight: var(--peso-bold);
+  font-size: var(--tamano-sm);
+}
+
+.panel-vivo-chip img {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+
+.panel-vivo-empresa {
+  font-weight: var(--peso-semibold);
+}
+
+.panel-vivo-hora {
+  margin-left: auto;
+  font-family: var(--fuente-monospace);
+  font-size: 0.95rem;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+.panel-vivo-campana {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid var(--borde);
+  border-radius: 10px;
+}
+
+.panel-vivo-campana svg {
+  width: 20px;
+  height: 20px;
+}
+
+.panel-vivo-campana b {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--veh-critico);
+  color: var(--veh-tinta);
+  font-size: var(--tamano-xs);
+  transform: scale(0);
+  transition: transform 300ms var(--portada-salida);
+}
+
+.panel-vivo-campana.con-aviso b {
+  transform: scale(1);
+}
+
+@media (max-width: 560px) {
+  .panel-vivo-barra {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .panel-vivo-chip {
+    gap: 0;
+    padding: var(--espacio-xs);
+    font-size: 0;
+  }
+
+  .panel-vivo-empresa {
+    font-size: 0.88rem;
+    line-height: 1.2;
+  }
+}
+
+/* ---------- Aviso de falla critica ---------- */
+.panel-vivo-aviso {
+  position: absolute;
+  top: 64px;
+  right: 18px;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 12px;
+  align-items: start;
+  width: min(340px, calc(100% - 36px));
+  padding: 12px 14px;
+  border: 1.5px solid var(--veh-critico);
+  border-radius: 10px;
+  background: var(--superficie);
+  box-shadow: var(--sombra-lg);
+  opacity: 0;
+  transform: translateY(-12px);
+  pointer-events: none;
+  transition: transform 420ms var(--portada-salida), opacity 300ms var(--portada-salida);
+}
+
+.panel-vivo-aviso.visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 560px) {
+  .panel-vivo-aviso {
+    top: auto;
+    bottom: 14px;
+  }
+}
+
+.panel-vivo-aviso-icono {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radio-md);
+  background: var(--veh-critico);
+  color: var(--veh-tinta);
+}
+
+.panel-vivo-aviso-icono svg {
+  width: 20px;
+  height: 20px;
+}
+
+.panel-vivo-aviso strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--portada-rojo-tinta);
+}
+
+.panel-vivo-aviso div > span {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+}
+
+/* ---------- Cuerpo ---------- */
+.panel-vivo-cuerpo {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 18px;
+  padding: 18px;
+}
+
+@media (max-width: 860px) {
+  .panel-vivo-cuerpo {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel-vivo-flota {
+  grid-column: 1 / -1;
+}
+
+.panel-vivo-flota-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.panel-vivo-flota-cabeza h2 {
+  color: var(--texto);
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.panel-vivo-flota-cabeza .portada-mono {
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.panel-vivo-franja {
+  display: flex;
+  height: 38px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: var(--radio-md);
+  background: var(--superficie-sutil);
+}
+
+.panel-vivo-tramo {
+  height: 100%;
+  flex-basis: 0;
+  transition: flex-grow 700ms var(--portada-salida);
+}
+
+.tramo-operativo { background: var(--veh-operativo); }
+.tramo-observacion { background: var(--veh-observacion); }
+.tramo-alerta { background: var(--veh-alerta); }
+.tramo-critico { background: var(--veh-critico); }
+.tramo-no { background: var(--veh-no-operativo); }
+
+.panel-vivo-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.panel-vivo-leyenda i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+
+.panel-vivo-leyenda b {
+  font-family: var(--fuente-monospace);
+  color: var(--texto);
+}
+
+.panel-vivo-caja {
+  padding: 14px;
+  border: 1.5px solid var(--borde);
+  border-radius: 10px;
+}
+
+.panel-vivo-caja h3 {
+  display: flex;
+  justify-content: space-between;
+  color: var(--texto);
+  font-size: 0.98rem;
+  letter-spacing: 0;
+}
+
+.panel-vivo-caja h3 .portada-mono {
+  font-weight: var(--peso-medio);
+  color: var(--texto-suave);
+}
+
+.panel-vivo-caja-no {
+  border-color: var(--veh-critico);
+}
+
+.panel-vivo .panel-vivo-caja-no h3 {
+  color: var(--veh-critico);
+}
+
+.panel-vivo-lista {
+  max-height: 250px;
+  overflow: hidden;
+}
+
+.panel-vivo-renglon {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--borde);
+  font-size: 0.92rem;
+}
+
+.panel-vivo-caja h3 + .panel-vivo-renglon,
+.panel-vivo-lista .panel-vivo-renglon:first-child {
+  margin-top: var(--espacio-sm);
+}
+
+.panel-vivo-renglon.entra {
+  animation: panel-vivo-entra 450ms var(--portada-salida);
+}
+
+@keyframes panel-vivo-entra {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.panel-vivo-motivo {
+  color: var(--texto-suave);
+}
+
+.panel-vivo-hora-mini {
+  font-family: var(--fuente-monospace);
+  font-size: 0.82rem;
+  color: var(--texto-suave);
+}
+
+.panel-vivo-estado {
+  padding: 3px 7px;
+  border-radius: var(--radio-sm);
+  font-family: var(--fuente-monospace);
+  font-size: 0.74rem;
+  font-weight: var(--peso-semibold);
+  color: var(--veh-tinta);
+  white-space: nowrap;
+}
+
+.panel-vivo-estado.estado-operativo { background: var(--veh-operativo); }
+.panel-vivo-estado.estado-observacion { background: var(--veh-observacion); }
+.panel-vivo-estado.estado-alerta { background: var(--veh-alerta); }
+.panel-vivo-estado.estado-critico,
+.panel-vivo-estado.estado-papeles { background: var(--veh-critico); }
+.panel-vivo-estado.estado-no { background: var(--veh-no-operativo); }

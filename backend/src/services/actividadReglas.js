@@ -9,6 +9,7 @@
 
 import { ETIQUETA_ROL } from './jerarquia.service.js';
 import { escaparLike } from './empresasReglas.js';
+import { lineaDeRespaldo } from './respaldoReglas.js';
 
 export const MENSAJES_ACTIVIDAD = {
     soloAdminEmpresa: 'Solo el Administrador de empresa ve la actividad de la empresa.',
@@ -84,6 +85,12 @@ const EMPRESA = {
     entro: (e) => `Entró a la empresa ${e}`,
     exportada: (e) => `Exportó todo de ${e}`,
     eliminada: (e) => `Eliminó la empresa ${e}`,
+};
+
+// Solicitudes de cita de la portada (pacto portada-publica, enmienda 1: HU-04.5).
+const SOLICITUD = {
+    contactada: 'Marcó como contactada la solicitud de',
+    borrada: 'Borró la solicitud de',
 };
 
 const SEDE = {
@@ -172,6 +179,8 @@ export const describirActividad = (f) => {
             if (f.accion === 'limites') return cambioDePlan(empresa, d);
             return (EMPRESA[f.accion] || (() => `${f.accion} · ${empresa}`))(empresa);
         }
+        case 'solicitud':
+            return `${SOLICITUD[f.accion] || 'Cambió la solicitud de'} ${f.objeto || 'una empresa'}${d.ciudad ? ` · ${d.ciudad}` : ''}`;
         default:
             return f?.accion || '';
     }
@@ -179,7 +188,8 @@ export const describirActividad = (f) => {
 
 // Lo que viaja al navegador: quien, que en palabras y cuando (HU-19.1). Los
 // detalles crudos no salen (pueden traer datos que la pantalla no necesita).
-export const filaParaMostrar = (f) => ({
+// conRespaldo: solo en el Registro del equipo, la linea "IP … · navegador" (HU-07 · RN-07).
+export const filaParaMostrar = (f, { conRespaldo = false } = {}) => ({
     id: f.id,
     cuando: f.created_at,
     quien: f.actor_nombre,
@@ -188,6 +198,7 @@ export const filaParaMostrar = (f) => ({
     tipo: f.tipo,
     texto: describirActividad(f),
     empresa: f.empresa_nombre || null,
+    ...(conRespaldo ? { respaldo: lineaDeRespaldo(f) } : {}),
 });
 
 // ----- Filtros (HU-19.4 · HU-20.1) -----
@@ -278,11 +289,11 @@ export const condicionesDeConsulta = (alcance, filtros) => {
 
 
 // Arma la pagina: se piden POR_PAGINA + 1 filas para saber si hay mas.
-export const armarPagina = (filas) => {
+export const armarPagina = (filas, opciones = {}) => {
     const pagina = (filas || []).slice(0, POR_PAGINA);
     const hayMas = (filas || []).length > POR_PAGINA;
     return {
-        actividad: pagina.map(filaParaMostrar),
+        actividad: pagina.map((f) => filaParaMostrar(f, opciones)),
         siguiente: hayMas ? cursorDe(pagina[pagina.length - 1]) : null,
     };
 };

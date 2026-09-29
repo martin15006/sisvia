@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import Toast from '../../components/Toast/Toast.jsx';
 import InputPassword from '../../components/InputPassword/InputPassword.jsx';
 import { MARCA } from '../../lib/marca.js';
+import { rutaDeInicio } from '../../lib/rutaDeInicio.js';
 import './Login.css';
 
 function Login() {
@@ -36,14 +37,7 @@ function Login() {
 
         try {
             const usuario = await iniciarSesion(identificador, password);
-
-            if (usuario.debe_cambiar_password) {
-                navigate('/cambiar-password');
-            } else if (usuario.rol === 'conductor') {
-                navigate('/conductor');
-            } else {
-                navigate('/dashboard');
-            }
+            navigate(rutaDeInicio(usuario));
 
         } catch (err) {
             // 403 → cuenta desactivada; 429 → bloqueada por intentos fallidos.
@@ -67,6 +61,13 @@ function Login() {
             </div>
 
             <div className="login-tarjeta animar-fade-in-up">
+                {/* HU-01.8 (portada-publica, enmienda 1): de vuelta a la portada */}
+                <Link to="/" className="login-volver">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                    Volver al inicio
+                </Link>
                 <div className="login-cabecera">
                     <img src={MARCA.logo} alt={MARCA.nombre} className="login-logo-img" />
                     <div className="login-logo-texto">{MARCA.nombre}</div>

@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase.js';
+import { insertarConRespaldo } from './respaldo.service.js';
 
 export const generarPasswordTemporal = () => {
     const chars =
@@ -28,7 +29,8 @@ export const registrarAuditoria = async ({
     accion,
     detalles = {},
 }) => {
-    await supabase.from('auditoria_usuarios').insert({
+    // Con la IP y el navegador si lo hace el equipo SISVIA (enmienda 1 de portada-publica, HU-07).
+    await insertarConRespaldo('auditoria_usuarios', {
         usuario_afectado_id: usuarioAfectadoId,
         accion_por_id: accionPorId,
         accion,

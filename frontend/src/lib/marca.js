@@ -19,6 +19,19 @@ export const MARCA = {
     // Logo servido desde /public.
     logo: "/logo.png",
 
+    // Contacto publico del equipo (portada y pie). La copia de las solicitudes
+    // al correo personal NO va aca: es SOLICITUDES_COPIA, en el backend.
+    contacto: {
+        correo: "sisviacontacto@gmail.com",
+        whatsapp: "573332540815",         // para wa.me: codigo de pais + numero
+        whatsappVisible: "333 254 0815",  // como se muestra
+        ciudad: "Ibagué, Tolima",
+    },
+
+    // Direccion publica de la app: la usa la vista previa al compartir el
+    // enlace (og:url, og:image), que exige direcciones completas.
+    urlPublica: "https://sisvia.pages.dev",
+
     // Prefijo de todas las claves de localStorage. Cambiarlo obliga a
     // todos los navegadores a empezar limpio (util al renombrar).
     prefijoStorage: "sisvia",

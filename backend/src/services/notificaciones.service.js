@@ -249,6 +249,22 @@ export const marcarLeida = async (notifId, usuarioId) => {
 };
 
 
+// marcarLeidasDe: marca leidas, para TODOS sus destinatarios, las de un tipo que
+// llevan a una direccion exacta. La usa el contactar una solicitud de cita: su
+// aviso ya no le sirve a nadie del equipo (pacto portada-publica, enmienda 2).
+export const marcarLeidasDe = async ({ tipo, url_destino }) => {
+    const { data, error } = await supabase
+        .from('notificaciones')
+        .update({ leida: true, leida_en: new Date().toISOString() })
+        .eq('tipo', tipo)
+        .eq('url_destino', url_destino)
+        .eq('leida', false)
+        .select('id');
+    if (error) throw error;
+    return (data || []).length;
+};
+
+
 // marcarTodasLeidas: marca TODAS las del usuario como leidas.
 export const marcarTodasLeidas = async (usuarioId) => {
     const ahora = new Date().toISOString();

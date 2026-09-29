@@ -21,6 +21,8 @@ import empresasRoutes from './routes/empresas.routes.js';
 import buzonRoutes from './routes/buzon.routes.js';
 import actividadRoutes from './routes/actividad.routes.js';
 import equipoRoutes from './routes/equipo.routes.js';
+import solicitudesRoutes from './routes/solicitudes.routes.js';
+import { contextoPedido } from './middlewares/contextoPedido.js';
 import { iniciarKeepAlive, detenerKeepAlive } from './utils/keepAlive.js';
 import { iniciarCronVencimientos, detenerCronVencimientos } from './jobs/vencimientos.job.js';
 import { verificarCorreo } from './services/email.service.js';
@@ -87,6 +89,10 @@ app.use(cors({
 
 app.use(express.json());
 
+// El pedido en curso, para guardar la IP y el navegador en el Registro del equipo
+// (pacto portada-publica, enmienda 1: HU-07). Va antes de todas las rutas.
+app.use(contextoPedido);
+
 app.set('etag', false);
 app.use('/api', (req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -114,6 +120,7 @@ app.use('/api/empresas', empresasRoutes);
 app.use('/api/buzon', buzonRoutes); // HU-18: Escribir a SISVIA (en pantalla, Soporte)
 app.use('/api/actividad', actividadRoutes); // HU-19: Actividad de la empresa
 app.use('/api/equipo', equipoRoutes); // HU-20: Registro del equipo y la marca de dueño
+app.use('/api/solicitudes', solicitudesRoutes); // Portada publica: solicitudes de cita (pacto portada-publica)
 
 app.use((req, res) => {
     res.status(404).json({ error: 'Ruta no encontrada' });

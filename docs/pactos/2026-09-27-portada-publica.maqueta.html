@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<!-- Maqueta APROBADA por Martín el 2026-09-27 (pacto portada-publica). Es el contrato visual, no código de la app. -->
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SISVIA · Un vehículo con fallas no sale</title>
+<meta name="description" content="Chequeo preoperacional desde el celular: si el vehículo está en estado crítico, no operativo o con los papeles vencidos, no sale, y el coordinador se entera.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Maquetas de la landing de SISVIA: base común (marca, menú, botones, contacto, pie).
+   Los valores salen de frontend/src/styles/variables.css de la app. */
+
+:root {
+  --naranja: #EA580C;
+  --naranja-hover: #F97316;
+  --naranja-oscuro: #C2410C;
+  --naranja-muy-oscuro: #9A3412;
+  --naranja-claro: #FFEDD5;
+  --sobre-naranja: #000000;
+
+  --tinta: #111111;
+  --tinta-2: #3F3F46;
+  --tinta-3: #52525B;
+  --papel: #FFFFFF;
+  --papel-2: #F3F4F6;
+  --regla: #D4D8DD;
+  --regla-fuerte: #9CA3AF;
+
+  --verde: #157F3D;
+  --ambar: #9C6400;
+  --alerta: #C2410C;
+  --rojo: #B3261E;
+  --gris-estado: #6B7280;
+
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+
+  --radio: 8px;
+  --radio-lg: 12px;
+  --sombra: 0 4px 14px rgba(0, 0, 0, 0.14);
+  --sombra-lg: 0 18px 44px rgba(0, 0, 0, 0.22);
+  --salida: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --z-menu: 20;
+  --z-aviso: 40;
+
+  --ancho: 1180px;
+  --margen: clamp(16px, 4vw, 40px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: 80px; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+h1, h2, h3 { margin: 0; line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+a { color: inherit; text-underline-offset: 3px; }
+img { display: block; max-width: 100%; }
+
+::selection { background: var(--naranja-claro); color: #000; }
+:focus-visible { outline: 3px solid var(--naranja-oscuro); outline-offset: 3px; border-radius: 4px; }
+html { scrollbar-color: var(--regla-fuerte) var(--papel-2); }
+
+.envoltura { width: 100%; max-width: var(--ancho); margin: 0 auto; padding: 0 var(--margen); }
+.mono { font-family: var(--mono); font-feature-settings: "tnum" 1; }
+.ejemplo {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.02em;
+  color: var(--tinta-3);
+}
+
+/* ---------- Menú ---------- */
+.menu {
+  position: sticky; top: 0; z-index: var(--z-menu);
+  background: var(--papel);
+  border-bottom: 1px solid var(--regla);
+}
+.menu-dentro { display: flex; align-items: center; gap: 24px; min-height: 64px; }
+.marca { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 1.15rem; letter-spacing: 0.01em; }
+.marca img { width: 34px; height: 34px; border-radius: 8px; }
+.menu-enlaces { display: flex; gap: 22px; margin-left: auto; font-size: 0.95rem; }
+.menu-enlaces a { text-decoration: none; color: var(--tinta-2); }
+.menu-enlaces a:hover { color: var(--tinta); text-decoration: underline; }
+.menu-acciones { display: flex; align-items: center; gap: 10px; }
+@media (max-width: 860px) {
+  .menu-enlaces { display: none; }
+  .menu-acciones { margin-left: auto; }
+}
+
+/* ---------- Botones ---------- */
+.boton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 0 22px; border-radius: var(--radio);
+  font-family: inherit; font-size: 1rem; font-weight: 600; text-decoration: none;
+  border: 2px solid transparent; cursor: pointer;
+  transition: background-color 180ms var(--salida), border-color 180ms var(--salida), transform 180ms var(--salida);
+}
+.boton:active { transform: translateY(1px); }
+.boton svg { width: 20px; height: 20px; flex-shrink: 0; }
+.boton-marca { background: var(--naranja); color: var(--sobre-naranja); }
+.boton-marca:hover { background: var(--naranja-hover); }
+.boton-linea { background: transparent; color: var(--tinta); border-color: var(--tinta); }
+.boton-linea:hover { background: var(--tinta); color: var(--papel); }
+.boton-chico { min-height: 40px; padding: 0 14px; font-size: 0.92rem; }
+.enlace-entrar { font-size: 0.95rem; font-weight: 600; text-decoration: none; padding: 8px 6px; }
+.enlace-entrar:hover { text-decoration: underline; }
+.solo-angosto { display: none; }
+@media (max-width: 520px) { .solo-ancho { display: none; } .solo-angosto { display: inline; } }
+
+/* ---------- Contacto (común a las tres maquetas) ---------- */
+.contacto { background: var(--tinta); color: var(--papel); padding: clamp(64px, 9vw, 112px) 0; }
+.contacto-rejilla { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: clamp(32px, 5vw, 72px); align-items: start; }
+@media (max-width: 900px) { .contacto-rejilla { grid-template-columns: 1fr; } }
+.contacto h2 { font-size: clamp(2rem, 4.2vw, 3.1rem); }
+.contacto-lead { margin-top: 16px; max-width: 52ch; color: #D4D4D8; font-size: 1.08rem; }
+.formulario { margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px; }
+@media (max-width: 560px) { .formulario { grid-template-columns: 1fr; } }
+.campo { display: flex; flex-direction: column; gap: 7px; }
+.campo-ancho { grid-column: 1 / -1; }
+.campo label { font-size: 0.9rem; font-weight: 600; color: #E4E4E7; }
+.campo label small { font-weight: 400; color: #A1A1AA; }
+.campo input, .campo select, .campo textarea {
+  min-height: 48px; padding: 12px 14px; border-radius: var(--radio);
+  border: 1.5px solid #52525B; background: #18181B; color: var(--papel);
+  font: inherit; font-size: 1rem;
+}
+.campo textarea { min-height: 96px; resize: vertical; }
+.campo input::placeholder, .campo textarea::placeholder { color: #A1A1AA; }
+.campo input:hover, .campo select:hover, .campo textarea:hover { border-color: #71717A; }
+.campo input:focus-visible, .campo select:focus-visible, .campo textarea:focus-visible { outline-color: var(--naranja); border-color: var(--naranja); }
+.formulario .boton-marca { justify-self: start; }
+.formulario-nota { grid-column: 1 / -1; font-size: 0.88rem; color: #A1A1AA; }
+.formulario-listo {
+  grid-column: 1 / -1; display: none; padding: 16px 18px; border-radius: var(--radio);
+  background: color-mix(in srgb, var(--verde) 22%, #18181B); border: 1.5px solid #34A56A; color: #ECFDF3;
+}
+.formulario.enviado .formulario-listo { display: block; }
+
+.directo { display: flex; flex-direction: column; gap: 14px; }
+.directo h3 { font-size: 1.15rem; letter-spacing: 0; }
+.directo-lista { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
+.directo-canal {
+  display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: var(--radio-lg); border: 1.5px solid #3F3F46;
+  text-decoration: none; transition: border-color 180ms var(--salida), background-color 180ms var(--salida);
+}
+.directo-canal:hover { border-color: var(--naranja); background: #18181B; }
+.directo-canal .icono { width: 44px; height: 44px; border-radius: 10px; background: var(--naranja); color: #000; display: grid; place-items: center; }
+.directo-canal .icono svg { width: 22px; height: 22px; }
+.directo-canal strong { display: block; font-size: 1rem; }
+.directo-canal span { display: block; color: #D4D4D8; font-family: var(--mono); font-size: 0.92rem; }
+.directo-ciudad { color: #A1A1AA; font-size: 0.95rem; margin-top: 4px; }
+
+/* ---------- Pie ---------- */
+.pie { background: #000; color: #A1A1AA; padding: 28px 0; font-size: 0.9rem; }
+.pie-dentro { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; justify-content: space-between; }
+.pie .marca { color: var(--papel); font-size: 1rem; }
+.pie .marca img { width: 26px; height: 26px; border-radius: 6px; }
+.pie a { color: #E4E4E7; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+}
+</style>
+<style>
+  /* ---------- Menú sobre la portada naranja ---------- */
+  .menu { background: var(--naranja); border-bottom-color: rgba(0,0,0,0.18); }
+  .menu-enlaces a { color: #1C1917; }
+  .menu .boton-marca { background: #000; color: #fff; }
+  .menu .boton-marca:hover { background: #27272A; }
+  .menu .marca img { box-shadow: 0 0 0 2px #000; }
+
+  /* ---------- Portada: la promesa y el panel en vivo ---------- */
+  .portada { background: var(--naranja); color: #000; padding: clamp(36px, 6vw, 80px) 0 0; }
+  .portada-texto { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 24px 48px; align-items: end; }
+  @media (max-width: 900px) { .portada-texto { grid-template-columns: 1fr; } }
+  .portada h1 { font-size: clamp(2.7rem, 6.4vw, 5.2rem); font-weight: 700; letter-spacing: -0.035em; max-width: 12ch; }
+  .portada h1 span { text-decoration: underline; text-decoration-thickness: 0.09em; text-underline-offset: 0.12em; }
+  .portada-lead { font-size: clamp(1.05rem, 1.5vw, 1.2rem); max-width: 44ch; }
+  .portada-acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+  .boton-negro { background: #000; color: #fff; }
+  .boton-negro:hover { background: #27272A; }
+  .portada .boton-linea { border-color: #000; color: #000; }
+  .portada .boton-linea:hover { background: #000; color: var(--naranja); }
+  .escenario { position: relative; margin-top: clamp(36px, 5vw, 56px); }
+  .etiqueta-ejemplo { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .etiqueta-ejemplo .ejemplo { color: #1C1917; }
+
+  .panel { position: relative; z-index: 1; background: var(--papel); border: 1.5px solid #000; border-radius: var(--radio-lg) var(--radio-lg) 0 0; border-bottom: 0; box-shadow: 0 -10px 50px rgba(0,0,0,0.18); overflow: hidden; }
+  .panel-barra { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--regla); }
+  .chip-marca { display: flex; align-items: center; gap: 8px; background: var(--naranja); border-radius: 8px; padding: 5px 10px 5px 6px; font-weight: 700; font-size: 0.9rem; }
+  .chip-marca img { width: 22px; height: 22px; border-radius: 5px; }
+  .panel-barra .empresa { font-weight: 600; }
+  .panel-barra .hora { margin-left: auto; font-family: var(--mono); font-size: 0.95rem; color: var(--tinta-2); white-space: nowrap; }
+  .campana { position: relative; width: 38px; height: 38px; border: 1.5px solid var(--regla); border-radius: 10px; display: grid; place-items: center; }
+  .campana svg { width: 20px; height: 20px; }
+  .campana b { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; border-radius: 10px; background: var(--rojo); color: #fff; font-size: 0.72rem; display: grid; place-items: center; padding: 0 5px; transform: scale(0); transition: transform 300ms var(--salida); }
+  .campana.con-aviso b { transform: scale(1); }
+  @media (max-width: 560px) {
+    .panel-barra { gap: 10px; padding: 10px 12px; }
+    .chip-marca { font-size: 0; gap: 0; padding: 4px; }
+    .panel-barra .empresa { font-size: 0.88rem; line-height: 1.2; }
+  }
+  .panel-cuerpo { padding: 18px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
+  @media (max-width: 860px) { .panel-cuerpo { grid-template-columns: 1fr; } }
+  .flota { grid-column: 1 / -1; }
+  .flota-cabeza { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .flota-cabeza h2 { font-size: clamp(1.25rem, 2.2vw, 1.6rem); letter-spacing: -0.02em; }
+  .flota-cabeza .mono { font-size: 0.9rem; color: var(--tinta-2); }
+  .franja-flota { margin-top: 12px; display: flex; height: 38px; border-radius: 8px; overflow: hidden; background: var(--papel-2); }
+  .franja-flota span { height: 100%; transition: flex-grow 700ms var(--salida); flex-grow: 0; flex-basis: 0; }
+  .f-operativo { background: var(--verde); } .f-observacion { background: var(--ambar); } .f-alerta { background: var(--alerta); } .f-critico { background: var(--rojo); } .f-no { background: var(--gris-estado); }
+  .leyenda { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.9rem; color: var(--tinta-2); }
+  .leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .leyenda b { font-family: var(--mono); color: var(--tinta); }
+  .caja { border: 1.5px solid var(--regla); border-radius: 10px; padding: 14px; }
+  .caja h3 { font-size: 0.98rem; letter-spacing: 0; display: flex; justify-content: space-between; }
+  .caja h3 .mono { color: var(--tinta-3); font-weight: 500; }
+  .caja-no-salen { border-color: var(--rojo); }
+  .caja-no-salen h3 { color: var(--rojo); }
+  .renglon-panel { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--regla); font-size: 0.92rem; }
+  .renglon-panel:first-of-type { margin-top: 8px; }
+  .placa-mini { font-family: var(--mono); font-weight: 600; background: #FDE047; border: 1.5px solid #000; border-radius: 4px; padding: 2px 6px; font-size: 0.82rem; white-space: nowrap; }
+  .renglon-panel .motivo { color: var(--tinta-2); }
+  .hora-mini { font-family: var(--mono); font-size: 0.82rem; color: var(--tinta-3); }
+  .estado-mini { font-family: var(--mono); font-size: 0.74rem; font-weight: 600; color: #fff; padding: 3px 7px; border-radius: 4px; white-space: nowrap; }
+  .nuevo { animation: entrar 450ms var(--salida); }
+  @keyframes entrar { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .feed { max-height: 250px; overflow: hidden; }
+  .toast {
+    position: absolute; right: 18px; top: 64px; z-index: 3; width: min(340px, calc(100% - 36px));
+    display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start;
+    padding: 12px 14px; border-radius: 10px; background: #fff; border: 1.5px solid var(--rojo); box-shadow: var(--sombra-lg);
+    transform: translateY(-12px); opacity: 0; pointer-events: none;
+    transition: transform 420ms var(--salida), opacity 300ms var(--salida);
+  }
+  @media (max-width: 560px) { .toast { top: auto; bottom: 14px; } }
+  .toast.visible { transform: none; opacity: 1; }
+  .toast .icono { width: 36px; height: 36px; border-radius: 8px; background: var(--rojo); color: #fff; display: grid; place-items: center; }
+  .toast .icono svg { width: 20px; height: 20px; }
+  .toast strong { display: block; font-size: 0.95rem; color: #7F1D1D; }
+  .toast span { display: block; font-size: 0.88rem; color: var(--tinta-2); }
+
+  /* ---------- En papel, KLM 204 habría salido ---------- */
+  .en-papel { padding: clamp(64px, 9vw, 112px) 0; background: var(--papel-2); border-top: 1.5px solid #000; }
+  .en-papel-rejilla { display: grid; grid-template-columns: 0.85fr 1fr; gap: clamp(36px, 6vw, 88px); align-items: center; }
+  .en-papel-texto { order: 2; }
+  @media (max-width: 920px) { .en-papel-rejilla { grid-template-columns: 1fr; } .en-papel-texto { order: 0; } }
+  .en-papel h2 { font-size: clamp(2rem, 4.2vw, 3.1rem); max-width: 15ch; line-height: 1.14; }
+  .en-papel p { margin-top: 18px; font-size: 1.08rem; color: var(--tinta-2); max-width: 50ch; }
+  .en-papel p + p { margin-top: 12px; }
+  .hoja { width: 100%; max-width: 430px; justify-self: center; margin: 0; padding: 22px 22px 24px; background: #FFFEF8; border: 1px solid #D6D3C4; border-radius: 3px; box-shadow: var(--sombra); transform: rotate(-1.4deg); }
+  .hoja-cabeza { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 10px; border-bottom: 2px solid var(--tinta-2); }
+  .hoja-cabeza strong { font-size: 0.8rem; letter-spacing: 0.06em; }
+  .hoja-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin: 12px 0 6px; font-size: 0.85rem; color: var(--tinta-3); }
+  .tinta { font-family: var(--mono); font-weight: 600; color: #1D4ED8; }
+  .hoja-tabla { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .hoja-tabla th { padding: 6px 0; border-bottom: 1px solid #D6D3C4; font-size: 0.72rem; font-weight: 600; color: var(--tinta-3); text-align: center; }
+  .hoja-tabla th:first-child { text-align: left; }
+  .hoja-tabla td { padding: 8px 0; border-bottom: 1px solid #E7E5DA; }
+  .hoja-tabla td + td, .hoja-tabla th + th { width: 44px; text-align: center; }
+  .casilla { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid #71717A; border-radius: 3px; font-family: var(--mono); font-weight: 700; line-height: 1; color: #1D4ED8; }
+  .hoja-pie { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; color: var(--tinta-3); }
+  .hoja-archivo { position: relative; margin-top: 14px; display: flex; justify-content: flex-end; }
+  .copiar { align-self: flex-start; min-height: 44px; padding: 0 4px; background: none; border: 0; color: #E4E4E7; font: inherit; font-size: 0.95rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .copiar:hover { color: var(--naranja-hover); }
+  .sello-archivo { padding: 4px 10px; border: 2.5px solid var(--tinta-3); border-radius: 6px; font-family: var(--mono); font-size: 0.9rem; font-weight: 700; letter-spacing: 0.06em; color: var(--tinta-3); transform: rotate(-5deg); }
+
+  /* ---------- ¿Por qué KLM 204 no sale? El semáforo ---------- */
+  .porque { padding: clamp(64px, 9vw, 112px) 0; border-top: 1.5px solid #000; }
+  .porque-rejilla { display: grid; grid-template-columns: 1fr 0.9fr; gap: clamp(36px, 6vw, 88px); align-items: center; }
+  @media (max-width: 920px) { .porque-rejilla { grid-template-columns: 1fr; } }
+  .porque h2 { font-size: clamp(2.2rem, 5vw, 3.9rem); letter-spacing: -0.03em; max-width: 13ch; }
+  .porque h2 { line-height: 1.14; }
+  .porque h2 .mono, .en-papel h2 .mono { display: inline-block; font-size: 0.78em; line-height: 1.15; font-weight: 600; letter-spacing: 0.02em; background: #FDE047; border: 3px solid #000; border-radius: 8px; padding: 0.04em 0.2em; margin: 0.06em 0; vertical-align: 0.08em; white-space: nowrap; }
+  .porque p { margin-top: 20px; font-size: 1.12rem; color: var(--tinta-2); max-width: 46ch; }
+  .semaforo { position: relative; padding: 22px 22px 18px; border: 1.5px solid var(--regla); border-radius: var(--radio-lg); background: var(--papel); box-shadow: var(--sombra); }
+  .semaforo-titulo { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .semaforo-titulo strong { font-size: 0.95rem; }
+  .escala { position: relative; display: grid; gap: 6px; }
+  .nivel { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; height: 56px; padding: 0 16px; border-radius: 6px; color: #fff; font-weight: 600; transition: box-shadow 300ms var(--salida); }
+  .nivel span.mono { font-size: 0.82rem; font-weight: 500; opacity: 0.92; }
+  .nivel.actual { box-shadow: 0 0 0 3px #000 inset; }
+  .nivel.actual span.mono { visibility: hidden; }
+  .nivel-operativo { background: var(--verde); } .nivel-observacion { background: var(--ambar); } .nivel-alerta { background: var(--alerta); } .nivel-critico { background: var(--rojo); } .nivel-no-operativo { background: var(--gris-estado); }
+  .puerta { display: flex; align-items: center; gap: 10px; margin: 4px 0; font-size: 0.86rem; font-weight: 600; }
+  .puerta::before, .puerta::after { content: ""; height: 3px; flex: 1; background: repeating-linear-gradient(90deg, var(--tinta) 0 10px, transparent 10px 16px); }
+  .placa { position: absolute; right: 10px; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; background: #FDE047; color: #000; border: 2px solid #000; font-family: var(--mono); font-weight: 600; font-size: 0.95rem; letter-spacing: 0.06em; box-shadow: 0 6px 16px rgba(0,0,0,0.25); transform: translateY(9px); transition: transform 900ms var(--salida), border-color 300ms, background-color 300ms; }
+  .placa.bloqueada { background: #fff; border-color: var(--rojo); color: var(--rojo); }
+  .placa svg { width: 16px; height: 16px; display: none; }
+  .placa.bloqueada svg { display: block; }
+  .aviso-bloqueo { margin-top: 14px; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 8px; background: #FEF2F2; border: 1.5px solid var(--rojo); color: #7F1D1D; font-size: 0.92rem; opacity: 0.4; filter: grayscale(1); transition: opacity 400ms var(--salida), filter 400ms var(--salida); }
+  .aviso-bloqueo.activo { opacity: 1; filter: none; }
+  .aviso-bloqueo svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--rojo); margin-top: 1px; }
+
+  /* ---------- Franjas por estado ---------- */
+  .franja { color: #fff; padding: clamp(48px, 7vw, 88px) 0; }
+  .franja-rejilla { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(28px, 5vw, 72px); align-items: center; }
+  @media (max-width: 880px) { .franja-rejilla { grid-template-columns: 1fr; } }
+  .franja h2 { font-size: clamp(2.1rem, 4.6vw, 3.5rem); letter-spacing: -0.03em; }
+  .h2-estado { display: block; font-size: 0.5em; letter-spacing: -0.01em; opacity: 0.9; margin-bottom: 0.15em; }
+  .franja-texto p { margin-top: 16px; font-size: 1.1rem; max-width: 44ch; color: rgba(255,255,255,0.94); }
+  .franja-texto p.franja-rango { margin-top: 18px; font-size: 0.92rem; color: rgba(255,255,255,0.9); }
+  .franja-operativo { background: var(--verde); } .franja-observacion { background: var(--ambar); } .franja-alerta { background: var(--alerta); } .franja-critico { background: var(--rojo); } .franja-no-operativo { background: var(--gris-estado); }
+  .muestra { background: var(--papel); color: var(--tinta); border-radius: var(--radio-lg); padding: 20px; box-shadow: var(--sombra-lg); }
+  .muestra-cabeza { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; padding-bottom: 12px; border-bottom: 1px solid var(--regla); }
+  .muestra-cabeza strong { font-size: 0.98rem; }
+  .fila { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--regla); font-size: 0.98rem; }
+  .fila:last-child { border-bottom: 0; }
+  .sello { font-family: var(--mono); font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
+  .sello-cumple { background: #DCFCE7; color: #14532D; } .sello-obs { background: #FEF3C7; color: #713F12; }
+  .cita-texto { margin-top: 14px; font-family: var(--mono); font-size: 0.95rem; line-height: 1.5; padding: 16px; border-radius: 8px; background: #FEF2F2; color: #7F1D1D; border: 1.5px solid var(--rojo); }
+  .foto { width: 72px; height: 54px; border-radius: 6px; background: linear-gradient(135deg, #D4D4D8 0 45%, #A1A1AA 45% 60%, #E4E4E7 60%); border: 1px solid var(--regla); }
+
+  /* ---------- Papeles, avisos y prueba, empresa ---------- */
+  .seccion { padding: clamp(64px, 9vw, 112px) 0; }
+  .seccion-gris { background: var(--papel-2); }
+  .seccion h2 { font-size: clamp(2rem, 4.2vw, 3.1rem); max-width: 18ch; }
+  .seccion-lead { margin-top: 16px; max-width: 58ch; color: var(--tinta-2); font-size: 1.08rem; }
+  .documentos { margin-top: 36px; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 2px solid var(--tinta); }
+  @media (max-width: 880px) { .documentos { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px) { .documentos { grid-template-columns: 1fr; } }
+  .documento { padding: 18px 18px 22px 0; border-bottom: 1px solid var(--regla); }
+  .documento + .documento { padding-left: 18px; border-left: 1px solid var(--regla); }
+  @media (max-width: 880px) { .documento:nth-child(3) { padding-left: 0; border-left: 0; } }
+  @media (max-width: 480px) { .documento + .documento { padding-left: 0; border-left: 0; } }
+  .documento h3 { font-size: 1.05rem; letter-spacing: 0; }
+  .documento .mono { display: block; margin-top: 6px; font-size: 0.92rem; color: var(--tinta-2); }
+  .estado-doc { display: inline-block; margin-top: 12px; font-family: var(--mono); font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
+  .doc-ok { background: #DCFCE7; color: #14532D; } .doc-pronto { background: #FEF3C7; color: #713F12; } .doc-vencido { background: var(--rojo); color: #fff; }
+
+  .avisos-rejilla { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 72px); align-items: center; }
+  @media (max-width: 880px) { .avisos-rejilla { grid-template-columns: 1fr; } }
+  .avisos-lista { margin-top: 24px; }
+  .aviso-linea { display: grid; grid-template-columns: 26px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--regla); }
+  .aviso-linea svg { width: 22px; height: 22px; color: var(--naranja-oscuro); margin-top: 2px; }
+  .aviso-linea strong { display: block; }
+  .aviso-linea span { display: block; color: var(--tinta-2); margin-top: 2px; }
+  .pdf { background: var(--papel); border-radius: 6px; box-shadow: var(--sombra-lg); overflow: hidden; transform: rotate(-1.2deg); }
+  .pdf-banda { background: var(--naranja); color: #000; padding: 18px 20px; display: flex; justify-content: space-between; gap: 12px; }
+  .pdf-banda strong { display: block; font-size: 1.1rem; }
+  .pdf-banda span { font-size: 0.85rem; }
+  .pdf-resultado { background: #DCFCE7; color: #14532D; padding: 10px 20px; font-weight: 700; display: flex; justify-content: space-between; }
+  .pdf-cuerpo { padding: 14px 20px 20px; font-size: 0.9rem; }
+  .pdf-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; padding-bottom: 12px; border-bottom: 1px solid var(--regla); }
+  .pdf-datos small { display: block; font-size: 0.7rem; color: var(--tinta-3); letter-spacing: 0.04em; }
+
+  .lista-empresa { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; column-gap: clamp(28px, 5vw, 72px); }
+  @media (max-width: 760px) { .lista-empresa { grid-template-columns: 1fr; } }
+  .lista-empresa div { padding: 20px 0; border-top: 1px solid var(--regla); }
+  .lista-empresa dt { font-weight: 700; font-size: 1.1rem; }
+  .lista-empresa dd { margin: 6px 0 0; color: var(--tinta-2); max-width: 48ch; }
+</style>
+</head>
+<body>
+
+<nav class="menu" aria-label="Principal">
+  <div class="envoltura menu-dentro">
+    <a class="marca" href="#"><img src="../../frontend/public/logo.png" alt="">SISVIA</a>
+    <div class="menu-enlaces">
+      <a href="#porque">Cómo decide</a>
+      <a href="#papeles">Documentos</a>
+      <a href="#avisos">Avisos</a>
+      <a href="#empresa">Tu empresa</a>
+    </div>
+    <div class="menu-acciones">
+      <a class="enlace-entrar" href="#">Entrar</a>
+      <a class="boton boton-marca boton-chico" href="#cita"><span class="solo-ancho">Reservar una cita</span><span class="solo-angosto">Reservar</span></a>
+    </div>
+  </div>
+</nav>
+
+<header class="portada">
+  <div class="envoltura">
+    <div class="portada-texto">
+      <h1>Un vehículo con fallas <span>no sale.</span></h1>
+      <div>
+        <p class="portada-lead">Cada conductor hace su chequeo desde el celular antes de salir. Tú ves en un solo panel qué vehículos pueden salir, cuáles no y por qué.</p>
+        <div class="portada-acciones">
+          <a class="boton boton-negro" href="#cita">Reservar una cita</a>
+          <a class="boton boton-linea" href="https://wa.me/573332540815?text=Hola%2C%20quiero%20conocer%20SISVIA%20para%20mi%20empresa">Escribir por WhatsApp</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="escenario">
+      <div class="etiqueta-ejemplo"><span class="ejemplo">PANEL RECREADO · DATOS DE EJEMPLO</span></div>
+      <div class="panel" aria-label="Recreación del panel de SISVIA con datos de ejemplo">
+        <div class="panel-barra">
+          <span class="chip-marca"><img src="../../frontend/public/logo.png" alt="">SISVIA</span>
+          <span class="empresa">Tu empresa · Sede Norte</span>
+          <span class="hora" data-hora>5:30 a. m.</span>
+          <span class="campana" data-campana><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><b>1</b></span>
+        </div>
+        <div class="toast" data-toast role="status">
+          <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+          <div><strong>Falla crítica en KLM 204</strong><span>Líquido de frenos no cumple · el vehículo quedó en crítico</span></div>
+        </div>
+        <div class="panel-cuerpo">
+          <div class="flota">
+            <div class="flota-cabeza"><h2>Así amanece tu flota.</h2><span class="mono" data-revisados>0 de 24 revisados</span></div>
+            <div class="franja-flota" aria-hidden="true"><span class="f-operativo" data-f="operativo"></span><span class="f-observacion" data-f="observacion"></span><span class="f-alerta" data-f="alerta"></span><span class="f-critico" data-f="critico"></span><span class="f-no" data-f="no"></span></div>
+            <div class="leyenda">
+              <span><i class="f-operativo"></i><b data-n="operativo">0</b> operativos</span>
+              <span><i class="f-observacion"></i><b data-n="observacion">0</b> en observación</span>
+              <span><i class="f-alerta"></i><b data-n="alerta">0</b> en alerta</span>
+              <span><i class="f-critico"></i><b data-n="nosalen">0</b> no pueden salir</span>
+            </div>
+          </div>
+          <div class="caja caja-no-salen">
+            <h3>No pueden salir <span class="mono" data-n="nosalen2">0</span></h3>
+            <div data-lista-no></div>
+          </div>
+          <div class="caja">
+            <h3>Chequeos de hoy <span class="mono">en vivo</span></h3>
+            <div class="feed" data-feed></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="en-papel" id="papel">
+  <div class="envoltura en-papel-rejilla">
+    <div class="en-papel-texto">
+      <h2>En papel, <span class="mono">KLM 204</span> habría salido.</h2>
+      <p>Muchas empresas todavía hacen el preoperacional en una hoja. El conductor puede marcar que los frenos no cumplen y el vehículo sale igual, porque la hoja no detiene a nadie.</p>
+      <p>Después, la hoja va a una carpeta. Si alguien la necesita en una auditoría, primero hay que encontrarla.</p>
+    </div>
+    <figure class="hoja" aria-label="Ejemplo de un preoperacional en papel: marca que los frenos no cumplen y aun así tiene hora de salida">
+      <div class="hoja-cabeza"><strong>FORMATO PREOPERACIONAL</strong><span class="ejemplo">EJEMPLO</span></div>
+      <div class="hoja-datos">
+        <span>Placa: <span class="tinta">KLM 204</span></span>
+        <span>Fecha: <span class="tinta">27/09</span></span>
+      </div>
+      <table class="hoja-tabla">
+        <thead><tr><th scope="col">Ítem</th><th scope="col">C</th><th scope="col">NC</th></tr></thead>
+        <tbody>
+          <tr><td>Luces</td><td><span class="casilla">X</span></td><td><span class="casilla"></span></td></tr>
+          <tr><td>Llantas</td><td><span class="casilla">X</span></td><td><span class="casilla"></span></td></tr>
+          <tr><td>Líquido de frenos</td><td><span class="casilla"></span></td><td><span class="casilla">X</span></td></tr>
+          <tr><td>Pito</td><td><span class="casilla">X</span></td><td><span class="casilla"></span></td></tr>
+        </tbody>
+      </table>
+      <div class="hoja-pie">
+        <span>Observaciones: <span class="tinta">frenos bajos</span></span>
+        <span>Hora de salida: <span class="tinta">5:40 a. m.</span></span>
+      </div>
+      <div class="hoja-archivo"><span class="sello-archivo">ARCHIVADO</span></div>
+    </figure>
+  </div>
+</section>
+
+<section class="porque" id="porque">
+  <div class="envoltura porque-rejilla">
+    <div>
+      <h2>¿Por qué <span class="mono">KLM 204</span> no sale?</h2>
+      <p>Cada chequeo le da al vehículo un estado según lo que encontró el conductor. Hasta alerta, puede salir. De crítico para abajo, no: la app no lo deja arrancar el recorrido, el intento queda registrado y el coordinador se entera.</p>
+    </div>
+    <figure class="semaforo" aria-label="Ejemplo: la criticidad de un vehículo sube con cada falla del chequeo">
+      <div class="semaforo-titulo"><strong>Estado de KLM 204</strong><span class="ejemplo">EJEMPLO</span></div>
+      <div class="escala">
+        <div class="nivel nivel-operativo">Operativo <span class="mono">0–19 %</span></div>
+        <div class="nivel nivel-observacion">Observación <span class="mono">20–39 %</span></div>
+        <div class="nivel nivel-alerta">Alerta <span class="mono">40–59 %</span></div>
+        <div class="puerta">De aquí para abajo, no sale</div>
+        <div class="nivel nivel-critico">Crítico <span class="mono">60–89 %</span></div>
+        <div class="nivel nivel-no-operativo">No operativo <span class="mono">90–100 %</span></div>
+        <div class="placa" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>KLM 204</div>
+      </div>
+      <div class="aviso-bloqueo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <div><strong>Intento bloqueado.</strong> KLM 204 quedó en crítico: el preoperacional no se puede iniciar y el coordinador ya lo sabe.</div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<main>
+  <section class="franja franja-operativo">
+    <div class="envoltura franja-rejilla">
+      <div class="franja-texto">
+        <h2><span class="h2-estado">Operativo.</span> Sale.</h2>
+        <p>El conductor responde primero si está en condiciones de manejar, y después revisa el vehículo por categorías, desde su celular. Si todo cumple, queda listo para salir.</p>
+        <p class="franja-rango mono">Criticidad del chequeo: 0–19 %</p>
+      </div>
+      <div class="muestra" aria-label="Ejemplo de checklist">
+        <div class="muestra-cabeza"><strong>Checklist · NIVELES</strong><span class="ejemplo">EJEMPLO</span></div>
+        <div class="fila">Líquido de frenos <span class="sello sello-cumple">CUMPLE</span></div>
+        <div class="fila">Aceite del motor <span class="sello sello-cumple">CUMPLE</span></div>
+        <div class="fila">Líquido hidráulico <span class="sello sello-cumple">CUMPLE</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="franja franja-observacion">
+    <div class="envoltura franja-rejilla">
+      <div class="franja-texto">
+        <h2><span class="h2-estado">Observación.</span> Sale, y queda anotado.</h2>
+        <p>Lo que no cumple necesita una observación del conductor y puede llevar foto. El coordinador la ve en el detalle del chequeo, sin llamadas ni papeles.</p>
+        <p class="franja-rango mono">Criticidad del chequeo: 20–39 %</p>
+      </div>
+      <div class="muestra" aria-label="Ejemplo de observación">
+        <div class="muestra-cabeza"><strong>Espejo lateral derecho</strong><span class="sello sello-obs">NO CUMPLE</span></div>
+        <div class="fila" style="grid-template-columns: auto 1fr;"><div class="foto" role="img" aria-label="Foto del conductor"></div><span>“Está rayado, pero se ve bien.” <span class="ejemplo">— el conductor, 5:32 a. m.</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="franja franja-alerta">
+    <div class="envoltura franja-rejilla">
+      <div class="franja-texto">
+        <h2><span class="h2-estado">Alerta.</span> Sale, pero ya hay que mirarlo.</h2>
+        <p>Cuando las fallas se suman, sube la criticidad. El panel del coordinador lo pone entre los vehículos que necesitan atención.</p>
+        <p class="franja-rango mono">Criticidad del chequeo: 40–59 %</p>
+      </div>
+      <div class="muestra" aria-label="Ejemplo del panel">
+        <div class="muestra-cabeza"><strong>Necesita atención</strong><span class="ejemplo">EJEMPLO</span></div>
+        <div class="fila"><span><span class="mono">PLN 330</span> · Sede Norte</span><span class="sello" style="background:#FFEDD5;color:#7C2D12">ALERTA · 45 %</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="franja franja-critico">
+    <div class="envoltura franja-rejilla">
+      <div class="franja-texto">
+        <h2><span class="h2-estado">Crítico.</span> No sale. Y se sabe al instante.</h2>
+        <p>El preoperacional no se puede iniciar. El conductor ve el motivo, el intento queda registrado, y si falló un ítem crítico a los responsables de la sede les llega un correo en ese momento.</p>
+        <p class="franja-rango mono">Criticidad del chequeo: 60–89 %</p>
+      </div>
+      <div class="muestra" aria-label="El mensaje que ve el conductor">
+        <div class="muestra-cabeza"><strong>Lo que ve el conductor</strong><span class="ejemplo">TEXTO REAL DE LA APP</span></div>
+        <p class="cita-texto">No puedes operar este vehículo: está en estado crítico. Avísale al Coordinador de sede para que lo revise.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="franja franja-no-operativo">
+    <div class="envoltura franja-rejilla">
+      <div class="franja-texto">
+        <h2><span class="h2-estado">No operativo.</span> No sale hasta que lo reparen.</h2>
+        <p>Así queda hasta que alguien lo revise y le cambie el estado. Su hoja de vida guarda cada chequeo, cada falla y cada cambio.</p>
+        <p class="franja-rango mono">Criticidad del chequeo: 90–100 %</p>
+      </div>
+      <div class="muestra" aria-label="Ejemplo de hoja de vida">
+        <div class="muestra-cabeza"><strong>Hoja de vida · <span class="mono">PQR 841</span></strong><span class="ejemplo">EJEMPLO</span></div>
+        <div class="fila"><span class="mono">24/09 · 5:41 a. m.</span><span>Chequeo · Crítico</span></div>
+        <div class="fila"><span class="mono">24/09 · 7:10 a. m.</span><span>Pasó a No operativo</span></div>
+        <div class="fila"><span class="mono">26/09 · 3:25 p. m.</span><span>Reparado · Operativo</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" id="papeles">
+    <div class="envoltura">
+      <h2>Los papeles también cierran la puerta.</h2>
+      <p class="seccion-lead">Con el SOAT, la técnico-mecánica o el extintor vencidos, o con la licencia del conductor vencida, el preoperacional no se puede iniciar. Desde 30 días antes, el coordinador recibe el aviso. Las fechas viven en la app, no en una hoja de cálculo que alguien tiene que acordarse de revisar.</p>
+      <div class="documentos" aria-label="Ejemplo de documentos de un vehículo">
+        <div class="documento"><h3>SOAT</h3><span class="mono">vence 14/10/2026</span><span class="estado-doc doc-pronto">AVISADO · FALTAN 17 DÍAS</span></div>
+        <div class="documento"><h3>Técnico-mecánica</h3><span class="mono">vence 03/05/2027</span><span class="estado-doc doc-ok">AL DÍA</span></div>
+        <div class="documento"><h3>Extintor</h3><span class="mono">venció 20/09/2026</span><span class="estado-doc doc-vencido">NO SALE</span></div>
+        <div class="documento"><h3>Licencia del conductor</h3><span class="mono">vence 31/12/2030</span><span class="estado-doc doc-ok">AL DÍA</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion seccion-gris" id="avisos">
+    <div class="envoltura avisos-rejilla">
+      <div>
+        <h2>Te enteras sin que nadie llame. Y queda la prueba.</h2>
+        <div class="avisos-lista">
+          <div class="aviso-linea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><div><strong>Falla crítica, en el momento</strong><span>A los responsables de la sede les llega un correo apenas falla un ítem crítico.</span></div></div>
+          <div class="aviso-linea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><div><strong>Vencimientos, con 30 días</strong><span>SOAT, técnico-mecánica, extintor y licencias, en la campanita y por correo.</span></div></div>
+          <div class="aviso-linea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg><div><strong>Cada chequeo, en PDF o Word</strong><span>Con la empresa, la sede, el conductor, el kilometraje y cada respuesta. Si llega una auditoría, no hay que buscar en carpetas.</span></div></div>
+        </div>
+      </div>
+      <div class="pdf" aria-label="Ejemplo del PDF de un chequeo">
+        <div class="pdf-banda"><div><strong>Chequeo preoperacional</strong><span>Tu empresa · Sede Norte</span></div><span class="mono">N.º 5CF98CF5</span></div>
+        <div class="pdf-resultado"><span>Resultado: OPERATIVO</span><span class="mono">Criticidad 10 %</span></div>
+        <div class="pdf-cuerpo">
+          <div class="pdf-datos">
+            <div><small>VEHÍCULO</small><strong class="mono">WEP 318</strong></div>
+            <div><small>CONDUCTOR</small><strong>Ejemplo Pérez</strong></div>
+            <div><small>KILOMETRAJE</small><strong class="mono">48.210 km</strong></div>
+            <div><small>FECHA</small><strong class="mono">27/09/2026</strong></div>
+          </div>
+          <div class="fila">Líquido de frenos <span class="sello sello-cumple">CUMPLE</span></div>
+          <div class="fila">Luces direccionales <span class="sello sello-cumple">CUMPLE</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" id="empresa">
+    <div class="envoltura">
+      <h2>Hecho para toda tu empresa.</h2>
+      <dl class="lista-empresa">
+        <div><dt>Tus sedes y tus cargos</dt><dd>Administrador de empresa, Director Regional, Coordinador de sede y Conductor: cada uno ve lo que le toca.</dd></div>
+        <div><dt>Tu propio checklist</dt><dd>Una base común y tus propios ítems, categorías y preguntas, según el tipo de vehículo.</dd></div>
+        <div><dt>Quién hizo qué</dt><dd>La Actividad registra cada cambio con el nombre de quien lo hizo y la hora.</dd></div>
+        <div><dt>Soporte adentro de la app</dt><dd>Le escribes al equipo SISVIA desde la misma app y te responde ahí.</dd></div>
+        <div><dt>Solo tu empresa ve lo tuyo</dt><dd>Cada empresa ve únicamente sus vehículos, su gente y sus chequeos.</dd></div>
+        <div><dt>En cualquier municipio</dt><dd>Tus sedes pueden estar en cualquiera de los municipios de Colombia.</dd></div>
+      </dl>
+    </div>
+  </section>
+</main>
+
+<section class="contacto" id="cita">
+  <div class="envoltura contacto-rejilla">
+    <div>
+      <h2>Reservemos una cita.</h2>
+      <p class="contacto-lead">Cuéntanos de tu empresa y te mostramos cómo funcionaría SISVIA en tu operación. La suscripción empieza con esa conversación.</p>
+      <form class="formulario" onsubmit="event.preventDefault(); this.classList.add('enviado');">
+        <div class="campo"><label for="u-empresa">Empresa</label><input id="u-empresa" required placeholder="Transportes El Ejemplo S.A.S."></div>
+        <div class="campo"><label for="u-ciudad">Ciudad</label><input id="u-ciudad" required placeholder="Ibagué"></div>
+        <div class="campo"><label for="u-vehiculos">Vehículos <small>(aprox.)</small></label><input id="u-vehiculos" inputmode="numeric" placeholder="25"></div>
+        <div class="campo"><label for="u-nombre">Tu nombre</label><input id="u-nombre" required autocomplete="name"></div>
+        <div class="campo"><label for="u-telefono">Teléfono o WhatsApp</label><input id="u-telefono" required inputmode="tel" autocomplete="tel" placeholder="300 123 4567"></div>
+        <div class="campo"><label for="u-correo">Correo</label><input id="u-correo" type="email" autocomplete="email" placeholder="tu@empresa.com"></div>
+        <div class="campo campo-ancho"><label for="u-mensaje">¿Algo que debamos saber? <small>(opcional)</small></label><textarea id="u-mensaje"></textarea></div>
+        <button class="boton boton-marca" type="submit">Enviar solicitud</button>
+        <p class="formulario-nota">Te escribimos al teléfono o al correo que dejes para acordar la cita.</p>
+        <p class="formulario-listo" role="status">Listo, recibimos tu solicitud. Te escribimos pronto para acordar la cita.</p>
+      </form>
+    </div>
+    <aside class="directo" aria-label="Contacto directo">
+      <h3>¿Prefieres escribirnos ya?</h3>
+      <div class="directo-lista">
+        <a class="directo-canal" href="https://wa.me/573332540815?text=Hola%2C%20quiero%20conocer%20SISVIA%20para%20mi%20empresa">
+          <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"/></svg></span>
+          <span><strong>WhatsApp</strong><span>333 254 0815</span></span>
+        </a>
+        <a class="directo-canal" href="mailto:sisviacontacto@gmail.com?subject=Quiero%20conocer%20SISVIA">
+          <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+          <span><strong>Correo</strong><span>sisviacontacto@gmail.com</span></span>
+        </a>
+      </div>
+      <button class="copiar" type="button" data-copiar="sisviacontacto@gmail.com" aria-live="polite">Copiar el correo</button>
+      <p class="directo-ciudad">Ibagué, Tolima.</p>
+    </aside>
+  </div>
+</section>
+
+<footer class="pie">
+  <div class="envoltura pie-dentro">
+    <a class="marca" href="#"><img src="../../frontend/public/logo.png" alt="">SISVIA</a>
+    <span>Chequeo preoperacional y control de vehículos</span>
+    <span><a href="mailto:sisviacontacto@gmail.com">sisviacontacto@gmail.com</a> · <a href="#">Entrar</a></span>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll("[data-copiar]").forEach((boton) => {
+    boton.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(boton.dataset.copiar); boton.textContent = "Correo copiado"; }
+      catch { boton.textContent = boton.dataset.copiar; }
+      setTimeout(() => { boton.textContent = "Copiar el correo"; }, 2500);
+    });
+  });
+</script>
+
+<script>
+  const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // El panel recreado: llegan los chequeos de la madrugada, KLM 204 cae en crítico y salta el aviso.
+  (() => {
+    const TOTAL = 24;
+    const chequeos = [
+      ["5:31", "WEP 318", "operativo"], ["5:32", "SXT 927", "observacion"], ["5:33", "GHA 553", "operativo"],
+      ["5:34", "KLM 204", "critico", "Crítico · líquido de frenos"], ["5:35", "TMB 076", "operativo"], ["5:36", "RJD 412", "operativo"],
+      ["5:37", "PLN 330", "alerta"], ["5:38", "VCE 118", "operativo"], ["5:39", "HMS 605", "operativo"],
+      ["5:40", "PQR 841", "no", "No operativo · en reparación"], ["5:41", "BZT 290", "operativo"], ["5:42", "DKA 771", "observacion"],
+    ];
+    const color = { operativo: "var(--verde)", observacion: "var(--ambar)", alerta: "var(--alerta)", critico: "var(--rojo)", no: "var(--gris-estado)", papeles: "var(--rojo)" };
+    const nombre = { operativo: "OPERATIVO", observacion: "OBSERVACIÓN", alerta: "ALERTA", critico: "CRÍTICO", no: "NO OPERATIVO", papeles: "BLOQUEADO" };
+    const porPapeles = ["—", "HNT 552", "papeles", "SOAT vencido desde el 12/09"];
+    const $ = (s) => document.querySelector(s);
+    const feed = $("[data-feed]"), listaNo = $("[data-lista-no]"), toast = $("[data-toast]"), campana = $("[data-campana]");
+    let cuenta, paso;
+    const renglon = ([hora, placa, estado, motivo], dondeNo) => {
+      const r = document.createElement("div");
+      r.className = "renglon-panel nuevo";
+      r.innerHTML = '<span class="placa-mini">' + placa + "</span>" +
+        '<span class="motivo">' + (dondeNo ? motivo : '<span class="hora-mini">' + hora + " a. m.</span>") + "</span>" +
+        '<span class="estado-mini" style="background:' + color[estado] + '">' + nombre[estado] + "</span>";
+      return r;
+    };
+    const pintar = (hora) => {
+      $("[data-hora]").textContent = hora + " a. m.";
+      const revisados = Object.values(cuenta).reduce((a, b) => a + b, 0);
+      $("[data-revisados]").textContent = revisados + " de " + TOTAL + " revisados";
+      for (const k in cuenta) document.querySelector('[data-f="' + k + '"]').style.flexGrow = cuenta[k];
+      $('[data-n="operativo"]').textContent = cuenta.operativo;
+      $('[data-n="observacion"]').textContent = cuenta.observacion;
+      $('[data-n="alerta"]').textContent = cuenta.alerta;
+      $('[data-n="nosalen"]').textContent = cuenta.critico + cuenta.no + 1;
+      $('[data-n="nosalen2"]').textContent = cuenta.critico + cuenta.no + 1;
+    };
+    const reiniciar = () => {
+      cuenta = { operativo: 0, observacion: 0, alerta: 0, critico: 0, no: 0 }; paso = 0;
+      feed.innerHTML = ""; listaNo.innerHTML = ""; listaNo.append(renglon(porPapeles, true));
+      toast.classList.remove("visible"); campana.classList.remove("con-aviso");
+      pintar("5:30");
+    };
+    const avanzar = () => {
+      if (paso >= chequeos.length) { setTimeout(() => { reiniciar(); setTimeout(avanzar, 1200); }, 4500); return; }
+      const c = chequeos[paso++];
+      cuenta[c[2]]++;
+      feed.prepend(renglon(c, false));
+      if (c[2] === "critico" || c[2] === "no") listaNo.append(renglon(c, true));
+      if (c[2] === "critico") { toast.classList.add("visible"); campana.classList.add("con-aviso"); setTimeout(() => toast.classList.remove("visible"), 3800); }
+      pintar(c[0]);
+      setTimeout(avanzar, c[2] === "critico" ? 2600 : 1100);
+    };
+    reiniciar();
+    if (quieto) {
+      chequeos.forEach((c) => { cuenta[c[2]]++; feed.prepend(renglon(c, false)); if (c[2] === "critico" || c[2] === "no") listaNo.append(renglon(c, true)); });
+      campana.classList.add("con-aviso"); pintar("5:42"); document.querySelectorAll(".nuevo").forEach((x) => x.classList.remove("nuevo"));
+      return;
+    }
+    setTimeout(avanzar, 900);
+  })();
+
+  // El semáforo de KLM 204: baja un nivel por cada falla y se bloquea al cruzar la puerta.
+  (() => {
+    const escala = document.querySelector(".escala");
+    const placa = escala.querySelector(".placa");
+    const niveles = [...escala.querySelectorAll(".nivel")];
+    const aviso = document.querySelector(".aviso-bloqueo");
+    const pasos = [0, 1, 2, 3];
+    let i = 0;
+    const ir = (n) => {
+      const nivel = niveles[pasos[n]];
+      placa.style.transform = "translateY(" + (nivel.offsetTop + (nivel.offsetHeight - placa.offsetHeight) / 2) + "px)";
+      niveles.forEach((x) => x.classList.toggle("actual", x === nivel));
+      const bloqueado = pasos[n] >= 3;
+      placa.classList.toggle("bloqueada", bloqueado);
+      aviso.classList.toggle("activo", bloqueado);
+    };
+    if (quieto) { ir(pasos.length - 1); return; }
+    ir(0);
+    const avanzar = () => { i = (i + 1) % pasos.length; ir(i); setTimeout(avanzar, i === pasos.length - 1 ? 4200 : 1500); };
+    setTimeout(avanzar, 1500);
+    addEventListener("resize", () => ir(i));
+  })();
+</script>
+</body>
+</html>

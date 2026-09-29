@@ -13,6 +13,7 @@ import { nombreOrganizacion } from "../../lib/organizacion.js";
 import { useAuth } from "../../hooks/useAuth.js";
 import { api } from "../../lib/api.js";
 import { escucharCambioBuzon } from "../../lib/buzon.js";
+import { escucharCambioSolicitudes } from "../../lib/solicitudes.js";
 import "./Sidebar.css";
 
 // SVGs inline para iconos del menu — todos siguen el mismo estilo "stroke" para
@@ -35,6 +36,13 @@ const Icono = {
     soporte: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+    ),
+    solicitudes: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+            <path d="M12 14v4M10 16h4" />
         </svg>
     ),
     empresas: (
@@ -153,6 +161,8 @@ const ITEMS = [
     { ruta: "/admin/registro-equipo", etiqueta: "Registro del equipo", icono: Icono.registroEquipo, roles: ["superadmin"], soloAfuera: true, soloDueno: true },
     // HU-18: los mensajes a SISVIA. El equipo SISVIA los ve afuera de las empresas.
     { ruta: "/admin/soporte", etiqueta: "Soporte", icono: Icono.soporte, roles: ["superadmin", "admin_empresa"], soloAfuera: true },
+    // Pacto portada-publica, HU-04.1: las solicitudes de cita de la portada, solo el equipo SISVIA afuera.
+    { ruta: "/admin/solicitudes", etiqueta: "Solicitudes", icono: Icono.solicitudes, roles: ["superadmin"], soloAfuera: true },
     { ruta: "/admin/notificaciones", etiqueta: "Notificaciones", icono: Icono.notificaciones },
     { ruta: "/admin/ajustes", etiqueta: "Ajustes", icono: Icono.ajustes },
     { ruta: "/admin/mi-perfil", etiqueta: "Mi perfil", icono: Icono.miPerfil },
@@ -177,6 +187,22 @@ function Sidebar({ abierto, onCerrar, usuario, onLogout }) {
         contar();
         return escucharCambioBuzon(contar);
     }, [afueraSuperadmin]);
+    // HU-04.1 · HU-04.6 (portada-publica, enmienda 1): cuantas solicitudes de cita nuevas
+    // hay. Se pregunta al entrar a cada pantalla y cada 10 s con la pestaña a la vista
+    // (el canal en vivo de la base no avisa con RLS sin politicas).
+    const [solicitudesNuevas, setSolicitudesNuevas] = useState(0);
+    useEffect(() => {
+        if (!afueraSuperadmin) return undefined;
+        const contar = () => api("/solicitudes/nuevas").then((r) => setSolicitudesNuevas(r.nuevas || 0)).catch(() => {});
+        contar();
+        const reloj = setInterval(() => {
+            if (document.visibilityState === "visible") contar();
+        }, 10 * 1000);
+        const dejar = escucharCambioSolicitudes(contar);
+        return () => { clearInterval(reloj); dejar(); };
+    }, [afueraSuperadmin]);
+    // Numero junto al item del menu: [cantidad, singular, plural].
+    const insignias = { "/admin/soporte": [nuevos, "nuevo", "nuevos"], "/admin/solicitudes": [solicitudesNuevas, "nueva", "nuevas"] };
     const variosSedes = cubreVariasSedes(usuario);
     // Nombre de la sede que está gestionando ahora (sede activa del selector).
     const sedeActivaNombre = suplente
@@ -222,9 +248,10 @@ function Sidebar({ abierto, onCerrar, usuario, onLogout }) {
                             >
                                 <span className="sidebar-item-icono">{item.icono}</span>
                                 <span className="sidebar-item-etiqueta">{item.etiqueta}</span>
-                                {item.ruta === "/admin/soporte" && afueraSuperadmin && nuevos > 0 && (
-                                    <span className="sidebar-item-insignia" aria-label={`${nuevos} ${nuevos === 1 ? "nuevo" : "nuevos"}`}>{nuevos}</span>
-                                )}
+                                {afueraSuperadmin && insignias[item.ruta]?.[0] > 0 && (() => {
+                                    const [cantidad, uno, varios] = insignias[item.ruta];
+                                    return <span className="sidebar-item-insignia" aria-label={`${cantidad} ${cantidad === 1 ? uno : varios}`}>{cantidad}</span>;
+                                })()}
                             </NavLink>
                         </li>
                     ))}

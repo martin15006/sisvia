@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import ProtectedRoutes from "./components/ProtectedRoute/ProtectedRoute.jsx";
 import Login from "./pages/Login/Login.jsx";
+import Portada from "./pages/Portada/Portada.jsx";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import UsuariosAdmin from "./pages/UsuariosAdmin/UsuariosAdmin.jsx";
 import PerfilUsuario from "./pages/PerfilUsuario/PerfilUsuario.jsx";
@@ -23,6 +24,7 @@ import IntentosBloqueados from "./pages/IntentosBloqueados/IntentosBloqueados.js
 import GeografiaAdmin from "./pages/GeografiaAdmin/GeografiaAdmin.jsx";
 import EmpresasAdmin from "./pages/EmpresasAdmin/EmpresasAdmin.jsx";
 import Soporte from "./pages/Soporte/Soporte.jsx";
+import Solicitudes from "./pages/Solicitudes/Solicitudes.jsx";
 import Actividad from "./pages/Actividad/Actividad.jsx";
 import ConfirmarSoporte from "./components/ConfirmarSoporte/ConfirmarSoporte.jsx";
 import ActividadPool from "./pages/ActividadPool/ActividadPool.jsx";
@@ -35,7 +37,8 @@ function App() {
                 {/* HU-16: contraseña del superadmin para cambios dentro de una empresa */}
                 <ConfirmarSoporte />
                 <Routes>
-                    <Route path='/' element={<Navigate to='/login' replace />} />
+                    {/* Portada publica (pacto portada-publica, HU-01): con la sesion abierta, manda al panel */}
+                    <Route path='/' element={<Portada />} />
                     <Route path='/login' element={<Login />} />
 
                     <Route path='/cambiar-password' element={
@@ -83,6 +86,13 @@ function App() {
                     <Route path="/admin/empresas" element={
                         <ProtectedRoutes>
                             <EmpresasAdmin />
+                        </ProtectedRoutes>
+                    } />
+
+                    {/* Pacto portada-publica, HU-04: solicitudes de cita de la portada */}
+                    <Route path="/admin/solicitudes" element={
+                        <ProtectedRoutes>
+                            <Solicitudes />
                         </ProtectedRoutes>
                     } />
 
@@ -195,7 +205,8 @@ function App() {
                         </ProtectedRoutes>
                     } />
 
-                    <Route path='*' element={<Navigate to='/login' replace />} />
+                    {/* CB-11: una direccion que no existe va a la portada */}
+                    <Route path='*' element={<Navigate to='/' replace />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

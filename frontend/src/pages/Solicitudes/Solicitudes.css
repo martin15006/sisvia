@@ -1,0 +1,251 @@
+/* Solicitudes de cita de la portada (pacto portada-publica, HU-04). Tokens del tema
+   (CL-04): se ve bien en claro y en oscuro. */
+
+.solicitudes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-lg);
+    min-width: 0;
+}
+
+.solicitudes-titulo {
+    margin: 0;
+    font-size: var(--tamano-xxl);
+    color: var(--texto-marca);
+}
+
+.solicitudes-subtitulo {
+    margin: var(--espacio-xs) 0 0;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-700);
+}
+
+.solicitudes-vacio {
+    padding: var(--espacio-xl);
+    border: 1px dashed var(--borde);
+    border-radius: var(--radio-lg);
+    text-align: center;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-700);
+}
+
+.solicitudes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+}
+
+/* ===== Una solicitud ===== */
+.solicitud {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+    padding: var(--espacio-lg);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-lg);
+    background: var(--superficie);
+    box-shadow: var(--sombra-sm);
+}
+
+.solicitud--nueva {
+    border-color: var(--color-primario-oscuro);
+}
+
+/* HU-03.1 (enmienda 2): la que se abrió desde la campanita. Queda debajo de la barra de arriba. */
+.solicitud {
+    scroll-margin-top: 96px;
+}
+
+.solicitud--elegida {
+    outline: 3px solid var(--color-primario);
+    outline-offset: 3px;
+}
+
+.solicitud-cabeza {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--espacio-sm) var(--espacio-md);
+}
+
+.solicitud-empresa {
+    margin: 0;
+    font-size: var(--tamano-lg);
+    line-height: 1.3;
+    color: var(--texto);
+    overflow-wrap: anywhere;
+}
+
+.solicitud-lugar {
+    margin: 2px 0 0;
+    font-size: var(--tamano-sm);
+    color: var(--color-gris-700);
+}
+
+.solicitud-estado {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--espacio-xs);
+    font-size: var(--tamano-xs);
+    color: var(--color-gris-700);
+}
+
+.solicitud-sello {
+    padding: 3px var(--espacio-sm);
+    border-radius: var(--radio-sm);
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-bold);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.solicitud-sello--nueva {
+    background: var(--color-primario);
+    color: var(--texto-sobre-marca);
+}
+
+.solicitud-sello--contactada {
+    background: var(--estado-exito-fondo);
+    color: var(--estado-exito-texto);
+}
+
+.solicitud-datos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--espacio-sm) var(--espacio-lg);
+    margin: 0;
+}
+
+@media (max-width: 760px) {
+    .solicitud-datos {
+        grid-template-columns: 1fr;
+    }
+}
+
+.solicitud-datos dt {
+    font-size: var(--tamano-xs);
+    font-weight: var(--peso-semibold);
+    color: var(--color-gris-700);
+}
+
+.solicitud-datos dd {
+    margin: 2px 0 0;
+    color: var(--texto);
+    overflow-wrap: anywhere;
+}
+
+.solicitud-datos a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* CB-09: un mensaje de 1000 caracteres se lee entero, con sus saltos de linea. */
+.solicitud-mensaje {
+    margin: 0;
+    padding: var(--espacio-md);
+    border-radius: var(--radio-md);
+    background: var(--superficie-sutil);
+    color: var(--texto);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.solicitud-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-sm);
+    padding-top: var(--espacio-sm);
+    border-top: 1px solid var(--borde);
+}
+
+.solicitud-contactada {
+    margin: 0 auto 0 0;
+    font-size: var(--tamano-sm);
+    color: var(--estado-exito-texto);
+    font-weight: var(--peso-semibold);
+}
+
+.solicitud-pie .solicitudes-boton--primario {
+    margin-right: auto;
+}
+
+/* ===== Botones ===== */
+.solicitudes-boton {
+    min-height: 44px;
+    padding: 0 var(--espacio-lg);
+    border: 2px solid var(--color-gris-300);
+    border-radius: var(--radio-md);
+    background: var(--superficie);
+    color: var(--color-gris-900);
+    font-size: var(--tamano-sm);
+    font-weight: var(--peso-bold);
+    cursor: pointer;
+    transition: background-color var(--velocidad-rapida) var(--suavizado), border-color var(--velocidad-rapida) var(--suavizado);
+}
+
+.solicitudes-boton:hover:not(:disabled) {
+    background: var(--acento-suave);
+    border-color: var(--color-primario-oscuro);
+}
+
+.solicitudes-boton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.solicitudes-boton--primario {
+    background: var(--color-primario);
+    border-color: var(--color-primario-oscuro);
+    color: var(--texto-sobre-marca);
+}
+
+.solicitudes-boton--primario:hover:not(:disabled) {
+    background: var(--color-primario-hover);
+}
+
+.solicitudes-boton--peligro {
+    border-color: var(--estado-error-borde);
+    color: var(--estado-error-texto);
+}
+
+.solicitudes-boton--peligro:hover:not(:disabled) {
+    background: var(--estado-error-fondo);
+    border-color: var(--estado-error-texto);
+}
+
+.solicitudes-boton--peligro-lleno {
+    background: var(--estado-error-solido);
+    border-color: var(--estado-error-solido);
+    color: var(--texto-inverso);
+}
+
+.solicitudes-boton--peligro-lleno:hover:not(:disabled) {
+    filter: brightness(0.92);
+}
+
+.solicitudes-error {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: var(--tamano-sm);
+    color: var(--estado-error-texto);
+}
+
+/* ===== Confirmar borrado ===== */
+.solicitudes-confirmar p {
+    margin: 0;
+    color: var(--texto);
+}
+
+.solicitudes-confirmar-botones {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--espacio-sm);
+    margin-top: var(--espacio-lg);
+}

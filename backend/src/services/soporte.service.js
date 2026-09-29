@@ -2,6 +2,7 @@
 // Lo llama verificarToken en cada pedido; las reglas viven en soporteReglas.js.
 import { supabase, crearClienteAuth } from '../config/supabase.js';
 import { auditarEmpresa } from './empresas.service.js';
+import { respaldoDelPedido } from '../middlewares/contextoPedido.js';
 import { estadoBloqueo, registrarFallo, limpiarIntentos } from './loginIntentos.service.js';
 import {
     HEADER_EMPRESA,
@@ -102,12 +103,15 @@ export const controlarSuperadmin = async (req, res) => {
         return true;
     }
 
-    // Se registra solo si el cambio de verdad se hizo.
+    // Se registra solo si el cambio de verdad se hizo. La IP y el navegador se toman
+    // ahora: al terminar la respuesta ya no se esta dentro del pedido (HU-07).
+    const respaldo = respaldoDelPedido();
     res.on('finish', () => {
         if (res.statusCode >= 400) return;
         auditarEmpresa({
             empresa: { id: usuario.empresaActiva, nombre: usuario.empresaActivaNombre },
             actorId: usuario.id,
+            respaldo,
             accion: 'soporte',
             // res.locals.auditoria: lo que el handler quiera sumar (por ejemplo, que elemento bloqueo)
             detalles: { que: accion.hecho, metodo, ruta: limpia(ruta), ...(res.locals.auditoria || {}) },

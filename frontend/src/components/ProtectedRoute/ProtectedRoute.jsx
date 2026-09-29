@@ -4,7 +4,7 @@ import { esAdminEfectivo } from "../../lib/roles.js";
 import './ProtectedRoute.css';
 
 function ProtectedRoute({ children, soloAdmin = false }) {
-    const { usuario, cargando } = useAuth();
+    const { usuario, cargando, salioPorSuCuenta } = useAuth();
     const { pathname } = useLocation();
 
     if (cargando) {
@@ -17,8 +17,10 @@ function ProtectedRoute({ children, soloAdmin = false }) {
     }
 
     // si no esta authenticado redirige al login 
+    // HU-01.7 (portada-publica, enmienda 1): quien cerro sesion va a la portada; a quien
+    // lo sacaron (sesion vencida, desactivado) o nunca entro, al login.
     if (!usuario) {
-        return <Navigate to='/login' replace />;
+        return <Navigate to={salioPorSuCuenta ? '/' : '/login'} replace />;
     }
 
     // Contraseña temporal: hasta cambiarla no entra a ningun modulo, aunque ya

@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../lib/api.js";
 import { useAuth } from "./useAuth.js";
 import { supabaseRealtime } from "../lib/supabaseClient.js";
+import { escucharCambioNotificaciones } from "../lib/notificacionesUtils.js";
 
 // Con Realtime activo, el polling solo es red de seguridad -> intervalo mas largo.
 const INTERVALO_POLLING_MS = 60 * 1000; // 60 segundos
@@ -82,6 +83,15 @@ function useNotificaciones({ habilitado = true } = {}) {
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [habilitado, refrescarContador]);
+
+    // ===== Cambios hechos fuera de la campanita (enmienda 2 de portada-publica) =====
+    useEffect(() => {
+        if (!habilitado) return undefined;
+        return escucharCambioNotificaciones(() => {
+            refrescarContador();
+            cargarLista();
+        });
+    }, [habilitado, refrescarContador, cargarLista]);
 
     // ===== Realtime (instantaneo) =====
     useEffect(() => {

@@ -6,6 +6,7 @@
 // sola (migracion 2026-09-21). Sedes y catalogo propio pasan por registrarActividad.
 import { supabase } from '../config/supabase.js';
 import { deLaEmpresa } from './scopeReglas.js';
+import { insertarConRespaldo } from './respaldo.service.js';
 import { cargoDe, viajaEnSoporte, condicionesDeConsulta, armarPagina, POR_PAGINA } from './actividadReglas.js';
 
 const CAMPOS = 'id, created_at, actor_nombre, actor_cargo, de_sisvia, tipo, accion, objeto, detalles, empresa_nombre';
@@ -25,7 +26,8 @@ export const registrarActividad = async ({ usuario, res, tipo, accion, objetoId 
             const { data } = await supabase.from('empresas').select('nombre').eq('id', empresaId).maybeSingle();
             empresaNombre = data?.nombre || null;
         }
-        const { error } = await supabase.from('actividad').insert({
+        // Con la IP y el navegador si lo hace el equipo SISVIA (HU-07).
+        const { error } = await insertarConRespaldo('actividad', {
             empresa_id: empresaId,
             empresa_nombre: empresaNombre,
             actor_id: usuario?.id || null,
@@ -46,15 +48,20 @@ export const registrarActividad = async ({ usuario, res, tipo, accion, objetoId 
 
 // Una pagina de actividad (de a 50, lo mas nuevo primero).
 //   alcance: { empresaId } (HU-19) o { equipo: true } (HU-20.1)
+// En el Registro del equipo va tambien la IP y el navegador (HU-07 · RN-07: solo
+// los dueños); en la Actividad de una empresa, nunca.
 export const listarActividad = async (alcance, filtros) => {
-    let q = supabase.from('actividad').select(CAMPOS);
-    for (const [op, ...args] of condicionesDeConsulta(alcance, filtros)) {
-        q = op === 'deLaEmpresa' ? deLaEmpresa(q, args[0]) : q[op](...args);
-    }
-    const { data, error } = await q
-        .order('created_at', { ascending: false })
-        .order('id', { ascending: false })
-        .limit(POR_PAGINA + 1);
+    const conRespaldo = alcance?.equipo === true;
+    const pedir = (campos) => {
+        let q = supabase.from('actividad').select(campos);
+        for (const [op, ...args] of condicionesDeConsulta(alcance, filtros)) {
+            q = op === 'deLaEmpresa' ? deLaEmpresa(q, args[0]) : q[op](...args);
+        }
+        return q.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(POR_PAGINA + 1);
+    };
+    let { data, error } = await pedir(conRespaldo ? `${CAMPOS}, ip, navegador` : CAMPOS);
+    // Sin la migracion 2026-09-28_registro_ip.sql todavia no hay ip: se muestra como antes.
+    if (error && conRespaldo && (error.code === '42703' || error.code === 'PGRST204')) ({ data, error } = await pedir(CAMPOS));
     if (error) throw error;
-    return armarPagina(data);
+    return armarPagina(data, { conRespaldo });
 };

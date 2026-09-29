@@ -1,0 +1,855 @@
+/* Portada publica (pacto portada-publica). Colores solo por tokens (CL-04):
+   los de la app y los --portada-* de variables.css. Estados con --veh-* (CL-05).
+   Los titulos grandes escalan con clamp() entre la pantalla del celular y la
+   del computador. */
+
+.portada-pagina {
+  --portada-salida: cubic-bezier(0.16, 1, 0.3, 1);
+  --portada-ancho: 1180px;
+  --portada-margen: clamp(var(--espacio-md), 4vw, 40px);
+
+  min-height: 100vh;
+  background: var(--superficie);
+  color: var(--texto);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+/* Los titulos de la app vienen en color de marca: aca heredan. */
+.portada-pagina h1,
+.portada-pagina h2,
+.portada-pagina h3 {
+  color: inherit;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.portada-pagina p {
+  text-wrap: pretty;
+}
+
+.portada-pagina a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.portada-pagina ::selection {
+  background: var(--color-primario-claro);
+  color: var(--color-negro);
+}
+
+/* Sobre el naranja y el blanco, el anillo de foco va en negro. */
+.portada-pagina :focus-visible {
+  outline: 3px solid var(--color-negro);
+  outline-offset: 3px;
+}
+
+.portada-envoltura {
+  width: 100%;
+  max-width: var(--portada-ancho);
+  margin: 0 auto;
+  padding: 0 var(--portada-margen);
+}
+
+.portada-mono {
+  font-family: var(--fuente-monospace);
+  font-feature-settings: "tnum" 1;
+}
+
+.portada-ejemplo {
+  color: var(--texto-suave);
+  font-family: var(--fuente-monospace);
+  font-size: var(--tamano-xs);
+  letter-spacing: 0.02em;
+}
+
+.portada-solo-lector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.portada-solo-angosto {
+  display: none;
+}
+
+@media (max-width: 520px) {
+  .portada-solo-ancho { display: none; }
+  .portada-solo-angosto { display: inline; }
+}
+
+/* Placa amarilla: en los renglones del panel y dentro de los titulos. */
+.portada-placa-mini {
+  padding: 2px 6px;
+  border: 1.5px solid var(--color-negro);
+  border-radius: var(--radio-sm);
+  background: var(--portada-placa);
+  color: var(--color-negro);
+  font-family: var(--fuente-monospace);
+  font-size: 0.82rem;
+  font-weight: var(--peso-semibold);
+  white-space: nowrap;
+}
+
+.portada-placa-titulo {
+  display: inline-block;
+  margin: 0.06em 0;
+  padding: 0.04em 0.2em;
+  border: 3px solid var(--color-negro);
+  border-radius: var(--radio-md);
+  background: var(--portada-placa);
+  color: var(--color-negro);
+  font-family: var(--fuente-monospace);
+  font-size: 0.78em;
+  font-weight: var(--peso-semibold);
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  vertical-align: 0.08em;
+  white-space: nowrap;
+}
+
+/* ---------- Botones ---------- */
+.portada-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 2px solid transparent;
+  border-radius: var(--radio-md);
+  font-size: var(--tamano-md);
+  font-weight: var(--peso-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 180ms var(--portada-salida), border-color 180ms var(--portada-salida), color 180ms var(--portada-salida), transform 180ms var(--portada-salida);
+}
+
+.portada-boton:active {
+  transform: translateY(1px);
+}
+
+.portada-pagina .portada-boton-negro {
+  background: var(--color-negro);
+  color: var(--color-blanco);
+}
+
+.portada-pagina .portada-boton-negro:hover {
+  background: var(--portada-negro-hover);
+  color: var(--color-blanco);
+}
+
+.portada-pagina .portada-boton-linea {
+  border-color: var(--color-negro);
+  color: var(--color-negro);
+}
+
+.portada-pagina .portada-boton-linea:hover {
+  background: var(--color-negro);
+  color: var(--color-primario);
+}
+
+.portada-pagina .portada-boton-marca {
+  background: var(--color-primario);
+  color: var(--texto-sobre-marca);
+}
+
+.portada-pagina .portada-boton-marca:hover {
+  background: var(--color-primario-hover);
+  color: var(--texto-sobre-marca);
+}
+
+.portada-boton:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.portada-boton-chico {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 0.92rem;
+}
+
+/* ---------- Menu (naranja, pegado arriba) ---------- */
+.portada-menu {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-dropdown);
+  background: var(--color-primario);
+  color: var(--color-negro);
+  border-bottom: 1px solid var(--velo-20);
+}
+
+.portada-menu-dentro {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-lg);
+  min-height: 64px;
+}
+
+.portada-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 1.15rem;
+  font-weight: var(--peso-bold);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+
+.portada-marca img {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radio-md);
+}
+
+.portada-menu .portada-marca img {
+  box-shadow: 0 0 0 2px var(--color-negro);
+}
+
+.portada-menu-enlaces {
+  display: flex;
+  gap: 22px;
+  margin-left: auto;
+  font-size: 0.95rem;
+}
+
+.portada-pagina .portada-menu-enlaces a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: none;
+}
+
+.portada-pagina .portada-menu-enlaces a:hover {
+  text-decoration: underline;
+}
+
+.portada-menu-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.portada-pagina .portada-entrar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--espacio-sm);
+  font-size: 0.95rem;
+  font-weight: var(--peso-semibold);
+  text-decoration: none;
+}
+
+.portada-pagina .portada-entrar:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 860px) {
+  .portada-menu-enlaces { display: none; }
+  .portada-menu-acciones { margin-left: auto; }
+}
+
+/* ---------- La promesa y el panel ---------- */
+.portada-hero {
+  padding: clamp(36px, 6vw, 80px) 0 0;
+  background: var(--color-primario);
+  color: var(--color-negro);
+}
+
+.portada-hero-texto {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: var(--espacio-lg) var(--espacio-xxl);
+  align-items: end;
+}
+
+@media (max-width: 900px) {
+  .portada-hero-texto { grid-template-columns: 1fr; }
+}
+
+.portada-hero h1 {
+  max-width: 12ch;
+  font-size: clamp(2.7rem, 6.4vw, 5.2rem);
+  font-weight: var(--peso-bold);
+  letter-spacing: -0.035em;
+}
+
+.portada-hero h1 span {
+  text-decoration: underline;
+  text-decoration-thickness: 0.09em;
+  text-underline-offset: 0.12em;
+}
+
+.portada-hero-lead {
+  max-width: 44ch;
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+}
+
+.portada-hero-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* ---------- En papel, KLM 204 habria salido ---------- */
+.portada-papel {
+  padding: clamp(var(--espacio-xxxl), 9vw, 112px) 0;
+  border-top: 1.5px solid var(--color-negro);
+  background: var(--superficie-sutil);
+}
+
+.portada-papel-rejilla {
+  display: grid;
+  grid-template-columns: 0.85fr 1fr;
+  gap: clamp(36px, 6vw, 88px);
+  align-items: center;
+}
+
+.portada-papel-texto {
+  order: 2;
+}
+
+@media (max-width: 920px) {
+  .portada-papel-rejilla { grid-template-columns: 1fr; }
+  .portada-papel-texto { order: 0; }
+}
+
+.portada-papel h2 {
+  max-width: 15ch;
+  font-size: clamp(2rem, 4.2vw, 3.1rem);
+  line-height: 1.14;
+}
+
+.portada-papel p {
+  max-width: 50ch;
+  margin-top: 18px;
+  color: var(--texto-suave);
+  font-size: 1.08rem;
+}
+
+.portada-papel p + p {
+  margin-top: 12px;
+}
+
+.portada-hoja {
+  justify-self: center;
+  width: 100%;
+  max-width: 430px;
+  padding: 22px 22px 24px;
+  border: 1px solid var(--portada-hoja-borde);
+  border-radius: 3px;
+  background: var(--portada-hoja);
+  box-shadow: var(--sombra-md);
+  transform: rotate(-1.4deg);
+}
+
+.portada-hoja-cabeza {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--texto-suave);
+}
+
+.portada-hoja-cabeza strong {
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+}
+
+.portada-hoja-datos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px var(--espacio-md);
+  margin: 12px 0 6px;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.portada-tinta {
+  color: var(--portada-tinta-azul);
+  font-family: var(--fuente-monospace);
+  font-weight: var(--peso-semibold);
+}
+
+.portada-hoja-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.portada-hoja-tabla th {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--portada-hoja-borde);
+  color: var(--texto-suave);
+  font-size: 0.72rem;
+  font-weight: var(--peso-semibold);
+  text-align: center;
+}
+
+.portada-hoja-tabla th:first-child {
+  text-align: left;
+}
+
+.portada-hoja-tabla td {
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--portada-hoja-regla);
+}
+
+.portada-hoja-tabla td + td,
+.portada-hoja-tabla th + th {
+  width: 44px;
+  text-align: center;
+}
+
+.portada-casilla {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--portada-hoja-casilla);
+  border-radius: 3px;
+  color: var(--portada-tinta-azul);
+  font-family: var(--fuente-monospace);
+  font-weight: var(--peso-bold);
+  line-height: 1;
+}
+
+.portada-hoja-pie {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.portada-hoja-archivo {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.portada-sello-archivo {
+  padding: var(--espacio-xs) 10px;
+  border: 2.5px solid var(--texto-suave);
+  border-radius: 6px;
+  color: var(--texto-suave);
+  font-family: var(--fuente-monospace);
+  font-size: 0.9rem;
+  font-weight: var(--peso-bold);
+  letter-spacing: 0.06em;
+  transform: rotate(-5deg);
+}
+
+/* ---------- Por que KLM 204 no sale ---------- */
+.portada-porque {
+  padding: clamp(var(--espacio-xxxl), 9vw, 112px) 0;
+  border-top: 1.5px solid var(--color-negro);
+  scroll-margin-top: 64px;
+}
+
+.portada-porque-rejilla {
+  display: grid;
+  grid-template-columns: 1fr 0.9fr;
+  gap: clamp(36px, 6vw, 88px);
+  align-items: center;
+}
+
+@media (max-width: 920px) {
+  .portada-porque-rejilla { grid-template-columns: 1fr; }
+}
+
+.portada-porque h2 {
+  max-width: 13ch;
+  font-size: clamp(2.2rem, 5vw, 3.9rem);
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+}
+
+.portada-porque p {
+  max-width: 46ch;
+  margin-top: 20px;
+  color: var(--texto-suave);
+  font-size: 1.12rem;
+}
+
+/* ---------- Franjas por estado ---------- */
+.portada-franja {
+  padding: clamp(var(--espacio-xxl), 7vw, 88px) 0;
+  color: var(--veh-tinta);
+}
+
+.franja-operativo { background: var(--veh-operativo); }
+.franja-observacion { background: var(--veh-observacion); }
+.franja-alerta { background: var(--veh-alerta); }
+.franja-critico { background: var(--veh-critico); }
+.franja-no-operativo { background: var(--veh-no-operativo); }
+
+.portada-franja-rejilla {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+}
+
+@media (max-width: 880px) {
+  .portada-franja-rejilla { grid-template-columns: 1fr; }
+}
+
+.portada-franja h2 {
+  font-size: clamp(2.1rem, 4.6vw, 3.5rem);
+  letter-spacing: -0.03em;
+}
+
+.portada-franja-estado {
+  display: block;
+  margin-bottom: 0.15em;
+  font-size: 0.5em;
+  letter-spacing: -0.01em;
+}
+
+.portada-franja-texto p {
+  max-width: 44ch;
+  margin-top: var(--espacio-md);
+  font-size: 1.1rem;
+}
+
+.portada-franja-texto .portada-franja-rango {
+  margin-top: 18px;
+  font-size: 0.92rem;
+}
+
+.portada-muestra {
+  padding: 20px;
+  border-radius: var(--radio-lg);
+  background: var(--superficie);
+  color: var(--texto);
+  box-shadow: var(--sombra-lg);
+}
+
+.portada-muestra-cabeza {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.portada-muestra-cabeza strong {
+  font-size: 0.98rem;
+}
+
+.portada-fila {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--borde);
+  font-size: 0.98rem;
+}
+
+.portada-fila:last-child {
+  border-bottom: 0;
+}
+
+.portada-fila-foto {
+  grid-template-columns: auto 1fr;
+}
+
+.portada-sello {
+  padding: var(--espacio-xs) var(--espacio-sm);
+  border-radius: var(--radio-sm);
+  font-family: var(--fuente-monospace);
+  font-size: 0.8rem;
+  font-weight: var(--peso-semibold);
+  white-space: nowrap;
+}
+
+.sello-cumple { background: var(--portada-cumple-fondo); color: var(--portada-cumple-tinta); }
+.sello-obs { background: var(--portada-obs-fondo); color: var(--portada-obs-tinta); }
+.sello-alerta { background: var(--color-primario-claro); color: var(--portada-alerta-tinta); }
+
+.portada-cita-texto {
+  margin-top: 14px;
+  padding: var(--espacio-md);
+  border: 1.5px solid var(--veh-critico);
+  border-radius: var(--radio-md);
+  background: var(--portada-rojo-fondo);
+  color: var(--portada-rojo-tinta);
+  font-family: var(--fuente-monospace);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.portada-foto {
+  width: 72px;
+  height: 54px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--color-gris-200) 0 45%, var(--color-gris-300) 45% 60%, var(--color-gris-50) 60%);
+}
+
+/* ---------- Secciones claras ---------- */
+.portada-seccion {
+  padding: clamp(var(--espacio-xxxl), 9vw, 112px) 0;
+  scroll-margin-top: 64px;
+}
+
+.portada-seccion-gris {
+  background: var(--superficie-sutil);
+}
+
+.portada-seccion h2 {
+  max-width: 18ch;
+  font-size: clamp(2rem, 4.2vw, 3.1rem);
+}
+
+.portada-seccion-lead {
+  max-width: 58ch;
+  margin-top: var(--espacio-md);
+  color: var(--texto-suave);
+  font-size: 1.08rem;
+}
+
+.portada-documentos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 36px;
+  border-top: 2px solid var(--texto);
+}
+
+@media (max-width: 880px) {
+  .portada-documentos { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 480px) {
+  .portada-documentos { grid-template-columns: 1fr; }
+}
+
+.portada-documento {
+  padding: 18px 18px 22px 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.portada-documento + .portada-documento {
+  padding-left: 18px;
+  border-left: 1px solid var(--borde);
+}
+
+@media (max-width: 880px) {
+  .portada-documento:nth-child(3) { padding-left: 0; border-left: 0; }
+}
+
+@media (max-width: 480px) {
+  .portada-documento + .portada-documento { padding-left: 0; border-left: 0; }
+}
+
+.portada-documento h3 {
+  font-size: 1.05rem;
+  letter-spacing: 0;
+}
+
+.portada-documento .portada-mono {
+  display: block;
+  margin-top: 6px;
+  color: var(--texto-suave);
+  font-size: 0.92rem;
+}
+
+.portada-estado-doc {
+  display: inline-block;
+  margin-top: 12px;
+  padding: var(--espacio-xs) var(--espacio-sm);
+  border-radius: var(--radio-sm);
+  font-family: var(--fuente-monospace);
+  font-size: 0.8rem;
+  font-weight: var(--peso-semibold);
+}
+
+.doc-ok { background: var(--portada-cumple-fondo); color: var(--portada-cumple-tinta); }
+.doc-pronto { background: var(--portada-obs-fondo); color: var(--portada-obs-tinta); }
+.doc-vencido { background: var(--veh-critico); color: var(--veh-tinta); }
+
+.portada-avisos-rejilla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+}
+
+@media (max-width: 880px) {
+  .portada-avisos-rejilla { grid-template-columns: 1fr; }
+}
+
+.portada-avisos-lista {
+  margin-top: var(--espacio-lg);
+}
+
+.portada-aviso {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--borde);
+}
+
+.portada-aviso svg {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  color: var(--color-primario-oscuro);
+}
+
+.portada-aviso strong {
+  display: block;
+}
+
+.portada-aviso span {
+  display: block;
+  margin-top: 2px;
+  color: var(--texto-suave);
+}
+
+.portada-pdf {
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--superficie);
+  box-shadow: var(--sombra-lg);
+  transform: rotate(-1.2deg);
+}
+
+.portada-pdf-banda {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  background: var(--color-primario);
+  color: var(--texto-sobre-marca);
+}
+
+.portada-pdf-banda strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.portada-pdf-banda span {
+  font-size: 0.85rem;
+}
+
+.portada-pdf-resultado {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: var(--portada-cumple-fondo);
+  color: var(--portada-cumple-tinta);
+  font-weight: var(--peso-bold);
+}
+
+.portada-pdf-cuerpo {
+  padding: 14px 20px 20px;
+  font-size: 0.9rem;
+}
+
+.portada-pdf-datos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.portada-pdf-datos small {
+  display: block;
+  color: var(--texto-suave);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.portada-lista-empresa {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: clamp(28px, 5vw, 72px);
+  margin-top: 36px;
+}
+
+@media (max-width: 760px) {
+  .portada-lista-empresa { grid-template-columns: 1fr; }
+}
+
+.portada-lista-empresa div {
+  padding: 20px 0;
+  border-top: 1px solid var(--borde);
+}
+
+.portada-lista-empresa dt {
+  font-size: 1.1rem;
+  font-weight: var(--peso-bold);
+}
+
+.portada-lista-empresa dd {
+  max-width: 48ch;
+  margin-top: 6px;
+  color: var(--texto-suave);
+}
+
+/* ---------- Pie ---------- */
+.portada-pie {
+  padding: 28px 0;
+  background: var(--color-negro);
+  color: var(--portada-noche-texto-3);
+  font-size: 0.9rem;
+}
+
+.portada-pie-dentro {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px 28px;
+}
+
+.portada-pie .portada-marca {
+  color: var(--color-blanco);
+  font-size: var(--tamano-md);
+}
+
+.portada-pie .portada-marca img {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.portada-pagina .portada-pie a:not(.portada-marca) {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--espacio-xs);
+  color: var(--portada-noche-texto);
+}
+
+.portada-pie :focus-visible {
+  outline-color: var(--color-primario);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portada-pagina *,
+  .portada-pagina *::before,
+  .portada-pagina *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

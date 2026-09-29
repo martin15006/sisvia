@@ -1,0 +1,169 @@
+/* El semáforo de KLM 204 (HU-01.4). Niveles con --veh-* (CL-05). */
+
+.semaforo {
+  position: relative;
+  padding: 22px 22px 18px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-lg);
+  background: var(--superficie);
+  box-shadow: var(--sombra-md);
+}
+
+.semaforo-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.semaforo-titulo strong {
+  font-size: 0.95rem;
+}
+
+.semaforo-escala {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+.semaforo-nivel {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  height: 56px;
+  padding: 0 var(--espacio-md);
+  border-radius: 6px;
+  color: var(--veh-tinta);
+  font-weight: var(--peso-semibold);
+  transition: box-shadow 300ms var(--portada-salida);
+}
+
+.semaforo-nivel .portada-mono {
+  font-size: 0.82rem;
+  font-weight: var(--peso-medio);
+}
+
+/* El nivel donde esta la placa: la placa tapa el rango, asi que se esconde. */
+.semaforo-nivel.actual {
+  box-shadow: 0 0 0 3px var(--color-negro) inset;
+}
+
+.semaforo-nivel.actual .portada-mono {
+  visibility: hidden;
+}
+
+.nivel-operativo { background: var(--veh-operativo); }
+.nivel-observacion { background: var(--veh-observacion); }
+.nivel-alerta { background: var(--veh-alerta); }
+.nivel-critico { background: var(--veh-critico); }
+.nivel-no-operativo { background: var(--veh-no-operativo); }
+
+.semaforo-puerta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: var(--espacio-xs) 0;
+  font-size: 0.86rem;
+  font-weight: var(--peso-semibold);
+}
+
+.semaforo-puerta::before,
+.semaforo-puerta::after {
+  content: "";
+  flex: 1;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, var(--texto) 0 10px, transparent 10px 16px);
+}
+
+.semaforo-placa {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  padding: 6px 10px;
+  border: 2px solid var(--color-negro);
+  border-radius: 6px;
+  background: var(--portada-placa);
+  color: var(--color-negro);
+  font-family: var(--fuente-monospace);
+  font-size: 0.95rem;
+  font-weight: var(--peso-semibold);
+  letter-spacing: 0.06em;
+  box-shadow: 0 6px 16px var(--velo-25);
+  transition: transform 900ms var(--portada-salida), border-color 300ms, background-color 300ms, color 300ms;
+}
+
+.semaforo-placa.bloqueada {
+  border-color: var(--veh-critico);
+  background: var(--superficie);
+  color: var(--veh-critico);
+}
+
+.semaforo-placa svg {
+  display: none;
+  width: 16px;
+  height: 16px;
+}
+
+.semaforo-placa.bloqueada svg {
+  display: block;
+}
+
+/* Aviso de abajo: "Puede salir" mientras no llega a critico, "Intento
+   bloqueado" cuando llega. Los dos se leen a mas de 4.5:1 (CL-07). */
+.semaforo-aviso {
+  display: grid;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-md);
+  background: var(--superficie-sutil);
+  color: var(--texto);
+  font-size: 0.92rem;
+  transition: background-color 400ms var(--portada-salida), border-color 400ms var(--portada-salida), color 400ms var(--portada-salida);
+}
+
+.semaforo-aviso.activo {
+  border-color: var(--veh-critico);
+  background: var(--portada-rojo-fondo);
+  color: var(--portada-rojo-tinta);
+}
+
+.semaforo-aviso-mensaje {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transition: opacity 300ms var(--portada-salida), visibility 300ms;
+}
+
+.semaforo-aviso .mensaje-bloqueo,
+.semaforo-aviso.activo .mensaje-sale {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.semaforo-aviso.activo .mensaje-bloqueo {
+  opacity: 1;
+  visibility: visible;
+}
+
+.semaforo-aviso svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}
+
+.mensaje-sale svg {
+  color: var(--veh-operativo);
+}
+
+.mensaje-bloqueo svg {
+  color: var(--veh-critico);
+}

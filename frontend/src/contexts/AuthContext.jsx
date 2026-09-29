@@ -12,6 +12,10 @@ export const AuthProvider = ({ children }) => {
     // Mensaje a mostrar en el login cuando la salida fue forzada (sesion expirada
     // o cuenta desactivada). Lo consume el Login y se limpia.
     const [mensajeSalida, setMensajeSalida] = useState(null);
+    // HU-01.7 (portada-publica, enmienda 1): si salio con "Cerrar sesion", las rutas
+    // protegidas mandan a la portada; si lo sacaron (sesion vencida, cuenta o empresa
+    // desactivada), al login con su aviso.
+    const [salioPorSuCuenta, setSalioPorSuCuenta] = useState(false);
     // Empresa a la que entro el superadmin (HU-16). Vive en localStorage (la lee
     // el helper api) y aca, para que el menu y la franja se actualicen.
     const [empresaActiva, setEmpresaActivaEstado] = useState(getEmpresaActiva);
@@ -42,6 +46,7 @@ export const AuthProvider = ({ children }) => {
             clearSedeActiva();
             clearEmpresaActiva();
             setUsuario(null);
+            setSalioPorSuCuenta(false);
             setSesionExpirada(true);
             setMensajeSalida(e.detail?.mensaje || 'Tu sesión expiró. Vuelve a iniciar sesión.');
         };
@@ -62,6 +67,7 @@ export const AuthProvider = ({ children }) => {
         clearEmpresaActiva();
         setUsuario(data.usuario);
         setSesionExpirada(false);
+        setSalioPorSuCuenta(false);
         return data.usuario;
     };
 
@@ -69,6 +75,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
         clearSedeActiva();
         clearEmpresaActiva();
+        setSalioPorSuCuenta(true);
         setUsuario(null);
     };
 
@@ -95,6 +102,7 @@ export const AuthProvider = ({ children }) => {
                 cargando,
                 sesionExpirada,
                 mensajeSalida,
+                salioPorSuCuenta,
                 iniciarSesion,
                 cerrarSesion,
                 actualizarUsuario,

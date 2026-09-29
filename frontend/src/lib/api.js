@@ -126,6 +126,8 @@ const interpretar = (endpoint, { response, data }) => {
         err.status = response.status;
         // Codigo del backend (ej. limite_plan, placa_en_sisvia) para ofrecer un atajo (HU-18.9).
         if (data.codigo) err.codigo = data.codigo;
+        // Errores por campo de un formulario (ej. la solicitud de cita de la portada).
+        if (data.errores) err.errores = data.errores;
         throw err;
     }
 

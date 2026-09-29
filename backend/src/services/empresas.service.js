@@ -6,6 +6,7 @@ import { alcanzoLimite, mensajeLimite, limiteBajoUso } from './limitesReglas.js'
 import { MENSAJES_EMPRESA, esCorreoRepetido, escaparLike, motivoNoEliminar } from './empresasReglas.js';
 import { generarPasswordTemporal, registrarAuditoria } from './usuarios.service.js';
 import { deLaEmpresa } from './scopeReglas.js';
+import { insertarConRespaldo } from './respaldo.service.js';
 
 const CAMPOS_EMPRESA = 'id, nombre, nit, ciudad_id, telefono, correo, limite_sedes, limite_vehiculos, activa, desactivada_en, ultimo_respaldo_en, created_at, ciudades:ciudad_id(nombre)';
 
@@ -13,14 +14,16 @@ const CAMPOS_EMPRESA = 'id, nombre, nit, ciudad_id, telefono, correo, limite_sed
 const errorDe = (status, mensaje) => Object.assign(new Error(mensaje), { status });
 
 // RNF-05: toda accion del superadmin sobre una empresa queda registrada.
-export const auditarEmpresa = async ({ empresa, actorId, accion, detalles = {} }) => {
-    const { error } = await supabase.from('auditoria_empresas').insert({
+// respaldo: la IP y el navegador (enmienda 1 de portada-publica, HU-07). Por defecto,
+// los del pedido en curso; el registro de soporte los pasa ya tomados.
+export const auditarEmpresa = async ({ empresa, actorId, accion, detalles = {}, respaldo }) => {
+    const { error } = await insertarConRespaldo('auditoria_empresas', {
         empresa_id: empresa.id,
         empresa_nombre: empresa.nombre,
         actor_id: actorId,
         accion,
         detalles,
-    });
+    }, respaldo);
     if (error) console.error('No se pudo auditar la accion sobre la empresa:', error.message);
 };
 

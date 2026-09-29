@@ -24,6 +24,13 @@ const TIPOS = [
 
 const trazo = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
 const ICONO = {
+    // Solicitudes de cita de la portada (pacto portada-publica, enmienda 1: HU-04.5)
+    solicitud: (
+        <svg viewBox="0 0 24 24" {...trazo}>
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4" />
+        </svg>
+    ),
     vehiculo: (
         <svg viewBox="0 0 24 24" {...trazo}>
             <path d="M3 17h2l2-6h12l2 6h2v3h-2a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H3v-3z" />
@@ -297,6 +304,8 @@ function Actividad({ modo = "empresa" }) {
                                                 {equipo && f.empresa && <span className="actividad-empresa">{f.empresa}</span>}
                                             </p>
                                             <p className="actividad-texto">{f.texto}</p>
+                                            {/* HU-07 (portada-publica, enmienda 1): desde qué conexión y navegador. Solo en el Registro del equipo. */}
+                                            {equipo && f.respaldo && <p className="actividad-respaldo">{f.respaldo}</p>}
                                         </div>
                                     </li>
                                 ))}

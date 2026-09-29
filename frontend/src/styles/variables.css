@@ -6,7 +6,10 @@
    aplicación, lo cambias acá una vez y se actualiza en todo.
    ============================================================ */
 
-:root {
+/* [data-tema="claro"] repite el tema claro en un elemento: asi una pagina (la
+   portada publica) se ve en claro aunque el navegador tenga guardado el oscuro. */
+:root,
+[data-tema="claro"] {
   /* === COLORES DE MARCA ===
      Naranja vivo (provisional, pacto identidad-y-correcciones, enmienda 1).
      El naranja no aguanta letra blanca (3.6:1): lo que va ENCIMA usa
@@ -231,6 +234,33 @@
   /* SOLIDO = color saturado para FONDO de boton (texto blanco encima); el -texto
      se aclara en oscuro y NO sirve de fondo de boton, por eso van separados. */
   --estado-error-solido: #B71C1C;  --estado-adv-solido: #eb943e;  --estado-info-solido: #1565C0;
+
+  /* === PORTADA PUBLICA (pacto portada-publica) ===
+     Colores propios de la portada. Ningun tema los redefine: la portada fija
+     su tema claro y se ve igual con el oscuro guardado (RN-05). */
+  --portada-placa: #FDE047;             /* placa amarilla, siempre con letra negra */
+  --portada-negro-hover: #27272A;
+  --portada-hoja: #FFFEF8;              /* el preoperacional en papel */
+  --portada-hoja-borde: #D6D3C4;
+  --portada-hoja-regla: #E7E5DA;
+  --portada-hoja-casilla: #71717A;
+  --portada-tinta-azul: #1D4ED8;        /* lo escrito a mano en la hoja: 6.7:1 */
+  --portada-rojo-fondo: #FEF2F2;
+  --portada-rojo-tinta: #7F1D1D;        /* letra sobre --portada-rojo-fondo y el blanco */
+  --portada-cumple-fondo: #DCFCE7;  --portada-cumple-tinta: #14532D;
+  --portada-obs-fondo: #FEF3C7;     --portada-obs-tinta: #713F12;
+  --portada-alerta-tinta: #7C2D12;      /* letra sobre --color-primario-claro */
+  --portada-noche: #111111;             /* seccion de la cita */
+  --portada-noche-campo: #18181B;
+  --portada-noche-borde: #3F3F46;
+  --portada-noche-borde-fuerte: #52525B;
+  --portada-noche-borde-hover: #71717A;
+  --portada-noche-texto: #E4E4E7;
+  --portada-noche-texto-2: #D4D4D8;
+  --portada-noche-texto-3: #A1A1AA;     /* 7.6:1 sobre --portada-noche */
+  --portada-listo-texto: #ECFDF3;
+  --portada-listo-borde: #34A56A;
+  --portada-noche-error: #FCA5A5;       /* errores del formulario: 10:1 sobre --portada-noche */
 }
 
 /* ============================================================

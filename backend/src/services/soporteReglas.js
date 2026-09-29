@@ -40,8 +40,9 @@ export const limpia = (ruta) => String(ruta || '').split('?')[0].replace(/\/+$/,
 // modulo Empresas, la subida de una imagen suelta (el dato se guarda despues,
 // en otra llamada que si se confirma), el buzon de Soporte (HU-18 · RN-12:
 // responder no pide contrasena ni entrar a la empresa) y lo del equipo SISVIA
-// (HU-20: el traspaso de la marca pide su contraseña por su cuenta).
-const PROPIAS = ['/api/auth', '/api/notificaciones', '/api/empresas', '/api/upload', '/api/buzon', '/api/equipo'];
+// (HU-20: el traspaso de la marca pide su contraseña por su cuenta), y las
+// solicitudes de cita de la portada (pacto portada-publica: no son de ninguna empresa).
+const PROPIAS = ['/api/auth', '/api/notificaciones', '/api/empresas', '/api/upload', '/api/buzon', '/api/equipo', '/api/solicitudes'];
 const esPropia = (ruta) => PROPIAS.some((p) => ruta === p || ruta.startsWith(p + '/'));
 
 // HU-16.2 · RN-11: ¿este pedido del superadmin, dentro de una empresa, pide contraseña?

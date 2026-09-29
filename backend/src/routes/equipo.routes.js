@@ -13,6 +13,7 @@ import { MENSAJES_DUENO, esDueno, motivoNoDarMarca, motivoNoQuitarme, errorDeMar
 import { listarActividad } from '../services/actividad.service.js';
 import { verificarContrasena } from '../services/soporte.service.js';
 import { avisarCambioDeMarca } from '../services/dueno.service.js';
+import { rpcConRespaldo } from '../services/respaldo.service.js';
 
 const router = Router();
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -105,7 +106,7 @@ for (const [ruta, funcion, hecho, aviso] of [
             if (motivo) return res.status(400).json({ error: motivo });
             if (!(await contrasenaOk(req, res, password))) return undefined;
 
-            const { error } = await supabase.rpc(funcion, { p_de: req.usuario.id, p_a: destino.id });
+            const { error } = await rpcConRespaldo(funcion, { p_de: req.usuario.id, p_a: destino.id }); // con IP y navegador (HU-07)
             if (error) return responderError(res, error, 'Error al cambiar la marca de dueño');
             // La campanita le avisa a quien la recibe y a los demás dueños (enmienda 8)
             await avisarCambioDeMarca({ accion: aviso, actor: req.usuario, destino });
@@ -124,7 +125,7 @@ router.post('/quitarme-marca', async (req, res) => {
         if (motivo) return res.status(motivo === MENSAJES_DUENO.soloDueno ? 403 : 400).json({ error: motivo });
         if (!(await contrasenaOk(req, res, password))) return undefined;
 
-        const { error } = await supabase.rpc('quitarme_marca_dueno', { p_quien: req.usuario.id });
+        const { error } = await rpcConRespaldo('quitarme_marca_dueno', { p_quien: req.usuario.id }); // con IP y navegador (HU-07)
         if (error) return responderError(res, error, 'Error al quitarte la marca de dueño');
         await avisarCambioDeMarca({ accion: 'quito', actor: req.usuario });
         return res.json({ mensaje: 'Ya no eres dueño de SISVIA.' });

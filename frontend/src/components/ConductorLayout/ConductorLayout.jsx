@@ -27,7 +27,7 @@ function ConductorLayout({ children }) {
 
     const cerrar = () => {
         cerrarSesion();
-        navigate("/login");
+        navigate("/"); // HU-01.7 (portada-publica, enmienda 1): al salir, a la portada
     };
 
     if (!usuario) return null;
